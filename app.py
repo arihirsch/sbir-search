@@ -12,21 +12,21 @@ CORS(app, resources={
     }
 })
 
-DB_PATH = "solicitations.db"  # Adjust this path as needed
+DB_PATH = "solicitations.db"
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row  # This enables column access by name
     return conn
 
-@app.route('/api/solicitations', methods=['GET'])
-def get_solicitations():
+@app.route('/api/solicitations', methods=['GET']) #tested
+def get_all_solicitations():
     conn = get_db_connection()
     cursor = conn.cursor()
     
     # Get query parameters
-    limit = request.args.get('limit', default=50, type=int)
-    offset = request.args.get('offset', default=0, type=int)
+    limit = int(request.args.get('limit', default=50))
+    offset = int(request.args.get('offset', default=0))
     agency = request.args.get('agency', default=None, type=str)
     
     query = "SELECT * FROM solicitations"
@@ -36,8 +36,7 @@ def get_solicitations():
         query += " WHERE agency = ?"
         params.append(agency)
     
-    query += " LIMIT ? OFFSET ?"
-    params.extend([limit, offset])
+    query += f" LIMIT {limit} OFFSET {offset}"
     
     cursor.execute(query, params)
     solicitations = [dict(row) for row in cursor.fetchall()]
@@ -60,7 +59,72 @@ def get_solicitations():
         'offset': offset
     })
 
-@app.route('/api/topics/<int:solicitation_id>', methods=['GET'])
+@app.route('/api/solicitations/<int:solicitation_id>', methods=['GET']) #tested
+def get_solicitation(solicitation_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Get the solicitation
+    cursor.execute("""
+        SELECT * FROM solicitations 
+        WHERE solicitation_id = ?
+    """, [solicitation_id])
+    
+    row = cursor.fetchone()
+    solicitation = dict(row) if row else None
+    
+    if not solicitation:
+        conn.close()
+        return jsonify({'error': 'Solicitation not found'}), 404
+    
+    # Get associated topics
+    cursor.execute("""
+        SELECT * FROM topics 
+        WHERE solicitation_id = ?
+    """, [solicitation_id])
+    topics = [dict(row) for row in cursor.fetchall()]
+    
+    # Add topics to the response
+    solicitation['topics'] = topics
+    
+    conn.close()
+    
+    return jsonify(solicitation)
+
+@app.route('/api/all-topics', methods=['GET']) #tested
+def get_all_topics():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Get query parameters
+    limit = int(request.args.get('limit', default=50))
+    offset = int(request.args.get('offset', default=0))
+    
+    # Get topics with their associated solicitation info
+    # not sure if we want to add extra info here
+    cursor.execute("""
+        SELECT t.*, s.agency, s.solicitation_number, s.solicitation_title
+        FROM topics t
+        LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
+        LIMIT ? OFFSET ?
+    """, [limit, offset])
+    
+    topics = [dict(row) for row in cursor.fetchall()]
+    
+    # Get total count
+    cursor.execute("SELECT COUNT(*) FROM topics")
+    total_count = cursor.fetchone()[0]
+    
+    conn.close()
+    
+    return jsonify({
+        'data': topics,
+        'total': total_count,
+        'limit': limit,
+        'offset': offset
+    })
+
+@app.route('/api/topics/<int:solicitation_id>', methods=['GET']) #tested
 def get_topics(solicitation_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -75,7 +139,7 @@ def get_topics(solicitation_id):
     
     return jsonify(topics)
 
-@app.route('/api/subtopics/<string:topic_number>/<int:solicitation_id>', methods=['GET'])
+@app.route('/api/subtopics/<string:topic_number>/<int:solicitation_id>', methods=['GET']) #tested
 def get_subtopics(topic_number, solicitation_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -90,7 +154,7 @@ def get_subtopics(topic_number, solicitation_id):
     
     return jsonify(subtopics)
 
-@app.route('/api/search', methods=['GET'])
+@app.route('/api/search', methods=['GET']) #tested
 def search():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -124,7 +188,7 @@ def search():
         'offset': offset
     })
 
-@app.route('/api/stats', methods=['GET'])
+@app.route('/api/stats', methods=['GET']) #tested
 def get_stats():
     conn = get_db_connection()
     cursor = conn.cursor()
