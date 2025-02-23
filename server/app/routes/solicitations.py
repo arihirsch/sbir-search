@@ -43,6 +43,40 @@ def get_all_solicitations():
         'offset': offset
     })
 
+@bp.route('/solicitations/search', methods=['GET'])
+def search():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    search_term = request.args.get('q', default='', type=str)
+    limit = request.args.get('limit', default=50, type=int)
+    offset = request.args.get('offset', default=0, type=int)
+    
+    if not search_term:
+        return jsonify({'error': 'No search term provided'}), 400
+    
+    # Search across multiple tables and fields
+    cursor.execute("""
+        SELECT DISTINCT s.*, t.topic_title, t.topic_description
+        FROM solicitations s
+        LEFT JOIN topics t ON s.solicitation_id = t.solicitation_id
+        WHERE 
+            s.solicitation_title LIKE ? OR
+            s.solicitation_number LIKE ? OR
+            t.topic_title LIKE ? OR
+            t.topic_description LIKE ?
+        LIMIT ? OFFSET ?
+    """, [f'%{search_term}%'] * 4 + [limit, offset])
+    
+    results = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    
+    return jsonify({
+        'data': results,
+        'limit': limit,
+        'offset': offset
+    })
+
 @bp.route('/solicitations/<int:solicitation_id>', methods=['GET'])
 def get_solicitation(solicitation_id):
     conn = get_db_connection()

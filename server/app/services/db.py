@@ -1,7 +1,7 @@
 import sqlite3
 from flask import g
 
-DB_PATH = "solicitations.db"
+DB_PATH = "server/solicitations.db"
 
 def get_db_connection():
     if 'db' not in g:
