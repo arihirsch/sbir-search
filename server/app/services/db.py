@@ -7,7 +7,8 @@ COMPANIES_DB = "server/companies.db"
 
 def get_db_connection(db_name="solicitations"):
     db_key = f'db_{db_name}'
-    if db_key not in g:
+    
+    if not hasattr(g, db_key):
         if db_name == "solicitations":
             path = SOLICITATIONS_DB
         elif db_name == "awards":
@@ -17,9 +18,11 @@ def get_db_connection(db_name="solicitations"):
         else:
             raise ValueError(f"Unknown database: {db_name}")
             
-        g.setdefault(db_key, sqlite3.connect(path))
-        g[db_key].row_factory = sqlite3.Row
-    return g[db_key]
+        conn = sqlite3.connect(path)
+        conn.row_factory = sqlite3.Row
+        setattr(g, db_key, conn)
+    
+    return getattr(g, db_key)
 
 def close_db(e=None):
     for db_key in list(g.keys()):

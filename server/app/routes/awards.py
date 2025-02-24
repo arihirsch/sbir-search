@@ -36,14 +36,15 @@ def search():
     if not search_term:
         return jsonify({'error': 'No search term provided'}), 400
     
-    # Search across multiple fields
+    # Search across multiple fields using correct column names from schema
     cursor.execute("""
         SELECT * FROM awards 
-        WHERE award_title LIKE ? OR
-            award_number LIKE ? OR
-            agency LIKE ?
+        WHERE firm LIKE ? OR
+            award_title LIKE ? OR
+            agency LIKE ? OR
+            abstract LIKE ?
         LIMIT ? OFFSET ?
-    """, [f'%{search_term}%'] * 3 + [limit, offset])
+    """, [f'%{search_term}%'] * 4 + [limit, offset])
     
     results = [dict(row) for row in cursor.fetchall()]
     conn.close()
