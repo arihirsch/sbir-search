@@ -1,0 +1,4 @@
+sbir-ui/.yarn/**            linguist-vendored
+sbir-ui/.yarn/releases/*    binary
+sbir-ui/.yarn/plugins/**/*  binary
+sbir-ui/.pnp.*              binary linguist-generated
