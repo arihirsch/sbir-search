@@ -38,7 +38,9 @@ cp .env.example .env
 │   ├── __init__.py        # Flask application initialization
 │   ├── routes/            # Route definitions
 │   │   ├── analytics.py   # Analytics-related routes
-│   │   └── solicitations.py # Solicitation-related routes
+│   │   ├── solicitations.py # Solicitation-related routes
+│   │   ├── awards.py      # Awards-related routes
+│   │   └── companies.py   # Companies-related routes
 │   └── services/          # Business logic and services
 │       └── db.py          # Database connection and queries
 ├── requirements.txt       # Python dependencies

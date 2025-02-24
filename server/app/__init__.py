@@ -18,8 +18,10 @@ def create_app():
     })
 
     # Register blueprints
-    from app.routes import solicitations, analytics
+    from app.routes import solicitations, analytics, awards, companies
     app.register_blueprint(solicitations.bp)
     app.register_blueprint(analytics.bp)
+    app.register_blueprint(awards.bp)
+    app.register_blueprint(companies.bp)
 
     return app 
