@@ -200,3 +200,79 @@ def get_open_topics():
         'limit': limit,
         'offset': offset
     })
+
+@bp.route('/topics/closed', methods=['GET'])
+def get_closed_topics():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    limit = int(request.args.get('limit', default=50))
+    offset = int(request.args.get('offset', default=0))
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    
+    cursor.execute("""
+        SELECT topic_number, topic_title, topic_description, 
+               topic_open_date, topic_closed_date, branch, solicitation_id
+        FROM topics
+        WHERE topic_closed_date < ?
+        ORDER BY topic_closed_date DESC
+        LIMIT ? OFFSET ?
+    """, [current_date, limit, offset])
+    
+    results = [dict(row) for row in cursor.fetchall()]
+    
+    return jsonify({
+        'data': results,
+        'limit': limit,
+        'offset': offset
+    })
+
+@bp.route('/topics/search', methods=['GET'])
+def search_topics():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    search_term = request.args.get('q', default='', type=str)
+    limit = request.args.get('limit', default=50, type=int)
+    offset = request.args.get('offset', default=0, type=int)
+    
+    if not search_term:
+        return jsonify({'error': 'No search term provided'}), 400
+    
+    # Search across topic fields
+    cursor.execute("""
+        SELECT t.*, s.agency, s.solicitation_number, s.solicitation_title
+        FROM topics t
+        LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
+        WHERE 
+            t.topic_title LIKE ? OR
+            t.topic_description LIKE ? OR
+            t.topic_number LIKE ? OR
+            t.branch LIKE ?
+        ORDER BY t.topic_open_date DESC
+        LIMIT ? OFFSET ?
+    """, [f'%{search_term}%'] * 4 + [limit, offset])
+    
+    results = [dict(row) for row in cursor.fetchall()]
+    
+    # Get total count for pagination
+    cursor.execute("""
+        SELECT COUNT(*) 
+        FROM topics t
+        WHERE 
+            t.topic_title LIKE ? OR
+            t.topic_description LIKE ? OR
+            t.topic_number LIKE ? OR
+            t.branch LIKE ?
+    """, [f'%{search_term}%'] * 4)
+    
+    total_count = cursor.fetchone()[0]
+    
+    conn.close()
+    
+    return jsonify({
+        'data': results,
+        'total': total_count,
+        'limit': limit,
+        'offset': offset
+    })
