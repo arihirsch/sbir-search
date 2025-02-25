@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from app.services.db import get_db_connection
+from datetime import datetime
 
 bp = Blueprint('solicitations', __name__, url_prefix='/api')
 
@@ -172,3 +173,30 @@ def get_subtopics(topic_number, solicitation_id):
     conn.close()
     
     return jsonify(subtopics)
+
+@bp.route('/topics/open', methods=['GET'])
+def get_open_topics():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    limit = int(request.args.get('limit', default=50))
+    offset = int(request.args.get('offset', default=0))
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    
+    cursor.execute("""
+        SELECT topic_number, topic_title, topic_description, 
+               topic_open_date, topic_closed_date, branch, solicitation_id
+        FROM topics
+        WHERE topic_open_date <= ? 
+        AND (topic_closed_date >= ? OR topic_closed_date IS NULL)
+        ORDER BY topic_open_date DESC
+        LIMIT ? OFFSET ?
+    """, [current_date, current_date, limit, offset])
+    
+    results = [dict(row) for row in cursor.fetchall()]
+    
+    return jsonify({
+        'data': results,
+        'limit': limit,
+        'offset': offset
+    })
