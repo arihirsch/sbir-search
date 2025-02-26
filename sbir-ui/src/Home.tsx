@@ -255,6 +255,14 @@ export default function Home() {
             <Button type="submit">Search</Button>
           </form>
 
+          <div className="text-center mb-8 text-gray-600">
+            {loading ? (
+              "Counting results..."
+            ) : (
+              `Found ${data.length} ${viewType}`
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
             {loading ? (
               <div className="col-span-2 text-center">Loading...</div>
