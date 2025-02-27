@@ -41,3 +41,9 @@ sbir-ui/.yarn/*
 !sbir-ui/.yarn/releases
 !sbir-ui/.yarn/sdks
 !sbir-ui/.yarn/versions
+node_modules/
+package-lock.json
+.pnp.loader.mjs
+.yarn/cache/
+.yarn/unplugged/
+.yarn/install-state.gz
