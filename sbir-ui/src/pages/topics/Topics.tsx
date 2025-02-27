@@ -63,7 +63,7 @@ export default function Topics() {
   };
 
   return (
-    <main className="p-24">
+    <main className="ml-48 p-24">
       <div className="max-w-5xl mx-auto">
         <div className="flex gap-4 mb-8">
           <Button

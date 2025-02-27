@@ -93,29 +93,8 @@ export default function Home() {
   };
 
   return (
-    <main className="p-24">
+    <main className="ml-48 p-24">
       <div className="max-w-5xl mx-auto">
-        <div className="flex gap-4 mb-8">
-          <Button
-            variant={viewType === 'topics' ? 'default' : 'outline'}
-            onClick={() => handleViewTypeChange('topics')}
-          >
-            Topics
-          </Button>
-          <Button
-            variant={viewType === 'awards' ? 'default' : 'outline'}
-            onClick={() => handleViewTypeChange('awards')}
-          >
-            Awards
-          </Button>
-          <Button
-            variant={viewType === 'companies' ? 'default' : 'outline'}
-            onClick={() => handleViewTypeChange('companies')}
-          >
-            Companies
-          </Button>
-        </div>
-
         {viewType === 'topics' && (
           <div className="flex gap-4 mb-8">
             <Button

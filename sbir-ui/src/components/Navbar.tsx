@@ -6,14 +6,6 @@ export default function Navbar() {
   
   return (
     <nav className="fixed top-0 left-0 w-48 h-screen bg-gray-100 p-4 flex flex-col gap-2">
-      <Link to="/">
-        <Button
-          variant={location.pathname === '/' ? 'default' : 'outline'}
-          className="w-full justify-start"
-        >
-          Home
-        </Button>
-      </Link>
       <Link to="/topics">
         <Button
           variant={location.pathname.startsWith('/topics') ? 'default' : 'outline'}
