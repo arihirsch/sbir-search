@@ -53,3 +53,17 @@ def search():
         'limit': limit,
         'offset': offset
     })
+
+@bp.route('/companies/<int:firm_nid>', methods=['GET'])
+def get_company(firm_nid):
+    conn = get_db_connection(db_name="companies")
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT * FROM companies WHERE firm_nid = ?", [firm_nid])
+    company = cursor.fetchone()
+    
+    if company is None:
+        return jsonify({'error': 'Company not found'}), 404
+        
+    conn.close()
+    return jsonify({'data': dict(company)})

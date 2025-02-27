@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,7 @@ export default function Companies() {
   const [data, setData] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || '');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -46,7 +47,7 @@ export default function Companies() {
   }
 
   return (
-    <main className="ml-48 p-24">
+    <main className="ml-48 pt-24 p-8">
       <div className="max-w-5xl mx-auto">
         <form
           action={handleSearch}
@@ -72,7 +73,11 @@ export default function Companies() {
             <div className="col-span-2 text-center">Loading...</div>
           ) : data.length > 0 ? (
             data.map((company) => (
-              <Card key={company.firm_nid}>
+              <Card 
+                key={company.firm_nid}
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => navigate(`/companies/${company.firm_nid}`)}
+              >
                 <CardHeader>
                   <CardTitle>{company.company_name}</CardTitle>
                 </CardHeader>

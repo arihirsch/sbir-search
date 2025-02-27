@@ -93,25 +93,8 @@ export default function Home() {
   };
 
   return (
-    <main className="ml-48 p-24">
+    <main className="ml-48 pt-24 p-8">
       <div className="max-w-5xl mx-auto">
-        {viewType === 'topics' && (
-          <div className="flex gap-4 mb-8">
-            <Button
-              variant={topicFilter === 'open' ? 'default' : 'outline'}
-              onClick={() => setTopicFilter('open')}
-            >
-              Open Topics
-            </Button>
-            <Button
-              variant={topicFilter === 'closed' ? 'default' : 'outline'}
-              onClick={() => setTopicFilter('closed')}
-            >
-              Closed Topics
-            </Button>
-          </div>
-        )}
-
         <form
           action={handleSearch}
           className="flex w-full max-w-xl mx-auto mb-8"

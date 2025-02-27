@@ -45,7 +45,7 @@ def get_all_solicitations():
     })
 
 @bp.route('/solicitations/search', methods=['GET'])
-def search():
+def search_solicitations():
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -110,7 +110,7 @@ def get_solicitation(solicitation_id):
     
     return jsonify(solicitation)
 
-@bp.route('/all-topics', methods=['GET'])
+@bp.route('/topics', methods=['GET'])
 def get_all_topics():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -143,9 +143,8 @@ def get_all_topics():
         'offset': offset
     })
 
-
-@bp.route('/topics/<int:solicitation_id>', methods=['GET'])
-def get_topics(solicitation_id):
+@bp.route('/solicitations/<int:solicitation_id>/topics', methods=['GET'])
+def get_topics_from_solicitation(solicitation_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -276,3 +275,38 @@ def search_topics():
         'limit': limit,
         'offset': offset
     })
+
+@bp.route('/topics/<string:topic_number>', methods=['GET'])
+def get_topic(topic_number):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Get the topic and associated solicitation info
+    cursor.execute("""
+        SELECT t.*, s.agency, s.solicitation_number, s.solicitation_title
+        FROM topics t
+        LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
+        WHERE t.topic_number = ?
+    """, [topic_number])
+    
+    row = cursor.fetchone()
+    topic = dict(row) if row else None
+    
+    if not topic:
+        conn.close()
+        return jsonify({'error': 'Topic not found'}), 404
+    
+    # Get associated subtopics
+    cursor.execute("""
+        SELECT * FROM subtopics 
+        WHERE topic_number = ? AND solicitation_id = ?
+    """, [topic_number, topic['solicitation_id']])
+    
+    subtopics = [dict(row) for row in cursor.fetchall()]
+    
+    # Add subtopics to the response
+    topic['subtopics'] = subtopics
+    
+    conn.close()
+    
+    return jsonify(topic)

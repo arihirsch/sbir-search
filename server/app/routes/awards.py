@@ -54,3 +54,25 @@ def search():
         'limit': limit,
         'offset': offset
     })  
+
+@bp.route('/awards/<int:award_link>', methods=['GET'])
+def get_award(award_link):
+    conn = get_db_connection(db_name="awards")
+    cursor = conn.cursor()
+    
+    # Get the award with company info
+    cursor.execute("""
+        SELECT * FROM awards
+        WHERE award_link = ?
+    """, [award_link])
+    
+    row = cursor.fetchone()
+    award = dict(row) if row else None
+    
+    if not award:
+        conn.close()
+        return jsonify({'error': 'Award not found'}), 404
+    
+    conn.close()
+    
+    return jsonify(award)  

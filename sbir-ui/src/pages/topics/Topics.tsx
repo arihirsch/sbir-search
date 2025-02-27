@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,7 @@ export default function Topics() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || '');
   const topicFilter = (searchParams.get("filter") as TopicFilter) || 'open';
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -63,7 +64,7 @@ export default function Topics() {
   };
 
   return (
-    <main className="ml-48 p-24">
+    <main className="ml-48 pt-24 p-8">
       <div className="max-w-5xl mx-auto">
         <form
           action={handleSearch}
@@ -93,7 +94,11 @@ export default function Topics() {
             <div className="col-span-2 text-center">Loading...</div>
           ) : data.length > 0 ? (
             data.map(topic => (
-              <Card key={topic.topic_number}>
+              <Card 
+                key={topic.topic_number}
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => navigate(`/topics/${topic.topic_number}`)}
+              >
                 <CardHeader>
                   <CardTitle>{topic.topic_title}</CardTitle>
                 </CardHeader>
@@ -105,7 +110,10 @@ export default function Topics() {
                   
                   <div className="mt-4">
                     <button
-                      onClick={() => toggleDescription(topic.topic_number.toString())}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleDescription(topic.topic_number.toString());
+                      }}
                       className="flex items-center text-sm text-gray-500 hover:text-gray-700"
                     >
                       {expandedCards.has(topic.topic_number.toString()) ? (

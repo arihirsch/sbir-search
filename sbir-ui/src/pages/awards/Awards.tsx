@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,7 @@ export default function Awards() {
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || '');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -60,7 +61,7 @@ export default function Awards() {
   };
 
   return (
-    <main className="ml-48 p-24">
+    <main className="ml-48 pt-24 p-8">
       <div className="max-w-5xl mx-auto">
         <form
           action={handleSearch}
@@ -86,7 +87,11 @@ export default function Awards() {
             <div className="col-span-2 text-center">Loading...</div>
           ) : data.length > 0 ? (
             data.map((award) => (
-              <Card key={award.award_link}>
+              <Card 
+                key={award.award_link}
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => navigate(`/awards/${award.award_link}`)}
+              >
                 <CardHeader>
                   <CardTitle>{award.award_title}</CardTitle>
                 </CardHeader>
@@ -100,7 +105,10 @@ export default function Awards() {
 
                   <div className="mt-4">
                     <button
-                      onClick={() => toggleDescription(award.award_link.toString())}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleDescription(award.award_link.toString());
+                      }}
                       className="flex items-center text-sm text-gray-500 hover:text-gray-700"
                     >
                       {expandedCards.has(award.award_link.toString()) ? (

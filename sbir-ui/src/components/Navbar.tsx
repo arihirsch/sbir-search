@@ -9,7 +9,7 @@ export default function Navbar() {
   const isTopicsRoute = location.pathname.startsWith('/topics');
   
   return (
-    <nav className="fixed top-0 left-0 w-48 h-screen bg-gray-100 p-4 flex flex-col gap-2">
+    <nav className="fixed top-14 left-0 w-48 h-[calc(100vh-3.5rem)] bg-gray-100 p-4 flex flex-col gap-2">
       <Link to="/topics">
         <Button
           variant={location.pathname.startsWith('/topics') ? 'default' : 'outline'}
