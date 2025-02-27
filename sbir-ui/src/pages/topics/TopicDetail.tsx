@@ -43,6 +43,17 @@ export default function TopicDetail() {
             <p><strong>Branch:</strong> {topic.branch}</p>
             <p><strong>Open Date:</strong> {topic.topic_open_date}</p>
             <p><strong>Close Date:</strong> {topic.topic_closed_date || 'Not specified'}</p>
+            <p>
+              <strong>SBIR Topic Link:</strong>{' '}
+              <a 
+                href={topic.sbir_topic_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 underline"
+              >
+                View Original Topic
+              </a>
+            </p>
             <div className="mt-4">
               <h3 className="font-semibold mb-2">Description</h3>
               <p className="whitespace-pre-wrap">{topic.topic_description}</p>
