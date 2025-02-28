@@ -1,26 +1,38 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Topic, parseTopic } from "@/types/topic";
+import { Solicitation, parseSolicitation } from "@/types/solicitation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator.tsx";
 
 export default function TopicDetail() {
   const { id } = useParams();
   const [topic, setTopic] = useState<Topic | null>(null);
+  const [solicitation, setSolicitation] = useState<Solicitation | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchTopic() {
+    async function fetchData() {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/topics/${id}`);
-        const data = await response.json();
-        setTopic(parseTopic(data));
+        // Fetch topic first
+        const topicResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/topics/${id}`);
+        const topicData = await topicResponse.json();
+        const parsedTopic = parseTopic(topicData);
+        setTopic(parsedTopic);
+
+        // Then fetch solicitation using solicitation_id from topic
+        const solicitationResponse = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/solicitations/${parsedTopic.solicitation_id}`
+        );
+        const solicitationData = await solicitationResponse.json();
+        setSolicitation(parseSolicitation(solicitationData));
       } catch (error) {
-        console.error('Failed to fetch topic:', error);
+        console.error('Failed to fetch data:', error);
       } finally {
         setLoading(false);
       }
     }
-    fetchTopic();
+    fetchData();
   }, [id]);
 
   if (loading) {
@@ -39,6 +51,29 @@ export default function TopicDetail() {
             <CardTitle>{topic.topic_title}</CardTitle>
           </CardHeader>
           <CardContent>
+            {solicitation && (
+              <div className="mb-6">
+                <h3 className="font-semibold mb-4">Solicitation Details</h3>
+                <p><strong>Agency:</strong> {solicitation.agency}</p>
+                <p><strong>Phase:</strong> {solicitation.phase}</p>
+                <p><strong>Program:</strong> {solicitation.program}</p>
+                <p><strong>Year:</strong> {solicitation.solicitation_year}</p>
+                <p><strong>Title:</strong> {solicitation.solicitation_title}</p>
+                <p>
+                  <strong>Agency Link:</strong>{' '}
+                  <a 
+                    href={solicitation.solicitation_agency_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    View Solicitation
+                  </a>
+                </p>
+                <Separator className="my-6" />
+              </div>
+            )}
+
             <p><strong>Topic Number:</strong> {topic.topic_number}</p>
             <p><strong>Branch:</strong> {topic.branch}</p>
             <p><strong>Open Date:</strong> {topic.topic_open_date}</p>
@@ -58,6 +93,26 @@ export default function TopicDetail() {
               <h3 className="font-semibold mb-2">Description</h3>
               <p className="whitespace-pre-wrap">{topic.topic_description}</p>
             </div>
+
+            {topic.subtopics && topic.subtopics.length > 0 && (
+              <div className="mt-6">
+                <Separator className="my-4" />
+                <h3 className="font-semibold mb-4">Subtopics</h3>
+                {topic.subtopics.map((subtopic, index) => (
+                  <div key={subtopic.subtopic_id} className="mb-6">
+                    <h4 className="font-medium mb-2">
+                      Subtopic {subtopic.subtopic_number}
+                    </h4>
+                    <p className="whitespace-pre-wrap mb-2">
+                      Title: {subtopic.subtopic_title}
+                    </p>
+                    <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                      Description: {subtopic.subtopic_description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

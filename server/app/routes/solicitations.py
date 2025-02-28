@@ -158,6 +158,7 @@ def get_topics_from_solicitation(solicitation_id):
     
     return jsonify(topics)
 
+#use both topic number and solicitation id to get subtopics to ensure we get the correct subtopics
 @bp.route('/subtopics/<string:topic_number>/<int:solicitation_id>', methods=['GET'])
 def get_subtopics(topic_number, solicitation_id):
     conn = get_db_connection()
@@ -281,32 +282,39 @@ def get_topic(topic_number):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Get the topic and associated solicitation info
-    cursor.execute("""
-        SELECT t.*, s.agency, s.solicitation_number, s.solicitation_title
-        FROM topics t
-        LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
-        WHERE t.topic_number = ?
-    """, [topic_number])
-    
-    row = cursor.fetchone()
-    topic = dict(row) if row else None
-    
-    if not topic:
+    try:
+        # Get the topic and associated solicitation info
+        cursor.execute("""
+            SELECT t.*, s.agency, s.solicitation_number, s.solicitation_title
+            FROM topics t
+            LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
+            WHERE t.topic_number = ?
+        """, [topic_number])
+        
+        row = cursor.fetchone()
+        if not row:
+            return jsonify({'error': 'Topic not found'}), 404
+            
+        topic = dict(row)
+        
+        # Get associated subtopics
+        cursor.execute("""
+            SELECT 
+                subtopic_id,
+                subtopic_number,
+                subtopic_title,
+                subtopic_description
+            FROM subtopics 
+            WHERE topic_number = ? AND solicitation_id = ?
+            ORDER BY subtopic_number
+        """, [topic_number, topic['solicitation_id']])
+        
+        subtopics = [dict(row) for row in cursor.fetchall()]
+        topic['subtopics'] = subtopics
+        
+        return jsonify(topic)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
         conn.close()
-        return jsonify({'error': 'Topic not found'}), 404
-    
-    # Get associated subtopics
-    cursor.execute("""
-        SELECT * FROM subtopics 
-        WHERE topic_number = ? AND solicitation_id = ?
-    """, [topic_number, topic['solicitation_id']])
-    
-    subtopics = [dict(row) for row in cursor.fetchall()]
-    
-    # Add subtopics to the response
-    topic['subtopics'] = subtopics
-    
-    conn.close()
-    
-    return jsonify(topic)

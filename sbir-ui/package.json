@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@geist-ui/core": "^2.3.8",
+    "@radix-ui/react-separator": "^1.1.2",
     "@radix-ui/react-slot": "^1.1.2",
     "@tailwindcss/vite": "^4.0.8",
     "class-variance-authority": "^0.7.1",
