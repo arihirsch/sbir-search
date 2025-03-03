@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { parseTopic, Topic } from "@/types/topic";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useNavbar } from "@/contexts/NavbarContext";
 
 export default function Topics() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -12,12 +13,20 @@ export default function Topics() {
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || '');
-  const topicFilter = searchParams.get("filter") || '';
+  const { topicFilter, setTopicFilter } = useNavbar();
   const navigate = useNavigate();
+
+  // Sync URL filter with context on initial load
+  useEffect(() => {
+    const urlFilter = searchParams.get("filter");
+    if (urlFilter && urlFilter !== topicFilter) {
+      setTopicFilter(urlFilter);
+    }
+  }, []);
 
   useEffect(() => {
     fetchData();
-  }, [searchParams]);
+  }, [searchParams, topicFilter]);
 
   async function fetchData() {
     setLoading(true);

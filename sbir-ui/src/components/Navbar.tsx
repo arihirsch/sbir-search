@@ -1,5 +1,4 @@
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { Button } from './ui/button';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Select,
   SelectContent,
@@ -7,67 +6,91 @@ import {
   SelectTrigger,
   SelectValue
 } from './ui/select';
+import { Button } from './ui/button';
+import { useNavbar } from '../contexts/NavbarContext';
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const topicFilter = searchParams.get("filter") || '';
+  const { topicFilter, setTopicFilter } = useNavbar();
   
   const isTopicsRoute = location.pathname.startsWith('/topics');
+  const isAwardsRoute = location.pathname.startsWith('/awards');
+  const isCompaniesRoute = location.pathname.startsWith('/companies');
+  
+  // Determine current section based on route
+  const getCurrentSection = () => {
+    // Extract the first part of the path (e.g., "topics" from "/topics/123")
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const mainSection = pathSegments[0] || '';
+    
+    if (mainSection === 'topics') return 'topics';
+    if (mainSection === 'awards') return 'awards';
+    if (mainSection === 'companies') return 'companies';
+    return 'topics'; // Default to topics
+  };
+  
+  const handleSectionChange = (value: string) => {
+    navigate(`/${value}`);
+  };
   
   const handleFilterChange = (value: string) => {
-    setSearchParams(params => {
-      if (value) {
-        params.set("filter", value);
-      } else {
-        params.delete("filter");
-      }
-      return params;
-    });
+    setTopicFilter(value);
+    
+    // Also update URL params when on the main topics page
+    if (location.pathname === '/topics') {
+      setSearchParams(params => {
+        if (value) {
+          params.set("filter", value);
+        } else {
+          params.delete("filter");
+        }
+        return params;
+      });
+    }
   };
   
   return (
-    <nav className="fixed top-14 left-0 w-48 h-[calc(100vh-3.5rem)] bg-gray-100 p-4 flex flex-col gap-2">
-      <Link to="/topics">
-        <Button
-          variant={location.pathname.startsWith('/topics') ? 'default' : 'outline'}
-          className="w-full justify-start"
-        >
-          Topics
-        </Button>
-      </Link>
+    <nav className="fixed top-14 left-0 w-48 h-[calc(100vh-3.5rem)] p-4 flex flex-col gap-4">
+      {/* Main navigation select */}
+      <Select value={getCurrentSection()} onValueChange={handleSectionChange}>
+        <SelectTrigger className="w-full text-sm bg-white">
+          <SelectValue placeholder="Navigate..." />
+        </SelectTrigger>
+        <SelectContent className="bg-white">
+          <SelectItem value="topics">Topics</SelectItem>
+          <SelectItem value="awards">Awards</SelectItem>
+          <SelectItem value="companies">Companies</SelectItem>
+        </SelectContent>
+      </Select>
       
-      {/* Show topic filter select only when on topics route */}
+      {/* Topic filter select - only shown when on topics route */}
       {isTopicsRoute && (
         <div className="pl-4 mt-2">
           <Select value={topicFilter} onValueChange={handleFilterChange}>
-            <SelectTrigger className="w-full text-sm">
+            <SelectTrigger className="w-full text-sm bg-white">
               <SelectValue placeholder="Status..." />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               <SelectItem value="open">Open Topics</SelectItem>
               <SelectItem value="closed">Closed Topics</SelectItem>
             </SelectContent>
           </Select>
         </div>
       )}
-
-      <Link to="/awards">
-        <Button
-          variant={location.pathname.startsWith('/awards') ? 'default' : 'outline'}
-          className="w-full justify-start"
-        >
-          Awards
-        </Button>
-      </Link>
-      <Link to="/companies">
-        <Button
-          variant={location.pathname.startsWith('/companies') ? 'default' : 'outline'}
-          className="w-full justify-start"
-        >
-          Companies
-        </Button>
-      </Link>
+      
+      {/* About link remains as a button */}
+      <div className="mt-auto">
+        <Link to="/about">
+          <Button
+            variant={location.pathname.startsWith('/about') ? 'default' : 'outline'}
+            className="w-full justify-start"
+          >
+            About
+          </Button>
+        </Link>
+      </div>
     </nav>
   );
 } 
