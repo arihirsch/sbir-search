@@ -6,15 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { parseTopic, Topic } from "@/types/topic";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-type TopicFilter = 'open' | 'closed';
-
 export default function Topics() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState<Topic[]>([]);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || '');
-  const topicFilter = (searchParams.get("filter") as TopicFilter) || 'open';
+  const topicFilter = searchParams.get("filter") || '';
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,10 +22,18 @@ export default function Topics() {
   async function fetchData() {
     setLoading(true);
     try {
-      let url = `${import.meta.env.VITE_API_BASE_URL}/topics/${topicFilter}`;
+      let url = `${import.meta.env.VITE_API_BASE_URL}/topics`;
+      
+      // If a filter is specified, append it to the URL
+      if (topicFilter === 'open' || topicFilter === 'closed') {
+        url = `${import.meta.env.VITE_API_BASE_URL}/topics/${topicFilter}`;
+      }
+      
+      // If there's a search term, use the search endpoint instead
       if (searchTerm) {
         url = `${import.meta.env.VITE_API_BASE_URL}/topics/search?q=${searchTerm}`;
       }
+      
       const response = await fetch(url);
       const responseData = await response.json();
       setData(responseData.data.map(parseTopic));
