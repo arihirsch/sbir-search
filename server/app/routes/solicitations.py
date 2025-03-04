@@ -10,7 +10,7 @@ def get_all_solicitations():
     cursor = conn.cursor()
     
     # Get query parameters
-    limit = int(request.args.get('limit', default=50))
+    limit = request.args.get('limit', default=None, type=int)
     offset = int(request.args.get('offset', default=0))
     agency = request.args.get('agency', default=None, type=str)
     
@@ -21,7 +21,12 @@ def get_all_solicitations():
         query += " WHERE agency = ?"
         params.append(agency)
     
-    query += f" LIMIT {limit} OFFSET {offset}"
+    # Only add LIMIT if specified
+    if limit is not None:
+        query += f" LIMIT {limit} OFFSET {offset}"
+    elif offset > 0:
+        # If offset is provided without limit, use a large limit
+        query += f" LIMIT 1000000 OFFSET {offset}"
     
     cursor.execute(query, params)
     solicitations = [dict(row) for row in cursor.fetchall()]
@@ -50,14 +55,14 @@ def search_solicitations():
     cursor = conn.cursor()
     
     search_term = request.args.get('q', default='', type=str)
-    limit = request.args.get('limit', default=50, type=int)
-    offset = request.args.get('offset', default=0, type=int)
+    limit = request.args.get('limit', default=None, type=int)
+    offset = int(request.args.get('offset', default=0))
     
     if not search_term:
         return jsonify({'error': 'No search term provided'}), 400
     
     # Search across multiple tables and fields
-    cursor.execute("""
+    query = """
         SELECT DISTINCT s.*, t.topic_title, t.topic_description
         FROM solicitations s
         LEFT JOIN topics t ON s.solicitation_id = t.solicitation_id
@@ -66,9 +71,19 @@ def search_solicitations():
             s.solicitation_number LIKE ? OR
             t.topic_title LIKE ? OR
             t.topic_description LIKE ?
-        LIMIT ? OFFSET ?
-    """, [f'%{search_term}%'] * 4 + [limit, offset])
+    """
+    params = [f'%{search_term}%'] * 4
     
+    # Only add LIMIT if specified
+    if limit is not None:
+        query += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+    elif offset > 0:
+        # If offset is provided without limit, use a large limit
+        query += " LIMIT 1000000 OFFSET ?"
+        params.append(offset)
+    
+    cursor.execute(query, params)
     results = [dict(row) for row in cursor.fetchall()]
     conn.close()
     
@@ -116,18 +131,27 @@ def get_all_topics():
     cursor = conn.cursor()
     
     # Get query parameters
-    limit = int(request.args.get('limit', default=50))
+    limit = request.args.get('limit', default=None, type=int)
     offset = int(request.args.get('offset', default=0))
     
     # Get topics with their associated solicitation info
-    # not sure if we want to add extra info here
-    cursor.execute("""
+    query = """
         SELECT t.*, s.agency, s.solicitation_number, s.solicitation_title
         FROM topics t
         LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
-        LIMIT ? OFFSET ?
-    """, [limit, offset])
+    """
+    params = []
     
+    # Only add LIMIT if specified
+    if limit is not None:
+        query += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+    elif offset > 0:
+        # If offset is provided without limit, use a large limit
+        query += " LIMIT 1000000 OFFSET ?"
+        params.append(offset)
+    
+    cursor.execute(query, params)
     topics = [dict(row) for row in cursor.fetchall()]
     
     # Get total count
@@ -179,20 +203,30 @@ def get_open_topics():
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    limit = int(request.args.get('limit', default=50))
+    limit = request.args.get('limit', default=None, type=int)
     offset = int(request.args.get('offset', default=0))
     current_date = datetime.now().strftime('%Y-%m-%d')
     
-    cursor.execute("""
+    query = """
         SELECT topic_number, topic_title, topic_description, 
                topic_open_date, topic_closed_date, branch, solicitation_id
         FROM topics
         WHERE topic_open_date <= ? 
         AND (topic_closed_date >= ? OR topic_closed_date IS NULL)
         ORDER BY topic_open_date DESC
-        LIMIT ? OFFSET ?
-    """, [current_date, current_date, limit, offset])
+    """
+    params = [current_date, current_date]
     
+    # Only add LIMIT if specified
+    if limit is not None:
+        query += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+    elif offset > 0:
+        # If offset is provided without limit, use a large limit
+        query += " LIMIT 1000000 OFFSET ?"
+        params.append(offset)
+    
+    cursor.execute(query, params)
     results = [dict(row) for row in cursor.fetchall()]
     
     return jsonify({
@@ -206,19 +240,29 @@ def get_closed_topics():
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    limit = int(request.args.get('limit', default=50))
+    limit = request.args.get('limit', default=None, type=int)
     offset = int(request.args.get('offset', default=0))
     current_date = datetime.now().strftime('%Y-%m-%d')
     
-    cursor.execute("""
+    query = """
         SELECT topic_number, topic_title, topic_description, 
                topic_open_date, topic_closed_date, branch, solicitation_id
         FROM topics
         WHERE topic_closed_date < ?
         ORDER BY topic_closed_date DESC
-        LIMIT ? OFFSET ?
-    """, [current_date, limit, offset])
+    """
+    params = [current_date]
     
+    # Only add LIMIT if specified
+    if limit is not None:
+        query += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+    elif offset > 0:
+        # If offset is provided without limit, use a large limit
+        query += " LIMIT 1000000 OFFSET ?"
+        params.append(offset)
+    
+    cursor.execute(query, params)
     results = [dict(row) for row in cursor.fetchall()]
     
     return jsonify({
@@ -233,14 +277,14 @@ def search_topics():
     cursor = conn.cursor()
     
     search_term = request.args.get('q', default='', type=str)
-    limit = request.args.get('limit', default=50, type=int)
-    offset = request.args.get('offset', default=0, type=int)
+    limit = request.args.get('limit', default=None, type=int)
+    offset = int(request.args.get('offset', default=0))
     
     if not search_term:
         return jsonify({'error': 'No search term provided'}), 400
     
     # Search across topic fields
-    cursor.execute("""
+    query = """
         SELECT t.*, s.agency, s.solicitation_number, s.solicitation_title
         FROM topics t
         LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
@@ -250,9 +294,19 @@ def search_topics():
             t.topic_number LIKE ? OR
             t.branch LIKE ?
         ORDER BY t.topic_open_date DESC
-        LIMIT ? OFFSET ?
-    """, [f'%{search_term}%'] * 4 + [limit, offset])
+    """
+    params = [f'%{search_term}%'] * 4
     
+    # Only add LIMIT if specified
+    if limit is not None:
+        query += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+    elif offset > 0:
+        # If offset is provided without limit, use a large limit
+        query += " LIMIT 1000000 OFFSET ?"
+        params.append(offset)
+    
+    cursor.execute(query, params)
     results = [dict(row) for row in cursor.fetchall()]
     
     # Get total count for pagination

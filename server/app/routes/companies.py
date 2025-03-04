@@ -8,10 +8,22 @@ def get_all_companies():
     conn = get_db_connection(db_name="companies")
     cursor = conn.cursor()
     
-    limit = int(request.args.get('limit', default=50))
+    limit = request.args.get('limit', default=None, type=int)
     offset = int(request.args.get('offset', default=0))
     
-    cursor.execute("SELECT * FROM companies LIMIT ? OFFSET ?", [limit, offset])
+    query = "SELECT * FROM companies"
+    params = []
+    
+    # Only add LIMIT if specified
+    if limit is not None:
+        query += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+    elif offset > 0:
+        # If offset is provided without limit, use a large limit
+        query += " LIMIT 1000000 OFFSET ?"
+        params.append(offset)
+    
+    cursor.execute(query, params)
     companies = [dict(row) for row in cursor.fetchall()]
     
     cursor.execute("SELECT COUNT(*) FROM companies")
@@ -30,21 +42,31 @@ def search():
     cursor = conn.cursor()
     
     search_term = request.args.get('q', default='', type=str)
-    limit = request.args.get('limit', default=50, type=int)
-    offset = request.args.get('offset', default=0, type=int)
+    limit = request.args.get('limit', default=None, type=int)
+    offset = int(request.args.get('offset', default=0))
     
     if not search_term:
         return jsonify({'error': 'No search term provided'}), 400
     
     # Search across multiple fields
-    cursor.execute("""
+    query = """
         SELECT * FROM companies 
         WHERE company_name LIKE ? OR
             city LIKE ? OR
             state LIKE ?
-        LIMIT ? OFFSET ?
-    """, [f'%{search_term}%'] * 3 + [limit, offset])
+    """
+    params = [f'%{search_term}%'] * 3
     
+    # Only add LIMIT if specified
+    if limit is not None:
+        query += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+    elif offset > 0:
+        # If offset is provided without limit, use a large limit
+        query += " LIMIT 1000000 OFFSET ?"
+        params.append(offset)
+    
+    cursor.execute(query, params)
     results = [dict(row) for row in cursor.fetchall()]
     conn.close()
     

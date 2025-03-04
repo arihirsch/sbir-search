@@ -8,10 +8,22 @@ def get_all_awards():
     conn = get_db_connection(db_name="awards")
     cursor = conn.cursor()
     
-    limit = int(request.args.get('limit', default=50))
+    limit = request.args.get('limit', default=None, type=int)
     offset = int(request.args.get('offset', default=0))
     
-    cursor.execute("SELECT * FROM awards LIMIT ? OFFSET ?", [limit, offset])
+    query = "SELECT * FROM awards"
+    params = []
+    
+    # Only add LIMIT if specified
+    if limit is not None:
+        query += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+    elif offset > 0:
+        # If offset is provided without limit, use a large limit
+        query += " LIMIT 1000000 OFFSET ?"
+        params.append(offset)
+    
+    cursor.execute(query, params)
     awards = [dict(row) for row in cursor.fetchall()]
     
     cursor.execute("SELECT COUNT(*) FROM awards")
@@ -30,22 +42,32 @@ def search():
     cursor = conn.cursor()
     
     search_term = request.args.get('q', default='', type=str)
-    limit = request.args.get('limit', default=50, type=int)
-    offset = request.args.get('offset', default=0, type=int)
+    limit = request.args.get('limit', default=None, type=int)
+    offset = int(request.args.get('offset', default=0))
     
     if not search_term:
         return jsonify({'error': 'No search term provided'}), 400
     
     # Search across multiple fields using correct column names from schema
-    cursor.execute("""
+    query = """
         SELECT * FROM awards 
         WHERE firm LIKE ? OR
             award_title LIKE ? OR
             agency LIKE ? OR
             abstract LIKE ?
-        LIMIT ? OFFSET ?
-    """, [f'%{search_term}%'] * 4 + [limit, offset])
+    """
+    params = [f'%{search_term}%'] * 4
     
+    # Only add LIMIT if specified
+    if limit is not None:
+        query += " LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+    elif offset > 0:
+        # If offset is provided without limit, use a large limit
+        query += " LIMIT 1000000 OFFSET ?"
+        params.append(offset)
+    
+    cursor.execute(query, params)
     results = [dict(row) for row in cursor.fetchall()]
     conn.close()
     
