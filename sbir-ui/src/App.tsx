@@ -23,7 +23,7 @@ function App() {
           <Route path="/awards" element={<Awards />} />
           <Route path="/companies" element={<Companies />} />
           <Route path="/about" element={<About />} />
-          <Route path="/topics/:id" element={<TopicDetail />} />
+          <Route path="/topics/:topicNumber/:solicitationId" element={<TopicDetail />} />
           <Route path="/awards/:id" element={<AwardDetail />} />
           <Route path="/companies/:id" element={<CompanyDetail />} />
         </Routes>

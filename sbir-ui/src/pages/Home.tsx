@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { Topic } from "@/types/topic";
 import { Award } from "@/types/award";
 import { Company } from "@/types/company";
+import { useNavigate } from "react-router-dom";
 
 type ViewType = 'topics' | 'awards' | 'companies';
 type TopicFilter = 'open' | 'closed';
@@ -18,6 +19,7 @@ export default function Home() {
   const [viewType, setViewType] = useState<ViewType>('topics');
   const [topicFilter, setTopicFilter] = useState<TopicFilter>('open');
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
 
   const handleViewTypeChange = (type: ViewType) => {
     setViewType(type);
@@ -123,7 +125,11 @@ export default function Home() {
             <div className="col-span-2 text-center">Loading...</div>
           ) : data.length > 0 ? (
             data.map((item: any) => (
-              <Card key={item.id || item.topic_number || item.award_link || item.firm_nid}>
+              <Card 
+                key={item.topic_number}
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => navigate(`/topics/${item.topic_number}/${item.solicitation_id}`)}
+              >
                 <CardHeader>
                   <CardTitle>
                     {item.topic_title || item.award_title || item.company_name}

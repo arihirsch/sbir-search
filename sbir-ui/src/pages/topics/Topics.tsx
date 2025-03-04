@@ -112,7 +112,7 @@ export default function Topics() {
               <Card 
                 key={topic.topic_number}
                 className="cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => navigate(`/topics/${topic.topic_number}`)}
+                onClick={() => navigate(`/topics/${topic.topic_number}/${topic.solicitation_id}`)}
               >
                 <CardHeader>
                   <CardTitle>{topic.topic_title}</CardTitle>

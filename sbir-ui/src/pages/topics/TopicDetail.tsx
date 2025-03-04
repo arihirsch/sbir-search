@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator.tsx";
 
 export default function TopicDetail() {
-  const { id } = useParams();
+  const { topicNumber, solicitationId } = useParams();
   const [topic, setTopic] = useState<Topic | null>(null);
   const [solicitation, setSolicitation] = useState<Solicitation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -14,8 +14,10 @@ export default function TopicDetail() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch topic first
-        const topicResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/topics/${id}`);
+        // Fetch topic using both parameters
+        const topicResponse = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/topics/${topicNumber}/${solicitationId}`
+        );
         const topicData = await topicResponse.json();
         const parsedTopic = parseTopic(topicData);
         setTopic(parsedTopic);
@@ -33,7 +35,7 @@ export default function TopicDetail() {
       }
     }
     fetchData();
-  }, [id]);
+  }, [topicNumber, solicitationId]);
 
   if (loading) {
     return <div className="text-center mt-8">Loading...</div>;
