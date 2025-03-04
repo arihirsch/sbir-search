@@ -15,6 +15,7 @@ export default function TopicDetail() {
     async function fetchData() {
       try {
         // Fetch topic using both parameters
+        // Note: topicNumber is already URL-encoded in the URL
         const topicResponse = await fetch(
           `${import.meta.env.VITE_API_BASE_URL}/topics/${topicNumber}/${solicitationId}`
         );

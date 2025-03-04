@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from app.services.db import get_db_connection
 from datetime import datetime
+import urllib.parse
 
 bp = Blueprint('solicitations', __name__, url_prefix='/api')
 
@@ -183,15 +184,18 @@ def get_topics_from_solicitation(solicitation_id):
     return jsonify(topics)
 
 #use both topic number and solicitation id to get subtopics to ensure we get the correct subtopics
-@bp.route('/subtopics/<string:topic_number>/<int:solicitation_id>', methods=['GET'])
+@bp.route('/subtopics/<path:topic_number>/<int:solicitation_id>', methods=['GET'])
 def get_subtopics(topic_number, solicitation_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     
+    # Decode the URL-encoded topic number
+    decoded_topic_number = urllib.parse.unquote(topic_number)
+    
     cursor.execute("""
         SELECT * FROM subtopics 
         WHERE topic_number = ? AND solicitation_id = ?
-    """, [topic_number, solicitation_id])
+    """, [decoded_topic_number, solicitation_id])
     
     subtopics = [dict(row) for row in cursor.fetchall()]
     conn.close()
@@ -331,19 +335,22 @@ def search_topics():
         'offset': offset
     })
 
-@bp.route('/topics/<string:topic_number>/<int:solicitation_id>', methods=['GET'])
+@bp.route('/topics/<path:topic_number>/<int:solicitation_id>', methods=['GET'])
 def get_topic(topic_number, solicitation_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     
     try:
+        # Decode the URL-encoded topic number
+        decoded_topic_number = urllib.parse.unquote(topic_number)
+        
         # Get the topic and associated solicitation info using both keys
         cursor.execute("""
             SELECT t.*, s.agency, s.solicitation_number, s.solicitation_title
             FROM topics t
             LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
             WHERE t.topic_number = ? AND t.solicitation_id = ?
-        """, [topic_number, solicitation_id])
+        """, [decoded_topic_number, solicitation_id])
         
         row = cursor.fetchone()
         if not row:
@@ -361,7 +368,7 @@ def get_topic(topic_number, solicitation_id):
             FROM subtopics 
             WHERE topic_number = ? AND solicitation_id = ?
             ORDER BY subtopic_number
-        """, [topic_number, solicitation_id])
+        """, [decoded_topic_number, solicitation_id])
         
         subtopics = [dict(row) for row in cursor.fetchall()]
         topic['subtopics'] = subtopics

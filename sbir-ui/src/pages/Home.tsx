@@ -128,7 +128,7 @@ export default function Home() {
               <Card 
                 key={item.topic_number}
                 className="cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => navigate(`/topics/${item.topic_number}/${item.solicitation_id}`)}
+                onClick={() => navigate(`/topics/${encodeURIComponent(item.topic_number)}/${item.solicitation_id}`)}
               >
                 <CardHeader>
                   <CardTitle>
