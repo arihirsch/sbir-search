@@ -4,6 +4,7 @@ import { Topic, parseTopic } from "@/types/topic";
 import { Solicitation, parseSolicitation } from "@/types/solicitation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator.tsx";
+import AgencyLogo from "@/components/AgencyLogo";
 
 export default function TopicDetail() {
   const { topicNumber, solicitationId } = useParams();
@@ -52,15 +53,18 @@ export default function TopicDetail() {
         {/* Solicitation Card */}
         {solicitation && (
           <Card>
-            <CardHeader>
-              <CardTitle>Solicitation Details</CardTitle>
+            <CardHeader className="pb-0">
+              <div className="flex flex-row items-center justify-between">
+                <CardTitle className="text-2xl font-bold">{solicitation.solicitation_title}</CardTitle>
+                <AgencyLogo agency={solicitation.agency} size="lg" className="ml-4" />
+              </div>
             </CardHeader>
+            <Separator />
             <CardContent>
               <p><strong>Agency:</strong> {solicitation.agency}</p>
               <p><strong>Phase:</strong> {solicitation.phase}</p>
               <p><strong>Program:</strong> {solicitation.program}</p>
               <p><strong>Year:</strong> {solicitation.solicitation_year}</p>
-              <p><strong>Title:</strong> {solicitation.solicitation_title}</p>
               <p><strong>Release Date:</strong> {solicitation.release_date || 'Not specified'}</p>
               <p><strong>Open Date:</strong> {solicitation.open_date || 'Not specified'}</p>
               <p><strong>Close Date:</strong> {solicitation.close_date || 'Not specified'}</p>
@@ -126,9 +130,13 @@ export default function TopicDetail() {
 
         {/* Topic Card */}
         <Card>
-          <CardHeader>
-            <CardTitle>{topic.topic_title}</CardTitle>
+          <CardHeader className="pb-0">
+            <div className="flex flex-row items-center justify-between">
+              <CardTitle className="text-2xl font-bold">{topic.topic_title}</CardTitle>
+              <AgencyLogo agency={topic.branch} size="lg" className="ml-4" />
+            </div>
           </CardHeader>
+          <Separator />
           <CardContent>
             <p><strong>Topic Number:</strong> {topic.topic_number}</p>
             <p><strong>Branch:</strong> {topic.branch}</p>
