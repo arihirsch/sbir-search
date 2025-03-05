@@ -78,6 +78,15 @@ export default function Topics() {
     });
   };
 
+  // Function to determine if a topic is open based on its close date
+  const isTopicOpen = (closeDate: string | null): boolean => {
+    if (!closeDate) return true; // If no close date, consider it open
+    
+    const today = new Date();
+    const closeDateObj = new Date(closeDate);
+    return today <= closeDateObj;
+  };
+
   return (
     <main className="ml-48 pt-24 p-8">
       <div className="max-w-5xl mx-auto">
@@ -123,7 +132,7 @@ export default function Topics() {
                   <p><strong>Open Date:</strong> {topic.topic_open_date}</p>
                   <p><strong>Close Date:</strong> {topic.topic_closed_date || 'Not specified'}</p>
                   
-                  <div className="mt-4">
+                  <div className="mt-4 flex justify-between items-center">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -138,12 +147,22 @@ export default function Topics() {
                       )}
                     </button>
                     
-                    {expandedCards.has(topic.topic_number.toString()) && (
-                      <div className="mt-2 text-sm text-gray-600">
-                        {topic.topic_description || "No description available"}
-                      </div>
-                    )}
+                    <div 
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        isTopicOpen(topic.topic_closed_date) 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {isTopicOpen(topic.topic_closed_date) ? 'Open' : 'Closed'}
+                    </div>
                   </div>
+                  
+                  {expandedCards.has(topic.topic_number.toString()) && (
+                    <div className="mt-2 text-sm text-gray-600">
+                      {topic.topic_description || "No description available"}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))
