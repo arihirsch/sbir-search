@@ -72,8 +72,8 @@ export default function Navbar() {
               <SelectValue placeholder="Status..." />
             </SelectTrigger>
             <SelectContent className="bg-white">
-              <SelectItem value="open">Open Topics</SelectItem>
-              <SelectItem value="closed">Closed Topics</SelectItem>
+              <SelectItem value="open">Open</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
             </SelectContent>
           </Select>
         </div>

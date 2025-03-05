@@ -123,8 +123,17 @@ export default function Topics() {
                 className="cursor-pointer hover:shadow-lg transition-shadow"
                 onClick={() => navigate(`/topics/${encodeURIComponent(topic.topic_number)}/${topic.solicitation_id}`)}
               >
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle>{topic.topic_title}</CardTitle>
+                  <div 
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      isTopicOpen(topic.topic_closed_date) 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}
+                  >
+                    {isTopicOpen(topic.topic_closed_date) ? 'Open' : 'Closed'}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <p><strong>Topic Number:</strong> {topic.topic_number}</p>
@@ -132,7 +141,7 @@ export default function Topics() {
                   <p><strong>Open Date:</strong> {topic.topic_open_date}</p>
                   <p><strong>Close Date:</strong> {topic.topic_closed_date || 'Not specified'}</p>
                   
-                  <div className="mt-4 flex justify-between items-center">
+                  <div className="mt-4">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -147,22 +156,12 @@ export default function Topics() {
                       )}
                     </button>
                     
-                    <div 
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        isTopicOpen(topic.topic_closed_date) 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {isTopicOpen(topic.topic_closed_date) ? 'Open' : 'Closed'}
-                    </div>
+                    {expandedCards.has(topic.topic_number.toString()) && (
+                      <div className="mt-2 text-sm text-gray-600">
+                        {topic.topic_description || "No description available"}
+                      </div>
+                    )}
                   </div>
-                  
-                  {expandedCards.has(topic.topic_number.toString()) && (
-                    <div className="mt-2 text-sm text-gray-600">
-                      {topic.topic_description || "No description available"}
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             ))
