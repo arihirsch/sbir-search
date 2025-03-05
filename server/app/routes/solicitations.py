@@ -212,7 +212,6 @@ def get_open_topics():
     
     # Format the current date to match the database format (YYYY/MM/DD)
     current_date = datetime.now().strftime('%Y/%m/%d')
-    print(f"Current date for comparison: {current_date}")
     
     query = """
         SELECT topic_number, topic_title, topic_description, 

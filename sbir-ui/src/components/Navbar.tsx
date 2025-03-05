@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Select,
   SelectContent,
@@ -6,7 +6,6 @@ import {
   SelectTrigger,
   SelectValue
 } from './ui/select';
-import { Button } from './ui/button';
 import { useNavbar } from '../contexts/NavbarContext';
 
 export default function Navbar() {
@@ -79,18 +78,6 @@ export default function Navbar() {
           </Select>
         </div>
       )}
-      
-      {/* About link remains as a button */}
-      <div className="mt-auto">
-        <Link to="/about">
-          <Button
-            variant={location.pathname.startsWith('/about') ? 'default' : 'outline'}
-            className="w-full justify-start"
-          >
-            About
-          </Button>
-        </Link>
-      </div>
     </nav>
   );
 } 
