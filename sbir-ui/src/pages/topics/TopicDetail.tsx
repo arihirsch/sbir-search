@@ -62,6 +62,54 @@ export default function TopicDetail() {
                 <p><strong>Program:</strong> {solicitation.program}</p>
                 <p><strong>Year:</strong> {solicitation.solicitation_year}</p>
                 <p><strong>Title:</strong> {solicitation.solicitation_title}</p>
+                <p><strong>Release Date:</strong> {solicitation.release_date || 'Not specified'}</p>
+                <p><strong>Open Date:</strong> {solicitation.open_date || 'Not specified'}</p>
+                <p><strong>Close Date:</strong> {solicitation.close_date || 'Not specified'}</p>
+                <p>
+                  <strong>Status:</strong>{' '}
+                  <span className={solicitation.current_status === 'open' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                    {solicitation.current_status || 'Unknown'}
+                  </span>
+                </p>
+
+                {solicitation.application_due_dates && solicitation.application_due_dates.length > 0 && (
+                  <>
+                    {/* Upcoming due dates */}
+                    {solicitation.application_due_dates.some(date => new Date(date) >= new Date()) && (
+                      <div className="mt-2">
+                        <strong>Upcoming Due Dates:</strong>
+                        <ul className="list-disc ml-6">
+                          {solicitation.application_due_dates
+                            .filter(date => new Date(date) >= new Date())
+                            .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+                            .map((date, index) => (
+                              <li key={index} className="text-green-600">
+                                {new Date(date).toLocaleDateString()}
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {/* Prior due dates */}
+                    {solicitation.application_due_dates.some(date => new Date(date) < new Date()) && (
+                      <div className="mt-2">
+                        <strong>Prior Due Dates:</strong>
+                        <ul className="list-disc ml-6">
+                          {solicitation.application_due_dates
+                            .filter(date => new Date(date) < new Date())
+                            .sort((a, b) => new Date(b).getTime() - new Date(a).getTime()) // Reverse chronological
+                            .map((date, index) => (
+                              <li key={index} className="text-gray-500">
+                                {new Date(date).toLocaleDateString()}
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                )}
+
                 <p>
                   <strong>Agency Link:</strong>{' '}
                   <a 
