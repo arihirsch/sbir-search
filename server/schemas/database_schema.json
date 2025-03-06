@@ -1,0 +1,156 @@
+{
+  "solicitations": {
+    "tables": {
+      "solicitations": {
+        "columns": {
+          "solicitation_id": "INTEGER PRIMARY KEY",
+          "solicitation_number": "TEXT",
+          "solicitation_title": "TEXT",
+          "agency": "TEXT",
+          "branch": "TEXT",
+          "solicitation_year": "INTEGER",
+          "release_date": "TEXT",
+          "open_date": "TEXT",
+          "close_date": "TEXT",
+          "url": "TEXT"
+        }
+      },
+      "topics": {
+        "columns": {
+          "topic_number": "TEXT",
+          "solicitation_id": "INTEGER",
+          "topic_title": "TEXT",
+          "branch": "TEXT",
+          "topic_description": "TEXT",
+          "sbir_topic_link": "TEXT",
+          "topic_open_date": "TEXT",
+          "topic_closed_date": "TEXT"
+        },
+        "primary_key": ["topic_number", "solicitation_id"],
+        "foreign_keys": {
+          "solicitation_id": "solicitations(solicitation_id)"
+        }
+      },
+      "subtopics": {
+        "columns": {
+          "subtopic_id": "INTEGER PRIMARY KEY",
+          "topic_number": "TEXT",
+          "solicitation_id": "INTEGER",
+          "subtopic_number": "TEXT",
+          "subtopic_title": "TEXT",
+          "subtopic_description": "TEXT"
+        },
+        "foreign_keys": {
+          "topic_number, solicitation_id": "topics(topic_number, solicitation_id)"
+        }
+      }
+    },
+    "relationships": [
+      {
+        "from": "solicitations",
+        "to": "topics",
+        "type": "one-to-many",
+        "on": "solicitation_id"
+      },
+      {
+        "from": "topics",
+        "to": "subtopics",
+        "type": "one-to-many",
+        "on": ["topic_number", "solicitation_id"]
+      }
+    ]
+  },
+  "awards": {
+    "tables": {
+      "awards": {
+        "columns": {
+          "award_link": "INTEGER PRIMARY KEY",
+          "firm": "TEXT",
+          "award_title": "TEXT",
+          "agency": "TEXT",
+          "branch": "TEXT",
+          "phase": "TEXT",
+          "program": "TEXT",
+          "agency_tracking_number": "TEXT",
+          "contract": "TEXT",
+          "proposal_award_date": "TEXT",
+          "contract_end_date": "TEXT",
+          "solicitation_number": "TEXT",
+          "solicitation_year": "INTEGER",
+          "topic_code": "TEXT",
+          "award_year": "INTEGER",
+          "award_amount": "DECIMAL(15,4)",
+          "duns": "TEXT",
+          "uei": "TEXT",
+          "hubzone_owned": "TEXT",
+          "socially_economically_disadvantaged": "TEXT",
+          "women_owned": "TEXT",
+          "number_employees": "INTEGER",
+          "company_url": "TEXT",
+          "address1": "TEXT",
+          "address2": "TEXT",
+          "city": "TEXT",
+          "state": "TEXT",
+          "zip": "TEXT",
+          "poc_name": "TEXT",
+          "poc_title": "TEXT",
+          "poc_phone": "TEXT",
+          "poc_email": "TEXT",
+          "pi_name": "TEXT",
+          "pi_title": "TEXT",
+          "pi_phone": "TEXT",
+          "pi_email": "TEXT",
+          "ri_name": "TEXT",
+          "ri_poc_name": "TEXT",
+          "ri_poc_phone": "TEXT",
+          "research_area_keywords": "TEXT",
+          "abstract": "TEXT"
+        }
+      }
+    }
+  },
+  "companies": {
+    "tables": {
+      "companies": {
+        "columns": {
+          "firm_nid": "INTEGER PRIMARY KEY",
+          "company_name": "TEXT",
+          "sbir_url": "TEXT",
+          "uei": "TEXT",
+          "duns": "TEXT",
+          "address1": "TEXT",
+          "address2": "TEXT",
+          "city": "TEXT",
+          "state": "TEXT",
+          "zip": "TEXT",
+          "company_url": "TEXT",
+          "hubzone_owned": "TEXT",
+          "socially_economically_disadvantaged": "TEXT",
+          "woman_owned": "TEXT",
+          "number_awards": "INTEGER"
+        }
+      }
+    }
+  },
+  "cross_database_relationships": [
+    {
+      "from": "awards.awards",
+      "to": "companies.companies",
+      "type": "many-to-one",
+      "description": "Awards are associated with companies via firm name, duns, and uei"
+    },
+    {
+      "from": "awards.awards",
+      "to": "solicitations.topics",
+      "type": "many-to-one",
+      "description": "Awards are associated with topics via topic_code and solicitation_number"
+    }
+  ],
+  "usage_examples": [
+    "Find all solicitations from the DOD agency",
+    "List topics that are currently open",
+    "Search for awards related to artificial intelligence",
+    "Find companies in California with more than 10 awards",
+    "Show all subtopics for a specific topic number"
+  ]
+}
