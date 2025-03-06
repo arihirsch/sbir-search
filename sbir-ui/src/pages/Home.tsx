@@ -86,8 +86,8 @@ export default function Home() {
     setSearchTerm(searchTermValue);
 
     if (searchTermValue) {
-      // Redirect to topics search page with the search term
-      navigate(`/topics?q=${encodeURIComponent(searchTermValue)}`);
+      // Use the LLM search endpoint instead of redirecting to topics
+      navigate(`/search?q=${encodeURIComponent(searchTermValue)}`);
     }
   }
 

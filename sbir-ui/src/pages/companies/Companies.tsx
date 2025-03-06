@@ -36,14 +36,17 @@ export default function Companies() {
   async function handleSearch(formData: FormData) {
     const searchTermValue = formData.get("searchTerm") as string;
     setSearchTerm(searchTermValue);
-    setSearchParams(params => {
-      if (searchTermValue) {
-        params.set("q", searchTermValue);
-      } else {
+    
+    if (searchTermValue) {
+      // Redirect to the search page instead
+      navigate(`/search?q=${encodeURIComponent(searchTermValue)}`);
+    } else {
+      // If empty search, just update the current page params
+      setSearchParams(params => {
         params.delete("q");
-      }
-      return params;
-    });
+        return params;
+      });
+    }
   }
 
   return (
