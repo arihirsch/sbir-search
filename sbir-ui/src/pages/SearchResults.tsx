@@ -58,7 +58,7 @@ export default function SearchResults() {
       if (data.results && Array.isArray(data.results)) {
         data.results.forEach((item: any) => {
           try {
-            if (data.database === 'topics') {
+            if (data.database === 'solicitations' || data.database === 'topics') {
               processedResults.push({
                 type: 'topic',
                 data: parseTopic(item)

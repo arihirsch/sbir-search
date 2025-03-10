@@ -104,6 +104,10 @@ def natural_language_to_sql(user_input, schema_info):
     
     Based on the user's query, determine which database to use and generate the appropriate SQL query.
     
+    IMPORTANT: For general searches or topic-related queries, use the "solicitations" database and specifically query the "topics" table. 
+    The topics table contains the most relevant information for general searches.
+    If there is not a clear match to awards or companies, default to querying the topics table in the solicitations database.
+    
     Schema: {schema_info}
     
     Query: {user_input}
@@ -121,7 +125,7 @@ def natural_language_to_sql(user_input, schema_info):
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are an AI that converts natural language to SQL. Return only the JSON with database and SQL query without any explanation."},
+                {"role": "system", "content": "You are an AI that converts natural language to SQL. Return only the JSON with database and SQL query without any explanation. For general searches, prioritize querying the topics table in the solicitations database."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,  # Lower temperature for more deterministic results
@@ -141,14 +145,20 @@ def natural_language_to_sql(user_input, schema_info):
             # Validate the database name
             if result["database"] not in ["solicitations", "awards", "companies"]:
                 raise ValueError(f"Invalid database name: {result['database']}")
+            
+            # If the database is solicitations but the query doesn't reference the topics table,
+            # modify it to query the topics table by default
+            if result["database"] == "solicitations" and "topics" not in result["sql"].lower():
+                current_app.logger.info("Modifying query to use topics table")
+                result["sql"] = f"SELECT * FROM topics WHERE topic_title LIKE '%{user_input}%' OR topic_description LIKE '%{user_input}%'"
                 
             return result
         except json.JSONDecodeError:
-            # If JSON parsing fails, try to extract the SQL directly
-            current_app.logger.warning("Failed to parse JSON response, falling back to default database")
+            # If JSON parsing fails, create a default query for the topics table
+            current_app.logger.warning("Failed to parse JSON response, falling back to default topics query")
             return {
-                "database": "solicitations",  # Default to solicitations database
-                "sql": result_text.strip()
+                "database": "solicitations",
+                "sql": f"SELECT * FROM topics WHERE topic_title LIKE '%{user_input}%' OR topic_description LIKE '%{user_input}%'"
             }
             
     except Exception as e:
