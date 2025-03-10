@@ -52,6 +52,10 @@ export default function SearchResults() {
       setSqlQuery(data.sql_query || '');
       setDatabase(data.database || '');
       
+      // Log SQL query and database to console instead of displaying in UI
+      console.log("Database:", data.database);
+      console.log("SQL Query:", data.sql_query);
+      
       // Process results based on the database type
       const processedResults: SearchResult[] = [];
       
@@ -297,27 +301,12 @@ export default function SearchResults() {
 
         {searchTerm && (
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold mb-2">Results for "{searchTerm}"</h1>
             {loading ? (
               <p className="text-gray-600">Searching...</p>
             ) : (
-              <p className="text-gray-600">Found {results.length} results</p>
+              <p className="text-gray-600">Found {results.length} results for "{searchTerm}"</p>
             )}
           </div>
-        )}
-
-        {sqlQuery && database && !loading && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-sm">Search Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs text-gray-600 mb-1"><strong>Database:</strong> {database}</p>
-              <p className="text-xs text-gray-600 font-mono bg-gray-100 p-2 rounded overflow-x-auto">
-                {sqlQuery}
-              </p>
-            </CardContent>
-          </Card>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
