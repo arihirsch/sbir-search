@@ -15,14 +15,16 @@ type SearchResult = {
 };
 
 export default function SearchResults() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [results, setResults] = useState<SearchResult[]>([]);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || '');
   const [sqlQuery, setSqlQuery] = useState<string>('');
   const [database, setDatabase] = useState<string>('');
   const navigate = useNavigate();
+  
+  // Get search term from URL params
+  const searchTerm = searchParams.get("q") || '';
 
   useEffect(() => {
     if (searchTerm) {
@@ -91,19 +93,6 @@ export default function SearchResults() {
     } finally {
       setLoading(false);
     }
-  }
-
-  async function handleSearch(formData: FormData) {
-    const searchTermValue = formData.get("searchTerm") as string;
-    setSearchTerm(searchTermValue);
-    setSearchParams(params => {
-      if (searchTermValue) {
-        params.set("q", searchTermValue);
-      } else {
-        params.delete("q");
-      }
-      return params;
-    });
   }
 
   const toggleDescription = (id: string) => {
@@ -284,21 +273,6 @@ export default function SearchResults() {
   return (
     <main className="ml-48 pt-24 p-8">
       <div className="max-w-5xl mx-auto">
-        <form
-          action={handleSearch}
-          className="flex w-full max-w-xl mx-auto mb-8"
-        >
-          <Input
-            type="search"
-            name="searchTerm"
-            placeholder="Search using natural language..."
-            className="flex-grow mr-2"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Button type="submit">Search</Button>
-        </form>
-
         {searchTerm && (
           <div className="text-center mb-8">
             {loading ? (

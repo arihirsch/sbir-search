@@ -8,11 +8,10 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { useNavbar } from "@/contexts/NavbarContext";
 
 export default function Topics() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [data, setData] = useState<Topic[]>([]);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || '');
   const { topicFilter, setTopicFilter } = useNavbar();
   const navigate = useNavigate();
 
@@ -38,11 +37,6 @@ export default function Topics() {
         url = `${import.meta.env.VITE_API_BASE_URL}/topics/${topicFilter}`;
       }
       
-      // If there's a search term, use the search endpoint instead
-      if (searchTerm) {
-        url = `${import.meta.env.VITE_API_BASE_URL}/topics/search?q=${searchTerm}`;
-      }
-      
       const response = await fetch(url);
       const responseData = await response.json();
       setData(responseData.data.map(parseTopic));
@@ -50,22 +44,6 @@ export default function Topics() {
       console.error('Failed to fetch data:', error);
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleSearch(formData: FormData) {
-    const searchTermValue = formData.get("searchTerm") as string;
-    setSearchTerm(searchTermValue);
-    
-    if (searchTermValue) {
-      // Redirect to the search page instead
-      navigate(`/search?q=${encodeURIComponent(searchTermValue)}`);
-    } else {
-      // If empty search, just update the current page params
-      setSearchParams(params => {
-        params.delete("q");
-        return params;
-      });
     }
   }
 
@@ -93,21 +71,6 @@ export default function Topics() {
   return (
     <main className="ml-48 pt-24 p-8">
       <div className="max-w-5xl mx-auto">
-        <form
-          action={handleSearch}
-          className="flex w-full max-w-xl mx-auto mb-8"
-        >
-          <Input
-            type="search"
-            name="searchTerm"
-            placeholder="Search topics..."
-            className="flex-grow mr-2"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Button type="submit">Search</Button>
-        </form>
-
         <div className="text-center mb-8 text-gray-600">
           {loading ? (
             "Loading topics..."

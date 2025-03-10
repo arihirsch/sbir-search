@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
 import { Topic, parseTopic } from "@/types/topic";
@@ -31,7 +29,6 @@ export default function Home() {
   const [featuredCompanies, setFeaturedCompanies] = useState<Company[]>([]);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -81,16 +78,6 @@ export default function Home() {
     fetchFeaturedData();
   }, []);
 
-  async function handleSearch(formData: FormData) {
-    const searchTermValue = formData.get("searchTerm") as string;
-    setSearchTerm(searchTermValue);
-
-    if (searchTermValue) {
-      // Use the LLM search endpoint instead of redirecting to topics
-      navigate(`/search?q=${encodeURIComponent(searchTermValue)}`);
-    }
-  }
-
   const toggleDescription = (id: string) => {
     setExpandedCards((prev) => {
       const newSet = new Set(prev);
@@ -116,21 +103,6 @@ export default function Home() {
     <main className="ml-48 pt-24 p-8">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-4xl font-bold text-center mb-8">SBIRSpy</h1>
-
-        <form
-          action={handleSearch}
-          className="flex w-full max-w-xl mx-auto mb-8"
-        >
-          <Input
-            type="search"
-            name="searchTerm"
-            placeholder="Search for topics, awards, or companies..."
-            className="flex-grow mr-2"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Button type="submit">Search</Button>
-        </form>
 
         <div className="space-y-6">
           {/* Featured Open Topics Section */}

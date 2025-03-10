@@ -1,17 +1,14 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Award, parseAward } from "@/types/award";
 
 export default function Awards() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [data, setData] = useState<Award[]>([]);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || '');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,9 +19,6 @@ export default function Awards() {
     setLoading(true);
     try {
       let url = `${import.meta.env.VITE_API_BASE_URL}/awards`;
-      if (searchTerm) {
-        url = `${import.meta.env.VITE_API_BASE_URL}/awards/search?q=${searchTerm}`;
-      }
       const response = await fetch(url);
       const responseData = await response.json();
       setData(responseData.data.map(parseAward));
@@ -32,22 +26,6 @@ export default function Awards() {
       console.error('Failed to fetch data:', error);
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleSearch(formData: FormData) {
-    const searchTermValue = formData.get("searchTerm") as string;
-    setSearchTerm(searchTermValue);
-    
-    if (searchTermValue) {
-      // Redirect to the search page instead
-      navigate(`/search?q=${encodeURIComponent(searchTermValue)}`);
-    } else {
-      // If empty search, just update the current page params
-      setSearchParams(params => {
-        params.delete("q");
-        return params;
-      });
     }
   }
 
@@ -66,21 +44,6 @@ export default function Awards() {
   return (
     <main className="ml-48 pt-24 p-8">
       <div className="max-w-5xl mx-auto">
-        <form
-          action={handleSearch}
-          className="flex w-full max-w-xl mx-auto mb-8"
-        >
-          <Input
-            type="search"
-            name="searchTerm"
-            placeholder="Search awards..."
-            className="flex-grow mr-2"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Button type="submit">Search</Button>
-        </form>
-
         <div className="text-center mb-8 text-gray-600">
           {loading ? "Loading awards..." : `Found ${data.length} awards`}
         </div>

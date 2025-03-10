@@ -1,15 +1,12 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Company, parseCompany } from "@/types/company";
 
 export default function Companies() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [data, setData] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || '');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,9 +17,6 @@ export default function Companies() {
     setLoading(true);
     try {
       let url = `${import.meta.env.VITE_API_BASE_URL}/companies`;
-      if (searchTerm) {
-        url = `${import.meta.env.VITE_API_BASE_URL}/companies/search?q=${searchTerm}`;
-      }
       const response = await fetch(url);
       const responseData = await response.json();
       setData(responseData.data.map(parseCompany));
@@ -33,40 +27,9 @@ export default function Companies() {
     }
   }
 
-  async function handleSearch(formData: FormData) {
-    const searchTermValue = formData.get("searchTerm") as string;
-    setSearchTerm(searchTermValue);
-    
-    if (searchTermValue) {
-      // Redirect to the search page instead
-      navigate(`/search?q=${encodeURIComponent(searchTermValue)}`);
-    } else {
-      // If empty search, just update the current page params
-      setSearchParams(params => {
-        params.delete("q");
-        return params;
-      });
-    }
-  }
-
   return (
     <main className="ml-48 pt-24 p-8">
       <div className="max-w-5xl mx-auto">
-        <form
-          action={handleSearch}
-          className="flex w-full max-w-xl mx-auto mb-8"
-        >
-          <Input
-            type="search"
-            name="searchTerm"
-            placeholder="Search companies..."
-            className="flex-grow mr-2"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Button type="submit">Search</Button>
-        </form>
-
         <div className="text-center mb-8 text-gray-600">
           {loading ? "Loading companies..." : `Found ${data.length} companies`}
         </div>
