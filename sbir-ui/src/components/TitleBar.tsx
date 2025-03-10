@@ -1,5 +1,4 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useState } from 'react';
 import { Search } from 'lucide-react';

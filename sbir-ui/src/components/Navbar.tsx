@@ -27,7 +27,7 @@ export default function Navbar() {
     if (mainSection === 'topics') return 'topics';
     if (mainSection === 'awards') return 'awards';
     if (mainSection === 'companies') return 'companies';
-    return 'topics'; // Default to topics
+    return ''; // Return empty string for home page or unknown routes
   };
   
   const handleSectionChange = (value: string) => {
@@ -51,11 +51,11 @@ export default function Navbar() {
   };
   
   return (
-    <nav className="fixed top-14 left-0 w-48 h-[calc(100vh-3.5rem)] p-4 flex flex-col gap-4">
+    <nav className="fixed top-20 left-0 w-48 h-[calc(100vh-3.5rem)] p-4 flex flex-col gap-4">
       {/* Main navigation select */}
       <Select value={getCurrentSection()} onValueChange={handleSectionChange}>
         <SelectTrigger className="w-full text-sm bg-white">
-          <SelectValue placeholder="Navigate..." />
+          <SelectValue placeholder="Filter by..." />
         </SelectTrigger>
         <SelectContent className="bg-white">
           <SelectItem value="topics">Topics</SelectItem>

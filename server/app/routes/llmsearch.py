@@ -63,7 +63,7 @@ def llm_search():
         
         try:
             cursor.execute(sql_query)
-            columns = [desc[0] for desc in cursor.description]
+            columns = [desc[0] for desc in cursor.description] # Get column names
             results = [dict(zip(columns, row)) for row in cursor.fetchall()]
             
             return jsonify({
