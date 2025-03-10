@@ -16,31 +16,35 @@ export default function TitleBar() {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-14 bg-white border-b flex items-center justify-between px-4 z-50">
-      <Link to="/">
-        <Button variant="ghost" className="text-lg font-semibold">
-          SBIR Search
-        </Button>
-      </Link>
-      
-      <form onSubmit={handleSearch} className="flex-1 max-w-xl mx-4">
-        <div className="relative">
-          <Input
-            type="search"
-            placeholder="Search for topics, awards, or companies..."
-            className="w-full pl-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+    <div className="fixed top-0 left-0 right-0 h-14 bg-white z-50">
+      <div className="max-w-7xl mx-auto px-4 h-full border-b border-gray-400 flex items-center justify-between">
+        <div className="flex-1 flex justify-start">
+          <Link to="/">
+            <h2 className="text-2xl font-semibold text-black cursor-pointer">SBIRSpy</h2>
+          </Link>
         </div>
-      </form>
-      
-      <Link to="/about">
-        <Button variant="ghost">
-          About
-        </Button>
-      </Link>
+        
+        <form onSubmit={handleSearch} className="flex-1 max-w-xl">
+          <div className="relative">
+            <Input
+              type="search"
+              placeholder="Search for topics, awards, or companies..."
+              className="w-full pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          </div>
+        </form>
+        
+        <div className="flex-1 flex justify-end">
+          <Link to="/about">
+            <span className="text-base text-black hover:text-gray-600 cursor-pointer">
+              About
+            </span>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 } 

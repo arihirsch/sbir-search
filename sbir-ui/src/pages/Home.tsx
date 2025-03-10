@@ -102,8 +102,6 @@ export default function Home() {
   return (
     <main className="ml-48 pt-24 p-8">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-4xl font-bold text-center mb-8">SBIRSpy</h1>
-
         <div className="space-y-6">
           {/* Featured Open Topics Section */}
           <div>

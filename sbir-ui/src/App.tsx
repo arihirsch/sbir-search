@@ -9,7 +9,7 @@ import TitleBar from './components/TitleBar.tsx';
 import TopicDetail from './pages/topics/TopicDetail';
 import AwardDetail from './pages/awards/AwardDetail';
 import CompanyDetail from './pages/companies/CompanyDetail';
-import SearchResults from './pages/SearchResults';
+import SearchResults from './pages/SearchResults.tsx';
 import { NavbarProvider } from './contexts/NavbarContext';
 
 function App() {
