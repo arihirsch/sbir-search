@@ -40,7 +40,7 @@ def llm_search():
     try:
         # Get query parameters
         user_input = request.args.get('q')
-        limit = request.args.get('limit', 100)
+        limit = request.args.get('limit', default=None, type=int)
         
         if not user_input:
             return jsonify({"error": "Missing query parameter 'q'"}), HTTPStatus.BAD_REQUEST
@@ -54,7 +54,7 @@ def llm_search():
         db_name = sql_result["database"]
         
         # Add safety limit to query if not present
-        if "LIMIT" not in sql_query.upper():
+        if limit is not None and "LIMIT" not in sql_query.upper():
             sql_query = f"{sql_query} LIMIT {limit}"
         
         # Execute query and get results
@@ -95,7 +95,7 @@ def natural_language_to_sql(user_input, schema_info):
     
     prompt = f"""
     Convert the following natural language query into an SQL query based on this database schema.
-    This is intended to be used by a user with a search input, so bias towards more results.
+    This is intended to be used by a user with a search input, so bias towards adding more fields to the query.
     
     We have three separate databases:
     1. "solicitations" - Contains information about solicitations, topics, and subtopics
@@ -103,10 +103,19 @@ def natural_language_to_sql(user_input, schema_info):
     3. "companies" - Contains information about companies that have received awards
     
     Based on the user's query, determine which database to use and generate the appropriate SQL query.
+
+    Some fields may be null, so we may have to account for that in the query using OR statements.
+
+    States are abbreviated. For example, Texas is TX, California is CA, etc.
     
     IMPORTANT: For general searches or topic-related queries, use the "solicitations" database and specifically query the "topics" table. 
     The topics table contains the most relevant information for general searches.
     If there is not a clear match to awards or companies, default to querying the topics table in the solicitations database.
+    Never query the solicitations table directly, even if a user asks for solicitations. Query the topics table instead.
+    You may need to join the topics table with the solicitations table to get the full picture of a topic like this:
+        SELECT t.*, s.agency, s.solicitation_number, s.solicitation_title
+        FROM topics t
+        LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
     
     Schema: {schema_info}
     
@@ -128,7 +137,7 @@ def natural_language_to_sql(user_input, schema_info):
                 {"role": "system", "content": "You are an AI that converts natural language to SQL. Return only the JSON with database and SQL query without any explanation. For general searches, prioritize querying the topics table in the solicitations database."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.1,  # Lower temperature for more deterministic results
+            temperature=0.2,  # Lower temperature for more deterministic results
             response_format={"type": "json_object"}  # Ensure JSON response
         )
         
@@ -137,6 +146,7 @@ def natural_language_to_sql(user_input, schema_info):
         # Parse the JSON response
         try:
             result = json.loads(result_text)
+            print(result)
             
             # Validate the response format
             if "database" not in result or "sql" not in result:

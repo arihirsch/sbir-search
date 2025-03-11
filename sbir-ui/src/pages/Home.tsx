@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
+import { ChevronDown, ChevronUp, ArrowRight, Search } from "lucide-react";
 import { Topic, parseTopic } from "@/types/topic";
 import { Award, parseAward } from "@/types/award";
 import { Company, parseCompany } from "@/types/company";
@@ -22,6 +22,14 @@ const FEATURED_CONFIG = {
     { id: "67871" }
   ]
 };
+
+// Featured search examples
+const FEATURED_SEARCHES = [
+  "List all solicitations from the DOD",
+  "List topics that are currently open",
+  "Search for awards related to artificial intelligence",
+  "Find companies in California with more than 3 awards",
+];
 
 export default function Home() {
   const [featuredTopics, setFeaturedTopics] = useState<Topic[]>([]);
@@ -99,10 +107,36 @@ export default function Home() {
     return today <= closeDateObj;
   };
 
+  // Function to navigate to search results with the given query
+  const navigateToSearch = (query: string) => {
+    navigate(`/search?q=${encodeURIComponent(query)}`);
+  };
+
   return (
     <main className="ml-48 pt-24 p-8">
       <div className="max-w-5xl mx-auto">
         <div className="space-y-6">
+          {/* Featured Searches Section */}
+          <div>
+            <h2 className="text-2xl font-bold">Featured Searches</h2>
+            <Card className="mb-0 border-0 shadow-none">
+              <CardContent className="p-0">
+                <div className="grid grid-cols-1 gap-3">
+                  {FEATURED_SEARCHES.map((query, index) => (
+                    <div 
+                      key={index}
+                      onClick={() => navigateToSearch(query)}
+                      className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer transition-colors"
+                    >
+                      <Search className="h-5 w-5 text-gray-500 mr-3" />
+                      <span>{query}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Featured Open Topics Section */}
           <div>
             <h2 className="text-2xl font-bold mb-6">Featured Open Topics</h2>
