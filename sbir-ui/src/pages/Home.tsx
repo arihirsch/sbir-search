@@ -118,7 +118,7 @@ export default function Home() {
         <div className="space-y-6">
           {/* Featured Searches Section */}
           <div>
-            <h2 className="text-2xl font-bold">Featured Searches</h2>
+            <h2 className="text-2xl font-bold">Featured Intelligent Searches</h2>
             <Card className="mb-0 border-0 shadow-none">
               <CardContent className="p-0">
                 <div className="grid grid-cols-1 gap-3">
