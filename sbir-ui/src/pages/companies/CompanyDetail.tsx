@@ -41,7 +41,7 @@ export default function CompanyDetail() {
   }
 
   return (
-    <main className="ml-48 pt-24 p-8">
+    <main className="pt-4">
       <div className="max-w-3xl mx-auto">
         <Card>
           <CardHeader>

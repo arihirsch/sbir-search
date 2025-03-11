@@ -1,6 +1,6 @@
 export default function About() {
   return (
-    <main className="ml-48 pt-24 p-8">
+    <main className="pt-4">
       <div className="max-w-3xl mx-auto">
         <h2 className="text-3xl font-bold mb-6">About SBIR Spy</h2>
         <div className="prose">

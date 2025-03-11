@@ -48,7 +48,7 @@ export default function TopicDetail() {
   }
 
   return (
-    <main className="ml-48 pt-24 p-8">
+    <main className="pt-4">
       <div className="grid grid-cols-2 gap-8 max-w-7xl mx-auto">
         {/* Solicitation Card */}
         {solicitation && (

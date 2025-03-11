@@ -32,7 +32,7 @@ export default function AwardDetail() {
   }
 
   return (
-    <main className="ml-48 pt-24 p-8">
+    <main className="pt-4">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Basic Award Information */}
         <Card>

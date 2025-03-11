@@ -271,7 +271,7 @@ export default function SearchResults() {
   };
 
   return (
-    <main className="ml-48 pt-24 p-8">
+    <main className="pt-4">
       <div className="max-w-5xl mx-auto">
         {searchTerm && (
           <div className="text-center mb-8">

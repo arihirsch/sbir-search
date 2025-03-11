@@ -51,33 +51,37 @@ export default function Navbar() {
   };
   
   return (
-    <nav className="fixed top-20 left-0 w-48 h-[calc(100vh-3.5rem)] p-4 flex flex-col gap-4">
-      {/* Main navigation select */}
-      <Select value={getCurrentSection()} onValueChange={handleSectionChange}>
-        <SelectTrigger className="w-full text-sm bg-white">
-          <SelectValue placeholder="Filter by..." />
-        </SelectTrigger>
-        <SelectContent className="bg-white">
-          <SelectItem value="topics">Topics</SelectItem>
-          <SelectItem value="awards">Awards</SelectItem>
-          <SelectItem value="companies">Companies</SelectItem>
-        </SelectContent>
-      </Select>
-      
-      {/* Topic filter select - only shown when on topics route */}
-      {isTopicsRoute && (
-        <div className="pl-4 mt-2">
-          <Select value={topicFilter} onValueChange={handleFilterChange}>
-            <SelectTrigger className="w-full text-sm bg-white">
-              <SelectValue placeholder="Status..." />
+    <div className="fixed top-14 left-0 right-0 h-14 bg-white z-40">
+      <div className="max-w-7xl mx-auto px-4 h-full flex items-center border-b border-gray-200">
+        {/* Main navigation select */}
+        <div className="flex items-center">
+          <Select value={getCurrentSection()} onValueChange={handleSectionChange}>
+            <SelectTrigger className="w-40 text-sm bg-white">
+              <SelectValue placeholder="Browse..." />
             </SelectTrigger>
             <SelectContent className="bg-white">
-              <SelectItem value="open">Open</SelectItem>
-              <SelectItem value="closed">Closed</SelectItem>
+              <SelectItem value="topics">Topics</SelectItem>
+              <SelectItem value="awards">Awards</SelectItem>
+              <SelectItem value="companies">Companies</SelectItem>
             </SelectContent>
           </Select>
+          
+          {/* Topic filter select - shown inline when on topics route */}
+          {isTopicsRoute && (
+            <div className="ml-4">
+              <Select value={topicFilter} onValueChange={handleFilterChange}>
+                <SelectTrigger className="w-32 text-sm bg-white">
+                  <SelectValue placeholder="Status..." />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
-      )}
-    </nav>
+      </div>
+    </div>
   );
 } 

@@ -16,19 +16,21 @@ function App() {
   return (
     <NavbarProvider>
       <Router>
-        <TitleBar />
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/topics" element={<Topics />} />
-          <Route path="/awards" element={<Awards />} />
-          <Route path="/companies" element={<Companies />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/search" element={<SearchResults />} />
-          <Route path="/topics/:topicNumber/:solicitationId" element={<TopicDetail />} />
-          <Route path="/awards/:id" element={<AwardDetail />} />
-          <Route path="/companies/:id" element={<CompanyDetail />} />
-        </Routes>
+          <TitleBar />
+          <Navbar />
+          <div className="max-w-7xl mx-auto px-4 pt-12 pb-16">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/topics" element={<Topics />} />
+              <Route path="/awards" element={<Awards />} />
+              <Route path="/companies" element={<Companies />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/search" element={<SearchResults />} />
+              <Route path="/topics/:topicNumber/:solicitationId" element={<TopicDetail />} />
+              <Route path="/awards/:id" element={<AwardDetail />} />
+              <Route path="/companies/:id" element={<CompanyDetail />} />
+            </Routes>
+          </div>
       </Router>
     </NavbarProvider>
   );
