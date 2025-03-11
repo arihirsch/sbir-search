@@ -25,10 +25,11 @@ const FEATURED_CONFIG = {
 
 // Featured search examples
 const FEATURED_SEARCHES = [
-  "List all solicitations from the DOD",
   "List topics that are currently open",
+  "List all solicitations from the DOD for 2024",
   "Search for awards related to artificial intelligence",
   "Find companies in California with more than 3 awards",
+  "My company manufactures optical sensors, list the relevant topics to me",
 ];
 
 export default function Home() {
@@ -113,7 +114,7 @@ export default function Home() {
   };
 
   return (
-        <div className="space-y-6">
+        <div className="space-y-2">
           {/* Featured Searches Section */}
           <div>
             <h2 className="text-2xl font-bold">Featured Intelligent Searches</h2>
