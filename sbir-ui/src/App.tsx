@@ -18,7 +18,8 @@ function App() {
       <Router>
           <TitleBar />
           <Navbar />
-          <div className="max-w-7xl mx-auto px-4 pt-12 pb-16">
+          <div className="fixed top-24 left-0 right-0 bottom-0 bg-white z-30 overflow-y-auto">
+            <div className="max-w-7xl mx-auto px-4 py-8">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/topics" element={<Topics />} />
@@ -30,6 +31,7 @@ function App() {
               <Route path="/awards/:id" element={<AwardDetail />} />
               <Route path="/companies/:id" element={<CompanyDetail />} />
             </Routes>
+            </div>
           </div>
       </Router>
     </NavbarProvider>

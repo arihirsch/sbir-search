@@ -28,8 +28,7 @@ export default function Companies() {
   }
 
   return (
-    <main className="pt-4">
-      <div className="max-w-5xl mx-auto">
+    <main>
         <div className="text-center mb-8 text-gray-600">
           {loading ? "Loading companies..." : `Found ${data.length} companies`}
         </div>
@@ -76,7 +75,6 @@ export default function Companies() {
             <div className="col-span-2 text-center">No companies found</div>
           )}
         </div>
-      </div>
     </main>
   );
 } 

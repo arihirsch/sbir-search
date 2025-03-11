@@ -69,8 +69,7 @@ export default function Topics() {
   };
 
   return (
-    <main className="pt-4">
-      <div className="max-w-5xl mx-auto">
+      <div>
         <div className="text-center mb-8 text-gray-600">
           {loading ? (
             "Loading topics..."
@@ -138,6 +137,5 @@ export default function Topics() {
           )}
         </div>
       </div>
-    </main>
   );
 } 

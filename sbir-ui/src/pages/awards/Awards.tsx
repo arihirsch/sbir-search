@@ -42,61 +42,59 @@ export default function Awards() {
   };
 
   return (
-    <main className="pt-4">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-8 text-gray-600">
-          {loading ? "Loading awards..." : `Found ${data.length} awards`}
-        </div>
+    <main >
+      <div className="text-center mb-8 text-gray-600">
+        {loading ? "Loading awards..." : `Found ${data.length} awards`}
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {loading ? (
-            <div className="col-span-2 text-center">Loading...</div>
-          ) : data.length > 0 ? (
-            data.map((award) => (
-              <Card 
-                key={award.award_link}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => navigate(`/awards/${award.award_link}`)}
-              >
-                <CardHeader>
-                  <CardTitle>{award.award_title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p><strong>Company:</strong> {award.firm}</p>
-                  <p><strong>Amount:</strong> ${award.award_amount.toLocaleString()}</p>
-                  <p><strong>Year:</strong> {award.award_year}</p>
-                  <p><strong>Agency:</strong> {award.agency}</p>
-                  <p><strong>Branch:</strong> {award.branch}</p>
-                  <p><strong>Phase:</strong> {award.phase}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {loading ? (
+          <div className="col-span-2 text-center">Loading...</div>
+        ) : data.length > 0 ? (
+          data.map((award) => (
+            <Card 
+              key={award.award_link}
+              className="cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => navigate(`/awards/${award.award_link}`)}
+            >
+              <CardHeader>
+                <CardTitle>{award.award_title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p><strong>Company:</strong> {award.firm}</p>
+                <p><strong>Amount:</strong> ${award.award_amount.toLocaleString()}</p>
+                <p><strong>Year:</strong> {award.award_year}</p>
+                <p><strong>Agency:</strong> {award.agency}</p>
+                <p><strong>Branch:</strong> {award.branch}</p>
+                <p><strong>Phase:</strong> {award.phase}</p>
 
-                  <div className="mt-4">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleDescription(award.award_link.toString());
-                      }}
-                      className="flex items-center text-sm text-gray-500 hover:text-gray-700"
-                    >
-                      {expandedCards.has(award.award_link.toString()) ? (
-                        <>Hide Abstract <ChevronUp className="ml-1 h-4 w-4" /></>
-                      ) : (
-                        <>Show Abstract <ChevronDown className="ml-1 h-4 w-4" /></>
-                      )}
-                    </button>
-                    
-                    {expandedCards.has(award.award_link.toString()) && (
-                      <div className="mt-2 text-sm text-gray-600">
-                        {award.abstract || "No abstract available"}
-                      </div>
+                <div className="mt-4">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleDescription(award.award_link.toString());
+                    }}
+                    className="flex items-center text-sm text-gray-500 hover:text-gray-700"
+                  >
+                    {expandedCards.has(award.award_link.toString()) ? (
+                      <>Hide Abstract <ChevronUp className="ml-1 h-4 w-4" /></>
+                    ) : (
+                      <>Show Abstract <ChevronDown className="ml-1 h-4 w-4" /></>
                     )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <div className="col-span-2 text-center">No awards found</div>
-          )}
-        </div>
+                  </button>
+                  
+                  {expandedCards.has(award.award_link.toString()) && (
+                    <div className="mt-2 text-sm text-gray-600">
+                      {award.abstract || "No abstract available"}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-2 text-center">No awards found</div>
+        )}
       </div>
     </main>
   );

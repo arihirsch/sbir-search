@@ -271,32 +271,30 @@ export default function SearchResults() {
   };
 
   return (
-    <main className="pt-4">
-      <div className="max-w-5xl mx-auto">
-        {searchTerm && (
-          <div className="text-center mb-8">
-            {loading ? (
-              <p className="text-gray-600">Searching...</p>
-            ) : (
-              <p className="text-gray-600">Found {results.length} results for "{searchTerm}"</p>
-            )}
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <main>
+      {searchTerm && (
+        <div className="text-center mb-8">
           {loading ? (
-            <div className="col-span-2 text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-              <p className="mt-2 text-gray-600">Searching with AI...</p>
-            </div>
-          ) : results.length > 0 ? (
-            results.map(result => renderResultCard(result))
-          ) : searchTerm ? (
-            <div className="col-span-2 text-center py-12">
-              <p className="text-gray-600">No results found. Try a different search term.</p>
-            </div>
-          ) : null}
+            <p className="text-gray-600">Searching...</p>
+          ) : (
+            <p className="text-gray-600">Found {results.length} results for "{searchTerm}"</p>
+          )}
         </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {loading ? (
+          <div className="col-span-2 text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <p className="mt-2 text-gray-600">Searching with AI...</p>
+          </div>
+        ) : results.length > 0 ? (
+          results.map(result => renderResultCard(result))
+        ) : searchTerm ? (
+          <div className="col-span-2 text-center py-12">
+            <p className="text-gray-600">No results found. Try a different search term.</p>
+          </div>
+        ) : null}
       </div>
     </main>
   );

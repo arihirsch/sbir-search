@@ -48,138 +48,136 @@ export default function TopicDetail() {
   }
 
   return (
-    <main className="pt-4">
-      <div className="grid grid-cols-2 gap-8 max-w-7xl mx-auto">
-        {/* Solicitation Card */}
-        {solicitation && (
-          <Card>
-            <CardHeader className="pb-0">
-              <div className="flex flex-row items-center justify-between">
-                <CardTitle className="text-2xl font-bold">{solicitation.solicitation_title}</CardTitle>
-                <AgencyLogo agency={solicitation.agency} size="lg" className="ml-4" />
-              </div>
-            </CardHeader>
-            <Separator />
-            <CardContent>
-              <p><strong>Agency:</strong> {solicitation.agency}</p>
-              <p><strong>Phase:</strong> {solicitation.phase}</p>
-              <p><strong>Program:</strong> {solicitation.program}</p>
-              <p><strong>Year:</strong> {solicitation.solicitation_year}</p>
-              <p><strong>Release Date:</strong> {solicitation.release_date || 'Not specified'}</p>
-              <p><strong>Open Date:</strong> {solicitation.open_date || 'Not specified'}</p>
-              <p><strong>Close Date:</strong> {solicitation.close_date || 'Not specified'}</p>
-              <p>
-                <strong>Status:</strong>{' '}
-                <span className={solicitation.current_status === 'open' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-                  {solicitation.current_status || 'Unknown'}
-                </span>
-              </p>
-
-              {solicitation.application_due_dates && solicitation.application_due_dates.length > 0 && (
-                <>
-                  {/* Upcoming due dates */}
-                  {solicitation.application_due_dates.some(date => new Date(date) >= new Date()) && (
-                    <div className="mt-2">
-                      <strong>Upcoming Due Dates:</strong>
-                      <ul className="list-disc ml-6">
-                        {solicitation.application_due_dates
-                          .filter(date => new Date(date) >= new Date())
-                          .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
-                          .map((date, index) => (
-                            <li key={index} className="text-green-600">
-                              {new Date(date).toLocaleDateString()}
-                            </li>
-                          ))}
-                      </ul>
-                    </div>
-                  )}
-                  
-                  {/* Prior due dates */}
-                  {solicitation.application_due_dates.some(date => new Date(date) < new Date()) && (
-                    <div className="mt-2">
-                      <strong>Prior Due Dates:</strong>
-                      <ul className="list-disc ml-6">
-                        {solicitation.application_due_dates
-                          .filter(date => new Date(date) < new Date())
-                          .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
-                          .map((date, index) => (
-                            <li key={index} className="text-gray-500">
-                              {new Date(date).toLocaleDateString()}
-                            </li>
-                          ))}
-                      </ul>
-                    </div>
-                  )}
-                </>
-              )}
-
-              <p>
-                <strong>Agency Link:</strong>{' '}
-                <a 
-                  href={solicitation.solicitation_agency_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 underline"
-                >
-                  View Solicitation
-                </a>
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Topic Card */}
-        <Card>
-          <CardHeader className="pb-0">
+    <main>
+      {/* Solicitation Card */}
+      {solicitation && (
+        <Card className="mb-4">
+          <CardHeader>
             <div className="flex flex-row items-center justify-between">
-              <CardTitle className="text-2xl font-bold">{topic.topic_title}</CardTitle>
-              <AgencyLogo agency={topic.branch} size="lg" className="ml-4" />
+              <CardTitle className="text-2xl font-bold">{solicitation.solicitation_title}</CardTitle>
+              <AgencyLogo agency={solicitation.agency} size="lg" className="ml-4" />
             </div>
           </CardHeader>
           <Separator />
           <CardContent>
-            <p><strong>Topic Number:</strong> {topic.topic_number}</p>
-            <p><strong>Branch:</strong> {topic.branch}</p>
-            <p><strong>Open Date:</strong> {topic.topic_open_date}</p>
-            <p><strong>Close Date:</strong> {topic.topic_closed_date || 'Not specified'}</p>
+            <p><strong>Agency:</strong> {solicitation.agency}</p>
+            <p><strong>Phase:</strong> {solicitation.phase}</p>
+            <p><strong>Program:</strong> {solicitation.program}</p>
+            <p><strong>Year:</strong> {solicitation.solicitation_year}</p>
+            <p><strong>Release Date:</strong> {solicitation.release_date || 'Not specified'}</p>
+            <p><strong>Open Date:</strong> {solicitation.open_date || 'Not specified'}</p>
+            <p><strong>Close Date:</strong> {solicitation.close_date || 'Not specified'}</p>
             <p>
-              <strong>SBIR Topic Link:</strong>{' '}
+              <strong>Status:</strong>{' '}
+              <span className={solicitation.current_status === 'open' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                {solicitation.current_status || 'Unknown'}
+              </span>
+            </p>
+
+            {solicitation.application_due_dates && solicitation.application_due_dates.length > 0 && (
+              <>
+                {/* Upcoming due dates */}
+                {solicitation.application_due_dates.some(date => new Date(date) >= new Date()) && (
+                  <div className="mt-2">
+                    <strong>Upcoming Due Dates:</strong>
+                    <ul className="list-disc ml-6">
+                      {solicitation.application_due_dates
+                        .filter(date => new Date(date) >= new Date())
+                        .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+                        .map((date, index) => (
+                          <li key={index} className="text-green-600">
+                            {new Date(date).toLocaleDateString()}
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {/* Prior due dates */}
+                {solicitation.application_due_dates.some(date => new Date(date) < new Date()) && (
+                  <div className="mt-2">
+                    <strong>Prior Due Dates:</strong>
+                    <ul className="list-disc ml-6">
+                      {solicitation.application_due_dates
+                        .filter(date => new Date(date) < new Date())
+                        .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
+                        .map((date, index) => (
+                          <li key={index} className="text-gray-500">
+                            {new Date(date).toLocaleDateString()}
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            )}
+
+            <p>
+              <strong>Agency Link:</strong>{' '}
               <a 
-                href={topic.sbir_topic_link}
+                href={solicitation.solicitation_agency_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-800 underline"
               >
-                View Original Topic
+                View Solicitation
               </a>
             </p>
-            <div className="mt-4">
-              <h3 className="font-semibold mb-2">Description</h3>
-              <p className="whitespace-pre-wrap">{topic.topic_description}</p>
-            </div>
-
-            {topic.subtopics && topic.subtopics.length > 0 && (
-              <div className="mt-6">
-                <Separator className="my-4" />
-                <h3 className="font-semibold mb-4">Subtopics</h3>
-                {topic.subtopics.map((subtopic) => (
-                  <div key={subtopic.subtopic_id} className="mb-6">
-                    <h4 className="font-medium mb-2">
-                      Subtopic {subtopic.subtopic_number}
-                    </h4>
-                    <p className="whitespace-pre-wrap mb-2">
-                      Title: {subtopic.subtopic_title}
-                    </p>
-                    <p className="text-sm text-gray-600 whitespace-pre-wrap">
-                      Description: {subtopic.subtopic_description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
           </CardContent>
         </Card>
-      </div>
+      )}
+
+      {/* Topic Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-row items-center justify-between">
+            <CardTitle className="text-2xl font-bold">{topic.topic_title}</CardTitle>
+            <AgencyLogo agency={topic.branch} size="lg" className="ml-4" />
+          </div>
+        </CardHeader>
+        <Separator />
+        <CardContent>
+          <p><strong>Topic Number:</strong> {topic.topic_number}</p>
+          <p><strong>Branch:</strong> {topic.branch}</p>
+          <p><strong>Open Date:</strong> {topic.topic_open_date}</p>
+          <p><strong>Close Date:</strong> {topic.topic_closed_date || 'Not specified'}</p>
+          <p>
+            <strong>SBIR Topic Link:</strong>{' '}
+            <a 
+              href={topic.sbir_topic_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              View Original Topic
+            </a>
+          </p>
+          <div className="mt-4">
+            <h3 className="font-semibold mb-2">Description</h3>
+            <p className="whitespace-pre-wrap">{topic.topic_description}</p>
+          </div>
+
+          {topic.subtopics && topic.subtopics.length > 0 && (
+            <div className="mt-6">
+              <Separator className="my-4" />
+              <h3 className="font-semibold mb-4">Subtopics</h3>
+              {topic.subtopics.map((subtopic) => (
+                <div key={subtopic.subtopic_id} className="mb-6">
+                  <h4 className="font-medium mb-2">
+                    Subtopic {subtopic.subtopic_number}
+                  </h4>
+                  <p className="whitespace-pre-wrap mb-2">
+                    Title: {subtopic.subtopic_title}
+                  </p>
+                  <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                    Description: {subtopic.subtopic_description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </main>
   );
 } 
