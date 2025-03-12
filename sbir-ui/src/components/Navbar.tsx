@@ -12,7 +12,16 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { topicFilter, setTopicFilter, phaseFilter, setPhaseFilter } = useNavbar();
+  const { 
+    topicFilter, 
+    setTopicFilter, 
+    phaseFilter, 
+    setPhaseFilter,
+    programFilter,
+    setProgramFilter,
+    agencyFilter,
+    setAgencyFilter
+  } = useNavbar();
   
   const isTopicsRoute = location.pathname.startsWith('/topics');
   const isAwardsRoute = location.pathname.startsWith('/awards');
@@ -66,6 +75,38 @@ export default function Navbar() {
     }
   };
   
+  const handleProgramChange = (value: string) => {
+    setProgramFilter(value);
+    
+    // Also update URL params when on the main topics page
+    if (location.pathname === '/topics') {
+      setSearchParams(params => {
+        if (value) {
+          params.set("program", value);
+        } else {
+          params.delete("program");
+        }
+        return params;
+      });
+    }
+  };
+  
+  const handleAgencyChange = (value: string) => {
+    setAgencyFilter(value);
+    
+    // Also update URL params when on the main topics page
+    if (location.pathname === '/topics') {
+      setSearchParams(params => {
+        if (value) {
+          params.set("agency", value);
+        } else {
+          params.delete("agency");
+        }
+        return params;
+      });
+    }
+  };
+  
   return (
     <div className="fixed top-14 left-0 right-0 h-14 bg-white z-40">
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center border-b border-gray-200">
@@ -107,6 +148,42 @@ export default function Navbar() {
                     <SelectItem value="phase1">Phase I</SelectItem>
                     <SelectItem value="phase2">Phase II</SelectItem>
                     <SelectItem value="both">Both</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Program filter select - also shown inline when on topics route */}
+              <div className="ml-4">
+                <Select value={programFilter} onValueChange={handleProgramChange}>
+                  <SelectTrigger className="w-32 text-sm bg-white">
+                    <SelectValue placeholder="Program..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="sbir">SBIR</SelectItem>
+                    <SelectItem value="sttr">STTR</SelectItem>
+                    <SelectItem value="both">Both</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Agency filter select - also shown inline when on topics route */}
+              <div className="ml-4">
+                <Select value={agencyFilter} onValueChange={handleAgencyChange}>
+                  <SelectTrigger className="w-32 text-sm bg-white">
+                    <SelectValue placeholder="Agency..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white max-h-60">
+                    <SelectItem value="HHS">HHS</SelectItem>
+                    <SelectItem value="DOD">DOD</SelectItem>
+                    <SelectItem value="NASA">NASA</SelectItem>
+                    <SelectItem value="NSF">NSF</SelectItem>
+                    <SelectItem value="USDA">USDA</SelectItem>
+                    <SelectItem value="EPA">EPA</SelectItem>
+                    <SelectItem value="ED">ED</SelectItem>
+                    <SelectItem value="DHS">DHS</SelectItem>
+                    <SelectItem value="DOT">DOT</SelectItem>
+                    <SelectItem value="DOE">DOE</SelectItem>
+                    <SelectItem value="DOC">DOC</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

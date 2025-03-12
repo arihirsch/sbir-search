@@ -12,7 +12,16 @@ export default function Topics() {
   const [data, setData] = useState<Topic[]>([]);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const { topicFilter, setTopicFilter, phaseFilter, setPhaseFilter } = useNavbar();
+  const { 
+    topicFilter, 
+    setTopicFilter, 
+    phaseFilter, 
+    setPhaseFilter,
+    programFilter,
+    setProgramFilter,
+    agencyFilter,
+    setAgencyFilter
+  } = useNavbar();
   const navigate = useNavigate();
 
   // Sync URL filters with context on initial load
@@ -26,11 +35,21 @@ export default function Topics() {
     if (urlPhase && urlPhase !== phaseFilter) {
       setPhaseFilter(urlPhase);
     }
+    
+    const urlProgram = searchParams.get("program");
+    if (urlProgram && urlProgram !== programFilter) {
+      setProgramFilter(urlProgram);
+    }
+    
+    const urlAgency = searchParams.get("agency");
+    if (urlAgency && urlAgency !== agencyFilter) {
+      setAgencyFilter(urlAgency);
+    }
   }, []);
 
   useEffect(() => {
     fetchData();
-  }, [searchParams, topicFilter, phaseFilter]);
+  }, [searchParams, topicFilter, phaseFilter, programFilter, agencyFilter]);
 
   async function fetchData() {
     setLoading(true);
@@ -46,6 +65,16 @@ export default function Topics() {
       // Add phase filter if present
       if (phaseFilter) {
         queryParams.append('phase', phaseFilter);
+      }
+      
+      // Add program filter if present
+      if (programFilter) {
+        queryParams.append('program', programFilter);
+      }
+      
+      // Add agency filter if present
+      if (agencyFilter) {
+        queryParams.append('agency', agencyFilter);
       }
       
       // Construct the URL with query parameters

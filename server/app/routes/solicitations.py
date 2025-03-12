@@ -136,6 +136,8 @@ def get_all_topics():
     offset = int(request.args.get('offset', default=0))
     status = request.args.get('status', default=None, type=str)
     phase = request.args.get('phase', default=None, type=str)
+    program = request.args.get('program', default=None, type=str)
+    agency = request.args.get('agency', default=None, type=str)
     
     # Format the current date to match the database format (YYYY/MM/DD)
     current_date = datetime.now().strftime('%Y/%m/%d')
@@ -169,6 +171,22 @@ def get_all_topics():
     elif phase == 'both':
         query += " AND s.phase = ?"
         params.append('BOTH')
+    
+    # Apply program filter
+    if program == 'sbir':
+        query += " AND (s.program = ? OR s.program = ?)"
+        params.extend(['SBIR', 'BOTH'])
+    elif program == 'sttr':
+        query += " AND (s.program = ? OR s.program = ?)"
+        params.extend(['STTR', 'BOTH'])
+    elif program == 'both':
+        query += " AND s.program = ?"
+        params.append('BOTH')
+    
+    # Apply agency filter
+    if agency:
+        query += " AND s.agency = ?"
+        params.append(agency)
     
     # Add ordering
     query += " ORDER BY t.topic_open_date DESC"

@@ -5,6 +5,10 @@ type NavbarContextType = {
   setTopicFilter: (filter: string) => void;
   phaseFilter: string;
   setPhaseFilter: (filter: string) => void;
+  programFilter: string;
+  setProgramFilter: (filter: string) => void;
+  agencyFilter: string;
+  setAgencyFilter: (filter: string) => void;
 };
 
 const NavbarContext = createContext<NavbarContextType | undefined>(undefined);
@@ -12,13 +16,19 @@ const NavbarContext = createContext<NavbarContextType | undefined>(undefined);
 export function NavbarProvider({ children }: { children: ReactNode }) {
   const [topicFilter, setTopicFilter] = useState<string>('');
   const [phaseFilter, setPhaseFilter] = useState<string>('');
+  const [programFilter, setProgramFilter] = useState<string>('');
+  const [agencyFilter, setAgencyFilter] = useState<string>('');
 
   return (
     <NavbarContext.Provider value={{ 
       topicFilter, 
       setTopicFilter,
       phaseFilter,
-      setPhaseFilter
+      setPhaseFilter,
+      programFilter,
+      setProgramFilter,
+      agencyFilter,
+      setAgencyFilter
     }}>
       {children}
     </NavbarContext.Provider>
