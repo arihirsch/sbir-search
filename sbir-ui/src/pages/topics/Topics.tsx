@@ -148,7 +148,7 @@ export default function Topics() {
                 </CardHeader>
                 <CardContent>
                   <p><strong>Topic Number:</strong> {topic.topic_number}</p>
-                  <p><strong>Branch:</strong> {topic.branch}</p>
+                  {topic.branch && <p><strong>Branch:</strong> {topic.branch}</p>}
                   <p><strong>Open Date:</strong> {topic.topic_open_date}</p>
                   <p><strong>Close Date:</strong> {topic.topic_closed_date || 'Not specified'}</p>
                   

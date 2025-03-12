@@ -150,15 +150,15 @@ export default function Home() {
                       className="cursor-pointer hover:shadow-lg transition-shadow"
                       onClick={() => navigate(`/topics/${encodeURIComponent(topic.topic_number)}/${topic.solicitation_id}`)}
                     >
-                      <CardHeader>
-                        <CardTitle>{topic.topic_title}</CardTitle>
-                        <CardDescription>Topic #{topic.topic_number}</CardDescription>
+                      <CardHeader className="flex flex-row items-start justify-between">
+                        <div>
+                          <CardTitle>{topic.topic_title}</CardTitle>
+                          <CardDescription>Topic #{topic.topic_number}</CardDescription>
+                        </div>
+                        <AgencyLogo agency={topic.branch} size="md" />
                       </CardHeader>
                       <CardContent>
-                        <div className="flex items-center mb-3">
-                          <AgencyLogo agency={topic.branch} size="sm" className="mr-2" />
-                          <p><strong>Branch:</strong> {topic.branch}</p>
-                        </div>
+                        <p><strong>Branch:</strong> {topic.branch}</p>
                         <p>
                           <strong>Status:</strong>{' '}
                           <span className={isTopicOpen(topic.topic_closed_date) ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
@@ -215,15 +215,15 @@ export default function Home() {
                       className="cursor-pointer hover:shadow-lg transition-shadow"
                       onClick={() => navigate(`/awards/${award.award_link}`)}
                     >
-                      <CardHeader>
-                        <CardTitle>{award.award_title}</CardTitle>
-                        <CardDescription>Award #{award.award_link}</CardDescription>
+                      <CardHeader className="flex flex-row items-start justify-between">
+                        <div>
+                          <CardTitle>{award.award_title}</CardTitle>
+                          <CardDescription>Award #{award.award_link}</CardDescription>
+                        </div>
+                        <AgencyLogo agency={award.agency} size="md" />
                       </CardHeader>
                       <CardContent>
-                        <div className="flex items-center mb-3">
-                          <AgencyLogo agency={award.agency} size="sm" className="mr-2" />
-                          <p><strong>Agency:</strong> {award.agency}</p>
-                        </div>
+                        <p><strong>Agency:</strong> {award.agency}</p>
                         <p><strong>Amount:</strong> ${award.award_amount.toLocaleString()}</p>
                         <p><strong>Phase:</strong> {award.phase}</p>
                         <p><strong>Award Date:</strong> {award.proposal_award_date}</p>
