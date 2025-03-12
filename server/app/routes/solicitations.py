@@ -134,14 +134,44 @@ def get_all_topics():
     # Get query parameters
     limit = request.args.get('limit', default=None, type=int)
     offset = int(request.args.get('offset', default=0))
+    status = request.args.get('status', default=None, type=str)
+    phase = request.args.get('phase', default=None, type=str)
     
-    # Get topics with their associated solicitation info
+    # Format the current date to match the database format (YYYY/MM/DD)
+    current_date = datetime.now().strftime('%Y/%m/%d')
+    
+    # Base query with joins and window function for count
     query = """
-        SELECT t.*, s.agency, s.solicitation_number, s.solicitation_title
+        SELECT t.*, s.agency, s.solicitation_number, s.solicitation_title, s.branch as solicitation_branch,
+               COUNT(*) OVER() as total_count
         FROM topics t
         LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
+        WHERE 1=1
     """
     params = []
+    
+    # Apply status filter
+    if status == 'open':
+        query += """ AND (t.topic_open_date <= ? 
+                    AND (t.topic_closed_date >= ? OR t.topic_closed_date IS NULL))"""
+        params.extend([current_date, current_date])
+    elif status == 'closed':
+        query += " AND t.topic_closed_date < ?"
+        params.append(current_date)
+    
+    # Apply phase filter
+    if phase == 'phase1':
+        query += " AND (s.phase = ? OR s.phase = ?)"
+        params.extend(['Phase I', 'BOTH'])
+    elif phase == 'phase2':
+        query += " AND (s.phase = ? OR s.phase = ?)"
+        params.extend(['Phase II', 'BOTH'])
+    elif phase == 'both':
+        query += " AND s.phase = ?"
+        params.append('BOTH')
+    
+    # Add ordering
+    query += " ORDER BY t.topic_open_date DESC"
     
     # Only add LIMIT if specified
     if limit is not None:
@@ -153,11 +183,19 @@ def get_all_topics():
         params.append(offset)
     
     cursor.execute(query, params)
-    topics = [dict(row) for row in cursor.fetchall()]
+    results = cursor.fetchall()
     
-    # Get total count
-    cursor.execute("SELECT COUNT(*) FROM topics")
-    total_count = cursor.fetchone()[0]
+    # Extract the total count from the first row (if results exist)
+    total_count = results[0]['total_count'] if results else 0
+    
+    # Convert rows to dictionaries and remove the total_count field
+    topics = []
+    for row in results:
+        topic_dict = dict(row)
+        # Remove the total_count field from each row
+        if 'total_count' in topic_dict:
+            del topic_dict['total_count']
+        topics.append(topic_dict)
     
     conn.close()
     
@@ -201,83 +239,6 @@ def get_subtopics(topic_number, solicitation_id):
     conn.close()
     
     return jsonify(subtopics)
-
-@bp.route('/topics/open', methods=['GET'])
-def get_open_topics():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    limit = request.args.get('limit', default=None, type=int)
-    offset = int(request.args.get('offset', default=0))
-    
-    # Format the current date to match the database format (YYYY/MM/DD)
-    current_date = datetime.now().strftime('%Y/%m/%d')
-    
-    query = """
-        SELECT topic_number, topic_title, topic_description, 
-               topic_open_date, topic_closed_date, branch, solicitation_id
-        FROM topics
-        WHERE topic_open_date <= ? 
-        AND (topic_closed_date >= ? OR topic_closed_date IS NULL)
-        ORDER BY topic_open_date DESC
-    """
-    params = [current_date, current_date]
-    
-    # Only add LIMIT if specified
-    if limit is not None:
-        query += " LIMIT ? OFFSET ?"
-        params.extend([limit, offset])
-    elif offset > 0:
-        # If offset is provided without limit, use a large limit
-        query += " LIMIT 1000000 OFFSET ?"
-        params.append(offset)
-    
-    cursor.execute(query, params)
-    results = [dict(row) for row in cursor.fetchall()]
-    
-    return jsonify({
-        'data': results,
-        'limit': limit,
-        'offset': offset
-    })
-
-@bp.route('/topics/closed', methods=['GET'])
-def get_closed_topics():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    limit = request.args.get('limit', default=None, type=int)
-    offset = int(request.args.get('offset', default=0))
-    
-    # Format the current date to match the database format (YYYY/MM/DD)
-    current_date = datetime.now().strftime('%Y/%m/%d')
-    
-    query = """
-        SELECT topic_number, topic_title, topic_description, 
-               topic_open_date, topic_closed_date, branch, solicitation_id
-        FROM topics
-        WHERE topic_closed_date < ?
-        ORDER BY topic_closed_date DESC
-    """
-    params = [current_date]
-    
-    # Only add LIMIT if specified
-    if limit is not None:
-        query += " LIMIT ? OFFSET ?"
-        params.extend([limit, offset])
-    elif offset > 0:
-        # If offset is provided without limit, use a large limit
-        query += " LIMIT 1000000 OFFSET ?"
-        params.append(offset)
-    
-    cursor.execute(query, params)
-    results = [dict(row) for row in cursor.fetchall()]
-    
-    return jsonify({
-        'data': results,
-        'limit': limit,
-        'offset': offset
-    })
 
 @bp.route('/topics/search', methods=['GET'])
 def search_topics():

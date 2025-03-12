@@ -12,29 +12,46 @@ export default function Topics() {
   const [data, setData] = useState<Topic[]>([]);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const { topicFilter, setTopicFilter } = useNavbar();
+  const { topicFilter, setTopicFilter, phaseFilter, setPhaseFilter } = useNavbar();
   const navigate = useNavigate();
 
-  // Sync URL filter with context on initial load
+  // Sync URL filters with context on initial load
   useEffect(() => {
     const urlFilter = searchParams.get("filter");
     if (urlFilter && urlFilter !== topicFilter) {
       setTopicFilter(urlFilter);
     }
+    
+    const urlPhase = searchParams.get("phase");
+    if (urlPhase && urlPhase !== phaseFilter) {
+      setPhaseFilter(urlPhase);
+    }
   }, []);
 
   useEffect(() => {
     fetchData();
-  }, [searchParams, topicFilter]);
+  }, [searchParams, topicFilter, phaseFilter]);
 
   async function fetchData() {
     setLoading(true);
     try {
-      let url = `${import.meta.env.VITE_API_BASE_URL}/topics`;
+      // Build query parameters
+      const queryParams = new URLSearchParams();
       
-      // If a filter is specified, append it to the URL
-      if (topicFilter === 'open' || topicFilter === 'closed') {
-        url = `${import.meta.env.VITE_API_BASE_URL}/topics/${topicFilter}`;
+      // Add status filter if present
+      if (topicFilter) {
+        queryParams.append('status', topicFilter);
+      }
+      
+      // Add phase filter if present
+      if (phaseFilter) {
+        queryParams.append('phase', phaseFilter);
+      }
+      
+      // Construct the URL with query parameters
+      let url = `${import.meta.env.VITE_API_BASE_URL}/topics`;
+      if (queryParams.toString()) {
+        url += `?${queryParams.toString()}`;
       }
       
       const response = await fetch(url);

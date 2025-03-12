@@ -4,15 +4,19 @@
       "solicitations": {
         "columns": {
           "solicitation_id": "INTEGER PRIMARY KEY",
-          "solicitation_number": "TEXT",
           "solicitation_title": "TEXT",
+          "solicitation_number": "TEXT",
+          "program": "TEXT",
+          "phase": "TEXT",
           "agency": "TEXT",
           "branch": "TEXT",
           "solicitation_year": "INTEGER",
           "release_date": "TEXT",
           "open_date": "TEXT",
           "close_date": "TEXT",
-          "url": "TEXT"
+          "application_due_dates": "TEXT",
+          "solicitation_agency_url": "TEXT",
+          "current_status": "TEXT"
         }
       },
       "topics": {
@@ -34,11 +38,14 @@
       "subtopics": {
         "columns": {
           "subtopic_id": "INTEGER PRIMARY KEY",
+          "subtopic_number": "TEXT",
           "topic_number": "TEXT",
           "solicitation_id": "INTEGER",
-          "subtopic_number": "TEXT",
           "subtopic_title": "TEXT",
-          "subtopic_description": "TEXT"
+          "branch": "TEXT",
+          "subtopic_description": "TEXT",
+          "subtopic_open_date": "TEXT",
+          "subtopic_close_date": "TEXT"
         },
         "foreign_keys": {
           "topic_number, solicitation_id": "topics(topic_number, solicitation_id)"
