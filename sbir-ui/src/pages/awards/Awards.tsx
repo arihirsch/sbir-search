@@ -16,7 +16,11 @@ export default function Awards() {
     awardProgramFilter,
     setAwardProgramFilter,
     awardPhaseFilter,
-    setAwardPhaseFilter
+    setAwardPhaseFilter,
+    awardAmountRange,
+    setAwardAmountRange,
+    isAmountRangeActive,
+    setIsAmountRangeActive
   } = useNavbar();
   const navigate = useNavigate();
 
@@ -36,11 +40,20 @@ export default function Awards() {
     if (urlPhase && urlPhase !== awardPhaseFilter) {
       setAwardPhaseFilter(urlPhase);
     }
+    
+    const urlMinAmount = searchParams.get("minAmount");
+    const urlMaxAmount = searchParams.get("maxAmount");
+    if (urlMinAmount && urlMaxAmount) {
+      const minAmount = parseInt(urlMinAmount);
+      const maxAmount = parseInt(urlMaxAmount);
+      setAwardAmountRange([minAmount, maxAmount]);
+      setIsAmountRangeActive(true);
+    }
   }, []);
 
   useEffect(() => {
     fetchData();
-  }, [searchParams, awardAgencyFilter, awardProgramFilter, awardPhaseFilter]);
+  }, [searchParams, awardAgencyFilter, awardProgramFilter, awardPhaseFilter, awardAmountRange, isAmountRangeActive]);
 
   async function fetchData() {
     setLoading(true);
@@ -61,6 +74,12 @@ export default function Awards() {
       // Add phase filter if present
       if (awardPhaseFilter) {
         queryParams.append('phase', awardPhaseFilter);
+      }
+      
+      // Add amount range filter if active
+      if (isAmountRangeActive) {
+        queryParams.append('minAmount', awardAmountRange[0].toString());
+        queryParams.append('maxAmount', awardAmountRange[1].toString());
       }
       
       // Construct the URL with query parameters

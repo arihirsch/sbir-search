@@ -6,7 +6,9 @@ import {
   SelectTrigger,
   SelectValue
 } from './ui/select';
+import { Slider } from './ui/slider';
 import { useNavbar } from '../contexts/NavbarContext';
+import { useState } from 'react';
 
 export default function Navbar() {
   const location = useLocation();
@@ -26,12 +28,28 @@ export default function Navbar() {
     awardProgramFilter,
     setAwardProgramFilter,
     awardPhaseFilter,
-    setAwardPhaseFilter
+    setAwardPhaseFilter,
+    awardAmountRange,
+    setAwardAmountRange,
+    isAmountRangeActive,
+    setIsAmountRangeActive
   } = useNavbar();
+  
+  // Local state for slider value before committing
+  const [localAmountRange, setLocalAmountRange] = useState<number[]>(awardAmountRange);
   
   const isTopicsRoute = location.pathname.startsWith('/topics');
   const isAwardsRoute = location.pathname.startsWith('/awards');
   const isCompaniesRoute = location.pathname.startsWith('/companies');
+  
+  // Format currency for display
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
   
   // Determine current section based on route
   const getCurrentSection = () => {
@@ -161,10 +179,44 @@ export default function Navbar() {
     }
   };
   
+  const handleAmountRangeChange = (value: number[]) => {
+    setLocalAmountRange(value);
+  };
+  
+  const handleAmountRangeCommit = (value: number[]) => {
+    setAwardAmountRange(value);
+    setIsAmountRangeActive(true);
+    
+    // Also update URL params when on the main awards page
+    if (location.pathname === '/awards') {
+      setSearchParams(params => {
+        params.set("minAmount", value[0].toString());
+        params.set("maxAmount", value[1].toString());
+        return params;
+      });
+    }
+  };
+  
+  const handleResetAmountRange = () => {
+    const defaultRange = [0, 2500000];
+    setAwardAmountRange(defaultRange);
+    setLocalAmountRange(defaultRange);
+    setIsAmountRangeActive(false);
+    
+    // Also update URL params when on the main awards page
+    if (location.pathname === '/awards') {
+      setSearchParams(params => {
+        params.delete("minAmount");
+        params.delete("maxAmount");
+        return params;
+      });
+    }
+  };
+  
   return (
     <div className="fixed top-14 left-0 right-0 h-14 bg-white z-40">
-      <div className="max-w-7xl mx-auto px-4 h-full flex items-center border-b border-gray-200">
-        {/* Main navigation select */}
+      <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between border-b border-gray-200">
+        {/* Left side with main navigation and filters */}
         <div className="flex items-center">
           <Select value={getCurrentSection()} onValueChange={handleSectionChange}>
             <SelectTrigger className="w-32 text-sm bg-white">
@@ -241,10 +293,10 @@ export default function Navbar() {
             </>
           )}
           
-          {/* Award filters - shown inline when on awards route */}
+          {/* Award filters (except slider) - shown inline when on awards route */}
           {isAwardsRoute && (
             <>
-              {/* Phase filter - now first */}
+              {/* Phase filter - first */}
               <div className="ml-4">
                 <Select value={awardPhaseFilter} onValueChange={handleAwardPhaseChange}>
                   <SelectTrigger className="w-32 text-sm bg-white">
@@ -258,7 +310,7 @@ export default function Navbar() {
                 </Select>
               </div>
               
-              {/* Program filter - now second */}
+              {/* Program filter - second */}
               <div className="ml-4">
                 <Select value={awardProgramFilter} onValueChange={handleAwardProgramChange}>
                   <SelectTrigger className="w-32 text-sm bg-white">
@@ -272,7 +324,7 @@ export default function Navbar() {
                 </Select>
               </div>
               
-              {/* Agency filter - now third */}
+              {/* Agency filter - third */}
               <div className="ml-4">
                 <Select value={awardAgencyFilter} onValueChange={handleAwardAgencyChange}>
                   <SelectTrigger className="w-32 text-sm bg-white">
@@ -296,6 +348,54 @@ export default function Navbar() {
             </>
           )}
         </div>
+        
+        {/* Right side with slider (only shown on awards route) */}
+        {isAwardsRoute && (
+          <div className="flex items-center">
+            {/* Amount Range Slider */}
+            <div className="flex items-center">
+              {/* Min value label with fixed width */}
+              <div className="w-20 text-right">
+                <span className="text-sm text-gray-500 mr-2">
+                  {formatCurrency(localAmountRange[0])}
+                </span>
+              </div>
+              
+              {/* Slider - update max to 2,500,000 */}
+              <div className="w-64 mx-2">
+                <Slider 
+                  defaultValue={awardAmountRange}
+                  value={localAmountRange}
+                  min={0}
+                  max={2500000}
+                  step={25000}
+                  onValueChange={handleAmountRangeChange}
+                  onValueCommit={handleAmountRangeCommit}
+                  className="w-full"
+                />
+              </div>
+              
+              {/* Max value label with fixed width */}
+              <div className="w-20">
+                <span className="text-sm text-gray-500">
+                  {formatCurrency(localAmountRange[1])}
+                </span>
+              </div>
+              
+              {/* Reset button container with fixed width */}
+              <div className="w-20">
+                {isAmountRangeActive && (
+                  <button 
+                    onClick={handleResetAmountRange}
+                    className="text-xs text-gray-600"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
