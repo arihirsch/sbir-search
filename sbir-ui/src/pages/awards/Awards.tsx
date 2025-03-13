@@ -3,22 +3,45 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Award, parseAward } from "@/types/award";
+import { useNavbar } from "@/contexts/NavbarContext";
 
 export default function Awards() {
   const [searchParams] = useSearchParams();
   const [data, setData] = useState<Award[]>([]);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const { awardAgencyFilter, setAwardAgencyFilter } = useNavbar();
   const navigate = useNavigate();
+
+  // Sync URL filters with context on initial load
+  useEffect(() => {
+    const urlAgency = searchParams.get("agency");
+    if (urlAgency && urlAgency !== awardAgencyFilter) {
+      setAwardAgencyFilter(urlAgency);
+    }
+  }, []);
 
   useEffect(() => {
     fetchData();
-  }, [searchParams]);
+  }, [searchParams, awardAgencyFilter]);
 
   async function fetchData() {
     setLoading(true);
     try {
+      // Build query parameters
+      const queryParams = new URLSearchParams();
+      
+      // Add agency filter if present
+      if (awardAgencyFilter) {
+        queryParams.append('agency', awardAgencyFilter);
+      }
+      
+      // Construct the URL with query parameters
       let url = `${import.meta.env.VITE_API_BASE_URL}/awards`;
+      if (queryParams.toString()) {
+        url += `?${queryParams.toString()}`;
+      }
+      
       const response = await fetch(url);
       const responseData = await response.json();
       setData(responseData.data.map(parseAward));
@@ -42,7 +65,7 @@ export default function Awards() {
   };
 
   return (
-    <main >
+    <main>
       <div className="text-center mb-8 text-gray-600">
         {loading ? "Loading awards..." : `Found ${data.length} awards`}
       </div>

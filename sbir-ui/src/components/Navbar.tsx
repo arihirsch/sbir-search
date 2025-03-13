@@ -20,7 +20,9 @@ export default function Navbar() {
     programFilter,
     setProgramFilter,
     agencyFilter,
-    setAgencyFilter
+    setAgencyFilter,
+    awardAgencyFilter,
+    setAwardAgencyFilter
   } = useNavbar();
   
   const isTopicsRoute = location.pathname.startsWith('/topics');
@@ -107,6 +109,22 @@ export default function Navbar() {
     }
   };
   
+  const handleAwardAgencyChange = (value: string) => {
+    setAwardAgencyFilter(value);
+    
+    // Also update URL params when on the main awards page
+    if (location.pathname === '/awards') {
+      setSearchParams(params => {
+        if (value) {
+          params.set("agency", value);
+        } else {
+          params.delete("agency");
+        }
+        return params;
+      });
+    }
+  };
+  
   return (
     <div className="fixed top-14 left-0 right-0 h-14 bg-white z-40">
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center border-b border-gray-200">
@@ -169,6 +187,32 @@ export default function Navbar() {
               {/* Agency filter select - also shown inline when on topics route */}
               <div className="ml-4">
                 <Select value={agencyFilter} onValueChange={handleAgencyChange}>
+                  <SelectTrigger className="w-32 text-sm bg-white">
+                    <SelectValue placeholder="Agency..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white max-h-60">
+                    <SelectItem value="HHS">HHS</SelectItem>
+                    <SelectItem value="DOD">DOD</SelectItem>
+                    <SelectItem value="NASA">NASA</SelectItem>
+                    <SelectItem value="NSF">NSF</SelectItem>
+                    <SelectItem value="USDA">USDA</SelectItem>
+                    <SelectItem value="EPA">EPA</SelectItem>
+                    <SelectItem value="ED">ED</SelectItem>
+                    <SelectItem value="DHS">DHS</SelectItem>
+                    <SelectItem value="DOT">DOT</SelectItem>
+                    <SelectItem value="DOE">DOE</SelectItem>
+                    <SelectItem value="DOC">DOC</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
+          
+          {/* Award filters - shown inline when on awards route */}
+          {isAwardsRoute && (
+            <>
+              <div className="ml-4">
+                <Select value={awardAgencyFilter} onValueChange={handleAwardAgencyChange}>
                   <SelectTrigger className="w-32 text-sm bg-white">
                     <SelectValue placeholder="Agency..." />
                   </SelectTrigger>

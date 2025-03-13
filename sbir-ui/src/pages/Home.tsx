@@ -117,7 +117,7 @@ export default function Home() {
         <div className="space-y-2">
           {/* Featured Searches Section */}
           <div>
-            <h2 className="text-2xl font-bold">Featured Intelligent Searches</h2>
+            <h2 className="text-2xl font-bold">Trending Intelligent Searches</h2>
             <Card className="mb-0 border-0 shadow-none">
               <CardContent className="p-0">
                 <div className="grid grid-cols-1 gap-3">
@@ -138,7 +138,7 @@ export default function Home() {
 
           {/* Featured Open Topics Section */}
           <div>
-            <h2 className="text-2xl font-bold mb-6">Featured Open Topics</h2>
+            <h2 className="text-2xl font-bold mb-6">Trending Open Topics</h2>
             {loading ? (
               <div className="text-center py-8">Loading featured topics...</div>
             ) : (
@@ -203,7 +203,7 @@ export default function Home() {
 
           {/* Featured Awards Section */}
           <div>
-            <h2 className="text-2xl font-bold mb-6">Featured Awards</h2>
+            <h2 className="text-2xl font-bold mb-6">Trending Awards</h2>
             {loading ? (
               <div className="text-center py-8">Loading featured awards...</div>
             ) : (
@@ -264,7 +264,7 @@ export default function Home() {
 
           {/* Featured Companies Section */}
           <div>
-            <h2 className="text-2xl font-bold mb-6">Featured Companies</h2>
+            <h2 className="text-2xl font-bold mb-6">Trending Companies</h2>
             {loading ? (
               <div className="text-center py-8">Loading featured companies...</div>
             ) : (

@@ -8,11 +8,26 @@ def get_all_awards():
     conn = get_db_connection(db_name="awards")
     cursor = conn.cursor()
     
+    # Get query parameters
     limit = request.args.get('limit', default=None, type=int)
     offset = int(request.args.get('offset', default=0))
+    agency = request.args.get('agency', default=None, type=str)
     
-    query = "SELECT * FROM awards"
+    # Base query with window function for count
+    query = """
+        SELECT *, COUNT(*) OVER() as total_count
+        FROM awards
+        WHERE 1=1
+    """
     params = []
+    
+    # Apply agency filter
+    if agency:
+        query += " AND agency = ?"
+        params.append(agency)
+    
+    # Add ordering
+    query += " ORDER BY award_year DESC"
     
     # Only add LIMIT if specified
     if limit is not None:
@@ -24,17 +39,28 @@ def get_all_awards():
         params.append(offset)
     
     cursor.execute(query, params)
-    awards = [dict(row) for row in cursor.fetchall()]
+    results = cursor.fetchall()
     
-    cursor.execute("SELECT COUNT(*) FROM awards")
-    total_count = cursor.fetchone()[0]
+    # Extract the total count from the first row (if results exist)
+    total_count = results[0]['total_count'] if results else 0
+    
+    # Convert rows to dictionaries and remove the total_count field
+    awards = []
+    for row in results:
+        award_dict = dict(row)
+        # Remove the total_count field from each row
+        if 'total_count' in award_dict:
+            del award_dict['total_count']
+        awards.append(award_dict)
+    
+    conn.close()
     
     return jsonify({
         'data': awards,
         'total': total_count,
         'limit': limit,
         'offset': offset
-    }) 
+    })
 
 @bp.route('/awards/search', methods=['GET'])
 def search():
