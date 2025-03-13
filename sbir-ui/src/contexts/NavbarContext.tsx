@@ -12,6 +12,10 @@ type NavbarContextType = {
   
   awardAgencyFilter: string;
   setAwardAgencyFilter: (filter: string) => void;
+  awardProgramFilter: string;
+  setAwardProgramFilter: (filter: string) => void;
+  awardPhaseFilter: string;
+  setAwardPhaseFilter: (filter: string) => void;
 };
 
 const NavbarContext = createContext<NavbarContextType | undefined>(undefined);
@@ -23,6 +27,8 @@ export function NavbarProvider({ children }: { children: ReactNode }) {
   const [agencyFilter, setAgencyFilter] = useState<string>('');
   
   const [awardAgencyFilter, setAwardAgencyFilter] = useState<string>('');
+  const [awardProgramFilter, setAwardProgramFilter] = useState<string>('');
+  const [awardPhaseFilter, setAwardPhaseFilter] = useState<string>('');
 
   return (
     <NavbarContext.Provider value={{ 
@@ -36,7 +42,11 @@ export function NavbarProvider({ children }: { children: ReactNode }) {
       setAgencyFilter,
       
       awardAgencyFilter,
-      setAwardAgencyFilter
+      setAwardAgencyFilter,
+      awardProgramFilter,
+      setAwardProgramFilter,
+      awardPhaseFilter,
+      setAwardPhaseFilter
     }}>
       {children}
     </NavbarContext.Provider>

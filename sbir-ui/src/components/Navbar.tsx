@@ -22,7 +22,11 @@ export default function Navbar() {
     agencyFilter,
     setAgencyFilter,
     awardAgencyFilter,
-    setAwardAgencyFilter
+    setAwardAgencyFilter,
+    awardProgramFilter,
+    setAwardProgramFilter,
+    awardPhaseFilter,
+    setAwardPhaseFilter
   } = useNavbar();
   
   const isTopicsRoute = location.pathname.startsWith('/topics');
@@ -125,14 +129,46 @@ export default function Navbar() {
     }
   };
   
+  const handleAwardProgramChange = (value: string) => {
+    setAwardProgramFilter(value);
+    
+    // Also update URL params when on the main awards page
+    if (location.pathname === '/awards') {
+      setSearchParams(params => {
+        if (value) {
+          params.set("program", value);
+        } else {
+          params.delete("program");
+        }
+        return params;
+      });
+    }
+  };
+  
+  const handleAwardPhaseChange = (value: string) => {
+    setAwardPhaseFilter(value);
+    
+    // Also update URL params when on the main awards page
+    if (location.pathname === '/awards') {
+      setSearchParams(params => {
+        if (value) {
+          params.set("phase", value);
+        } else {
+          params.delete("phase");
+        }
+        return params;
+      });
+    }
+  };
+  
   return (
     <div className="fixed top-14 left-0 right-0 h-14 bg-white z-40">
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center border-b border-gray-200">
         {/* Main navigation select */}
         <div className="flex items-center">
           <Select value={getCurrentSection()} onValueChange={handleSectionChange}>
-            <SelectTrigger className="w-40 text-sm bg-white">
-              <SelectValue placeholder="Browse..." />
+            <SelectTrigger className="w-32 text-sm bg-white">
+              <SelectValue placeholder="Select section..." />
             </SelectTrigger>
             <SelectContent className="bg-white">
               <SelectItem value="topics">Topics</SelectItem>
@@ -141,7 +177,7 @@ export default function Navbar() {
             </SelectContent>
           </Select>
           
-          {/* Topic filter select - shown inline when on topics route */}
+          {/* Topic filters - shown inline when on topics route */}
           {isTopicsRoute && (
             <>
               <div className="ml-4">
@@ -156,7 +192,6 @@ export default function Navbar() {
                 </Select>
               </div>
               
-              {/* Phase filter select - also shown inline when on topics route */}
               <div className="ml-4">
                 <Select value={phaseFilter} onValueChange={handlePhaseChange}>
                   <SelectTrigger className="w-32 text-sm bg-white">
@@ -170,7 +205,6 @@ export default function Navbar() {
                 </Select>
               </div>
               
-              {/* Program filter select - also shown inline when on topics route */}
               <div className="ml-4">
                 <Select value={programFilter} onValueChange={handleProgramChange}>
                   <SelectTrigger className="w-32 text-sm bg-white">
@@ -184,7 +218,6 @@ export default function Navbar() {
                 </Select>
               </div>
               
-              {/* Agency filter select - also shown inline when on topics route */}
               <div className="ml-4">
                 <Select value={agencyFilter} onValueChange={handleAgencyChange}>
                   <SelectTrigger className="w-32 text-sm bg-white">
@@ -211,6 +244,35 @@ export default function Navbar() {
           {/* Award filters - shown inline when on awards route */}
           {isAwardsRoute && (
             <>
+              {/* Phase filter - now first */}
+              <div className="ml-4">
+                <Select value={awardPhaseFilter} onValueChange={handleAwardPhaseChange}>
+                  <SelectTrigger className="w-32 text-sm bg-white">
+                    <SelectValue placeholder="Phase..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="Phase I">Phase I</SelectItem>
+                    <SelectItem value="Phase II">Phase II</SelectItem>
+                    <SelectItem value="BOTH">Both</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Program filter - now second */}
+              <div className="ml-4">
+                <Select value={awardProgramFilter} onValueChange={handleAwardProgramChange}>
+                  <SelectTrigger className="w-32 text-sm bg-white">
+                    <SelectValue placeholder="Program..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="SBIR">SBIR</SelectItem>
+                    <SelectItem value="STTR">STTR</SelectItem>
+                    <SelectItem value="BOTH">Both</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Agency filter - now third */}
               <div className="ml-4">
                 <Select value={awardAgencyFilter} onValueChange={handleAwardAgencyChange}>
                   <SelectTrigger className="w-32 text-sm bg-white">
