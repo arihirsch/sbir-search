@@ -17,6 +17,8 @@ export default function Awards() {
     setAwardProgramFilter,
     awardPhaseFilter,
     setAwardPhaseFilter,
+    awardYearFilter,
+    setAwardYearFilter,
     awardAmountRange,
     setAwardAmountRange,
     isAmountRangeActive,
@@ -41,6 +43,11 @@ export default function Awards() {
       setAwardPhaseFilter(urlPhase);
     }
     
+    const urlYear = searchParams.get("year");
+    if (urlYear && urlYear !== awardYearFilter) {
+      setAwardYearFilter(urlYear);
+    }
+    
     const urlMinAmount = searchParams.get("minAmount");
     const urlMaxAmount = searchParams.get("maxAmount");
     if (urlMinAmount && urlMaxAmount) {
@@ -53,7 +60,7 @@ export default function Awards() {
 
   useEffect(() => {
     fetchData();
-  }, [searchParams, awardAgencyFilter, awardProgramFilter, awardPhaseFilter, awardAmountRange, isAmountRangeActive]);
+  }, [searchParams, awardAgencyFilter, awardProgramFilter, awardPhaseFilter, awardYearFilter, awardAmountRange, isAmountRangeActive]);
 
   async function fetchData() {
     setLoading(true);
@@ -74,6 +81,11 @@ export default function Awards() {
       // Add phase filter if present
       if (awardPhaseFilter) {
         queryParams.append('phase', awardPhaseFilter);
+      }
+      
+      // Add year filter if present
+      if (awardYearFilter) {
+        queryParams.append('year', awardYearFilter);
       }
       
       // Add amount range filter if active
@@ -134,7 +146,9 @@ export default function Awards() {
                 <p><strong>Amount:</strong> ${award.award_amount.toLocaleString()}</p>
                 <p><strong>Year:</strong> {award.award_year}</p>
                 <p><strong>Agency:</strong> {award.agency}</p>
-                <p><strong>Branch:</strong> {award.branch}</p>
+                {award.branch && award.branch.trim() !== "" && (
+                  <p><strong>Branch:</strong> {award.branch}</p>
+                )}
                 <p><strong>Phase:</strong> {award.phase}</p>
                 <p><strong>Program:</strong> {award.program}</p>
 

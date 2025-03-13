@@ -29,6 +29,8 @@ export default function Navbar() {
     setAwardProgramFilter,
     awardPhaseFilter,
     setAwardPhaseFilter,
+    awardYearFilter,
+    setAwardYearFilter,
     awardAmountRange,
     setAwardAmountRange,
     isAmountRangeActive,
@@ -179,6 +181,22 @@ export default function Navbar() {
     }
   };
   
+  const handleAwardYearChange = (value: string) => {
+    setAwardYearFilter(value);
+    
+    // Also update URL params when on the main awards page
+    if (location.pathname === '/awards') {
+      setSearchParams(params => {
+        if (value) {
+          params.set("year", value);
+        } else {
+          params.delete("year");
+        }
+        return params;
+      });
+    }
+  };
+  
   const handleAmountRangeChange = (value: number[]) => {
     setLocalAmountRange(value);
   };
@@ -219,8 +237,8 @@ export default function Navbar() {
         {/* Left side with main navigation and filters */}
         <div className="flex items-center">
           <Select value={getCurrentSection()} onValueChange={handleSectionChange}>
-            <SelectTrigger className="w-32 text-sm bg-white">
-              <SelectValue placeholder="Select section..." />
+            <SelectTrigger className="w-36 text-sm bg-white">
+              <SelectValue placeholder="Category..." />
             </SelectTrigger>
             <SelectContent className="bg-white">
               <SelectItem value="topics">Topics</SelectItem>
@@ -296,7 +314,24 @@ export default function Navbar() {
           {/* Award filters (except slider) - shown inline when on awards route */}
           {isAwardsRoute && (
             <>
-              {/* Phase filter - first */}
+              {/* Year filter - first */}
+              <div className="ml-4">
+                <Select value={awardYearFilter} onValueChange={handleAwardYearChange}>
+                  <SelectTrigger className="w-32 text-sm bg-white">
+                    <SelectValue placeholder="Year..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="2025">2025</SelectItem>
+                    <SelectItem value="2024">2024</SelectItem>
+                    <SelectItem value="2023">2023</SelectItem>
+                    <SelectItem value="2022">2022</SelectItem>
+                    <SelectItem value="2021">2021</SelectItem>
+                    <SelectItem value="2020">2020</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Phase filter - second */}
               <div className="ml-4">
                 <Select value={awardPhaseFilter} onValueChange={handleAwardPhaseChange}>
                   <SelectTrigger className="w-32 text-sm bg-white">
@@ -310,7 +345,7 @@ export default function Navbar() {
                 </Select>
               </div>
               
-              {/* Program filter - second */}
+              {/* Program filter - third */}
               <div className="ml-4">
                 <Select value={awardProgramFilter} onValueChange={handleAwardProgramChange}>
                   <SelectTrigger className="w-32 text-sm bg-white">
@@ -324,7 +359,7 @@ export default function Navbar() {
                 </Select>
               </div>
               
-              {/* Agency filter - third */}
+              {/* Agency filter - fourth */}
               <div className="ml-4">
                 <Select value={awardAgencyFilter} onValueChange={handleAwardAgencyChange}>
                   <SelectTrigger className="w-32 text-sm bg-white">

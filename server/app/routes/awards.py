@@ -14,6 +14,7 @@ def get_all_awards():
     agency = request.args.get('agency', default=None, type=str)
     program = request.args.get('program', default=None, type=str)
     phase = request.args.get('phase', default=None, type=str)
+    year = request.args.get('year', default=None, type=str)
     min_amount = request.args.get('minAmount', default=None, type=int)
     max_amount = request.args.get('maxAmount', default=None, type=int)
     
@@ -53,6 +54,11 @@ def get_all_awards():
         elif phase.upper() == 'BOTH':
             query += " AND phase = ?"
             params.append('BOTH')
+    
+    # Apply year filter
+    if year:
+        query += " AND award_year = ?"
+        params.append(int(year))
     
     # Apply amount range filter
     if min_amount is not None:
