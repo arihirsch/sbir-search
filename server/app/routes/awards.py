@@ -9,7 +9,7 @@ def get_all_awards():
     cursor = conn.cursor()
     
     # Get query parameters
-    limit = request.args.get('limit', default=None, type=int)
+    limit = request.args.get('limit', default=50, type=int)
     offset = int(request.args.get('offset', default=0))
     agency = request.args.get('agency', default=None, type=str)
     program = request.args.get('program', default=None, type=str)

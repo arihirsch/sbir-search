@@ -8,7 +8,7 @@ def get_all_companies():
     conn = get_db_connection(db_name="companies")
     cursor = conn.cursor()
     
-    limit = request.args.get('limit', default=None, type=int)
+    limit = request.args.get('limit', default=50, type=int)
     offset = int(request.args.get('offset', default=0))
     
     query = "SELECT * FROM companies"

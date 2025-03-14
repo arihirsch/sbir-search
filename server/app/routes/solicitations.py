@@ -132,7 +132,7 @@ def get_all_topics():
     cursor = conn.cursor()
     
     # Get query parameters
-    limit = request.args.get('limit', default=None, type=int)
+    limit = request.args.get('limit', default=50, type=int)
     offset = int(request.args.get('offset', default=0))
     status = request.args.get('status', default=None, type=str)
     phase = request.args.get('phase', default=None, type=str)

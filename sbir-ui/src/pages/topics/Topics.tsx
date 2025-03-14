@@ -12,6 +12,10 @@ export default function Topics() {
   const [data, setData] = useState<Topic[]>([]);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [totalTopics, setTotalTopics] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const pageSize = 50; // Match the backend default
   const { 
     topicFilter, 
     setTopicFilter, 
@@ -29,27 +33,40 @@ export default function Topics() {
     const urlFilter = searchParams.get("filter");
     if (urlFilter && urlFilter !== topicFilter) {
       setTopicFilter(urlFilter);
+      setCurrentPage(1); // Reset to first page when filter changes
     }
     
     const urlPhase = searchParams.get("phase");
     if (urlPhase && urlPhase !== phaseFilter) {
       setPhaseFilter(urlPhase);
+      setCurrentPage(1); // Reset to first page when filter changes
     }
     
     const urlProgram = searchParams.get("program");
     if (urlProgram && urlProgram !== programFilter) {
       setProgramFilter(urlProgram);
+      setCurrentPage(1); // Reset to first page when filter changes
     }
     
     const urlAgency = searchParams.get("agency");
     if (urlAgency && urlAgency !== agencyFilter) {
       setAgencyFilter(urlAgency);
+      setCurrentPage(1); // Reset to first page when filter changes
     }
-  }, []);
+  }, [searchParams]);
+
+  // Add effect to reset page when filters change
+  useEffect(() => {
+    // Skip the initial render
+    if (topicFilter !== undefined || phaseFilter !== undefined || 
+        programFilter !== undefined || agencyFilter !== undefined) {
+      setCurrentPage(1);
+    }
+  }, [topicFilter, phaseFilter, programFilter, agencyFilter]);
 
   useEffect(() => {
     fetchData();
-  }, [searchParams, topicFilter, phaseFilter, programFilter, agencyFilter]);
+  }, [searchParams, topicFilter, phaseFilter, programFilter, agencyFilter, currentPage]);
 
   async function fetchData() {
     setLoading(true);
@@ -77,6 +94,10 @@ export default function Topics() {
         queryParams.append('agency', agencyFilter);
       }
       
+      // Add pagination parameters
+      queryParams.append('limit', pageSize.toString());
+      queryParams.append('offset', ((currentPage - 1) * pageSize).toString());
+      
       // Construct the URL with query parameters
       let url = `${import.meta.env.VITE_API_BASE_URL}/topics`;
       if (queryParams.toString()) {
@@ -86,6 +107,8 @@ export default function Topics() {
       const response = await fetch(url);
       const responseData = await response.json();
       setData(responseData.data.map(parseTopic));
+      setTotalTopics(responseData.total);
+      setHasMore(responseData.total > currentPage * pageSize);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -114,13 +137,25 @@ export default function Topics() {
     return today <= closeDateObj;
   };
 
+  const handleNextPage = () => {
+    setCurrentPage(prev => prev + 1);
+    window.scrollTo(0, 0);
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage(prev => Math.max(1, prev - 1));
+    window.scrollTo(0, 0);
+  };
+
   return (
       <div>
         <div className="text-center mb-8 text-gray-600">
           {loading ? (
             "Loading topics..."
           ) : (
-            `Found ${data.length} topics`
+            totalTopics > data.length ? 
+            `Showing topics ${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalTopics)} of ${totalTopics}` : 
+            `Found ${totalTopics} topics`
           )}
         </div>
 
@@ -182,6 +217,29 @@ export default function Topics() {
             </div>
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {!loading && data.length > 0 && (
+          <div className="flex justify-between items-center mt-8">
+            <Button 
+              onClick={handlePrevPage} 
+              disabled={currentPage === 1}
+              variant="outline"
+            >
+              Previous Page
+            </Button>
+            <div className="text-sm text-gray-600">
+              Page {currentPage}
+            </div>
+            <Button 
+              onClick={handleNextPage} 
+              disabled={!hasMore}
+              variant="outline"
+            >
+              Next Page
+            </Button>
+          </div>
+        )}
       </div>
   );
 } 
