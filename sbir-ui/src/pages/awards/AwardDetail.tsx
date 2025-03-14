@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Award, parseAward } from "@/types/award";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import AgencyLogo from "@/components/AgencyLogo";
+import { Separator } from "@/components/ui/separator.tsx";
+
 
 export default function AwardDetail() {
   const { id } = useParams();
@@ -36,8 +39,12 @@ export default function AwardDetail() {
       {/* Basic Award Information */}
       <Card className="mb-4">
         <CardHeader>
-          <CardTitle>{award.award_title}</CardTitle>
+          <div className="flex flex-row items-center justify-between">
+            <CardTitle className="text-2xl font-bold">{award.award_title}</CardTitle>
+            <AgencyLogo agency={award.agency} size="lg" className="ml-4" />
+          </div>
         </CardHeader>
+        <Separator />
         <CardContent className="grid grid-cols-2 gap-4">
           <div>
             <h3 className="font-semibold mb-2">Award Details</h3>
@@ -60,7 +67,7 @@ export default function AwardDetail() {
       {/* Company Information */}
       <Card className="mb-4">
         <CardHeader>
-          <CardTitle>Company Information</CardTitle>
+          <CardTitle className="text-xl font-bold">Company Information</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-4">
           <div>
@@ -73,6 +80,7 @@ export default function AwardDetail() {
                 {award.company_url}
               </a>
             ) : 'N/A'}</p>
+            <p><strong>Address:</strong> {award.address1}{award.address2 ? `, ${award.address2}` : ''}, {award.city}, {award.state} {award.zip}</p>
           </div>
           <div>
             <p><strong>HUBZone Owned:</strong> {award.hubzone_owned || 'N/A'}</p>
@@ -80,45 +88,28 @@ export default function AwardDetail() {
             <p><strong>Women Owned:</strong> {award.women_owned || 'N/A'}</p>
           </div>
         </CardContent>
-      </Card>
-
-      {/* Address */}
-      <Card className="mb-4">
-        <CardHeader>
-          <CardTitle>Address</CardTitle>
-        </CardHeader>
         <CardContent>
-          <p>{award.address1}</p>
-          {award.address2 && <p>{award.address2}</p>}
-          <p>{award.city}, {award.state} {award.zip}</p>
-        </CardContent>
-      </Card>
-
-      {/* Contact Information */}
-      <Card className="mb-4">
-        <CardHeader>
-          <CardTitle>Contact Information</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-3 gap-6">
-          <div>
-            <h3 className="font-semibold mb-2">Point of Contact</h3>
-            <p><strong>Name:</strong> {award.poc_name || 'N/A'}</p>
-            <p><strong>Title:</strong> {award.poc_title || 'N/A'}</p>
-            <p><strong>Phone:</strong> {award.poc_phone || 'N/A'}</p>
-            <p><strong>Email:</strong> {award.poc_email || 'N/A'}</p>
-          </div>
-          <div>
-            <h3 className="font-semibold mb-2">Principal Investigator</h3>
-            <p><strong>Name:</strong> {award.pi_name || 'N/A'}</p>
-            <p><strong>Title:</strong> {award.pi_title || 'N/A'}</p>
-            <p><strong>Phone:</strong> {award.pi_phone || 'N/A'}</p>
-            <p><strong>Email:</strong> {award.pi_email || 'N/A'}</p>
-          </div>
-          <div>
-            <h3 className="font-semibold mb-2">Research Institution</h3>
-            <p><strong>Name:</strong> {award.ri_name || 'N/A'}</p>
-            <p><strong>POC Name:</strong> {award.ri_poc_name || 'N/A'}</p>
-            <p><strong>POC Phone:</strong> {award.ri_poc_phone || 'N/A'}</p>
+          <div className="grid grid-cols-3 gap-6">
+            <div>
+              <h4 className="font-semibold mb-2">Point of Contact</h4>
+              <p><strong>Name:</strong> {award.poc_name || 'N/A'}</p>
+              <p><strong>Title:</strong> {award.poc_title || 'N/A'}</p>
+              <p><strong>Phone:</strong> {award.poc_phone || 'N/A'}</p>
+              <p><strong>Email:</strong> {award.poc_email || 'N/A'}</p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Principal Investigator</h4>
+              <p><strong>Name:</strong> {award.pi_name || 'N/A'}</p>
+              <p><strong>Title:</strong> {award.pi_title || 'N/A'}</p>
+              <p><strong>Phone:</strong> {award.pi_phone || 'N/A'}</p>
+              <p><strong>Email:</strong> {award.pi_email || 'N/A'}</p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Research Institution</h4>
+              <p><strong>Name:</strong> {award.ri_name || 'N/A'}</p>
+              <p><strong>POC Name:</strong> {award.ri_poc_name || 'N/A'}</p>
+              <p><strong>POC Phone:</strong> {award.ri_poc_phone || 'N/A'}</p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -126,7 +117,7 @@ export default function AwardDetail() {
       {/* Solicitation Information */}
       <Card className="mb-4">
         <CardHeader>
-          <CardTitle>Solicitation Details</CardTitle>
+          <CardTitle className="text-xl font-bold">Solicitation Details</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-4">
           <div>
@@ -144,7 +135,7 @@ export default function AwardDetail() {
       {/* Research Information */}
       <Card className="mb-4">
         <CardHeader>
-          <CardTitle>Research Information</CardTitle>
+          <CardTitle className="text-xl font-bold">Research Information</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="mb-4">

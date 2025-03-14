@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { parseTopic, Topic } from "@/types/topic";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useNavbar } from "@/contexts/NavbarContext";
+import AgencyLogo from "@/components/AgencyLogo";
 
 export default function Topics() {
   const [searchParams] = useSearchParams();
@@ -169,20 +170,25 @@ export default function Topics() {
                 className="cursor-pointer hover:shadow-lg transition-shadow"
                 onClick={() => navigate(`/topics/${encodeURIComponent(topic.topic_number)}/${topic.solicitation_id}`)}
               >
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle>{topic.topic_title}</CardTitle>
-                  <div 
-                    className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      isTopicOpen(topic.topic_closed_date) 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}
-                  >
-                    {isTopicOpen(topic.topic_closed_date) ? 'Open' : 'Closed'}
+                <CardHeader className="flex flex-row items-start justify-between pb-2">
+                  <div>
+                    <CardTitle>{topic.topic_title}</CardTitle>
+                    <CardDescription className="mt-2">Topic #{topic.topic_number}</CardDescription>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <AgencyLogo agency={topic.branch} size="md" />
+                    <div 
+                      className={`px-2 py-1 mt-2 text-xs font-medium rounded-full ${
+                        isTopicOpen(topic.topic_closed_date) 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {isTopicOpen(topic.topic_closed_date) ? 'Open' : 'Closed'}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p><strong>Topic Number:</strong> {topic.topic_number}</p>
                   {topic.branch && <p><strong>Branch:</strong> {topic.branch}</p>}
                   <p><strong>Open Date:</strong> {topic.topic_open_date}</p>
                   <p><strong>Close Date:</strong> {topic.topic_closed_date || 'Not specified'}</p>

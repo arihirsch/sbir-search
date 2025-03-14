@@ -153,7 +153,7 @@ export default function Home() {
                       <CardHeader className="flex flex-row items-start justify-between">
                         <div>
                           <CardTitle>{topic.topic_title}</CardTitle>
-                          <CardDescription>Topic #{topic.topic_number}</CardDescription>
+                          <CardDescription className="mt-2">Topic #{topic.topic_number}</CardDescription>
                         </div>
                         <AgencyLogo agency={topic.branch} size="md" />
                       </CardHeader>
@@ -218,7 +218,7 @@ export default function Home() {
                       <CardHeader className="flex flex-row items-start justify-between">
                         <div>
                           <CardTitle>{award.award_title}</CardTitle>
-                          <CardDescription>Award #{award.award_link}</CardDescription>
+                          <CardDescription className="mt-2">Award #{award.award_link}</CardDescription>
                         </div>
                         <AgencyLogo agency={award.agency} size="md" />
                       </CardHeader>

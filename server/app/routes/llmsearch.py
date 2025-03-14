@@ -35,7 +35,7 @@ def llm_search():
     
     Query parameters:
     - q: The natural language query
-    - limit: Optional maximum number of results (default: 100)
+    - limit: Optional maximum number of results (default: all)
     """
     try:
         # Get query parameters
