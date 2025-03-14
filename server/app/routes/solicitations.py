@@ -139,8 +139,8 @@ def get_all_topics():
     program = request.args.get('program', default=None, type=str)
     agency = request.args.get('agency', default=None, type=str)
     
-    # Format the current date to match the database format (YYYY/MM/DD)
-    current_date = datetime.now().strftime('%Y/%m/%d')
+    # Format the current date to match the database format (YYYY-MM-DD)
+    current_date = datetime.now().strftime('%Y-%m-%d')
     
     # Base query with joins and window function for count
     query = """
