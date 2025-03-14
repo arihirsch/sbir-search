@@ -41,7 +41,7 @@ export default function Awards() {
     
     const urlProgram = searchParams.get("program");
     if (urlProgram && urlProgram !== awardProgramFilter) {
-      setAwardProgramFilter(urlProgram);
+        setAwardProgramFilter(urlProgram);
       setCurrentPage(1); // Reset to first page when filter changes
     }
     

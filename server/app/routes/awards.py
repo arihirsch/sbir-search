@@ -34,26 +34,20 @@ def get_all_awards():
     # Apply program filter
     if program:
         if program.upper() == 'SBIR':
-            query += " AND (program = ? OR program = ?)"
-            params.extend(['SBIR', 'BOTH'])
-        elif program.upper() == 'STTR':
-            query += " AND (program = ? OR program = ?)"
-            params.extend(['STTR', 'BOTH'])
-        elif program.upper() == 'BOTH':
             query += " AND program = ?"
-            params.append('BOTH')
+            params.append('SBIR')
+        elif program.upper() == 'STTR':
+            query += " AND program = ?"
+            params.append('STTR')
     
     # Apply phase filter
     if phase:
         if phase == 'Phase I':
-            query += " AND (phase = ? OR phase = ?)"
-            params.extend(['Phase I', 'BOTH'])
-        elif phase == 'Phase II':
-            query += " AND (phase = ? OR phase = ?)"
-            params.extend(['Phase II', 'BOTH'])
-        elif phase.upper() == 'BOTH':
             query += " AND phase = ?"
-            params.append('BOTH')
+            params.append('Phase I')
+        elif phase == 'Phase II':
+            query += " AND phase = ?"
+            params.append('Phase II')
     
     # Apply year filter
     if year:

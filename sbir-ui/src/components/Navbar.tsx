@@ -283,7 +283,6 @@ export default function Navbar() {
                   <SelectContent className="bg-white">
                     <SelectItem value="sbir">SBIR</SelectItem>
                     <SelectItem value="sttr">STTR</SelectItem>
-                    <SelectItem value="both">Both</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -340,7 +339,6 @@ export default function Navbar() {
                   <SelectContent className="bg-white">
                     <SelectItem value="Phase I">Phase I</SelectItem>
                     <SelectItem value="Phase II">Phase II</SelectItem>
-                    <SelectItem value="BOTH">Both</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -354,7 +352,6 @@ export default function Navbar() {
                   <SelectContent className="bg-white">
                     <SelectItem value="SBIR">SBIR</SelectItem>
                     <SelectItem value="STTR">STTR</SelectItem>
-                    <SelectItem value="BOTH">Both</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
