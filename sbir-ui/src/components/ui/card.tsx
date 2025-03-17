@@ -15,7 +15,7 @@ function Card({ className, href, linkProps, ...props }: CardProps) {
       data-slot="card"
       to={href}
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border-gray py-6 shadow-sm",
         href && "cursor-pointer no-underline text-inherit",
         className
       )}
