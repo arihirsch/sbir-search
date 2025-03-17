@@ -124,8 +124,8 @@ export default function SearchResults() {
         return (
           <Card 
             key={`topic-${topic.topic_number}`}
-            className="cursor-pointer hover:shadow-lg transition-shadow"
-            onClick={() => navigate(`/topics/${encodeURIComponent(topic.topic_number)}/${topic.solicitation_id}`)}
+            className="hover:shadow-lg transition-shadow"
+            href={`/topics/${encodeURIComponent(topic.topic_number)}/${topic.solicitation_id}`}
           >
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -183,8 +183,8 @@ export default function SearchResults() {
         return (
           <Card 
             key={`award-${award.award_link}`}
-            className="cursor-pointer hover:shadow-lg transition-shadow"
-            onClick={() => navigate(`/awards/${award.award_link}`)}
+            className="hover:shadow-lg transition-shadow"
+            href={`/awards/${award.award_link}`}
           >
             <CardHeader>
               <div className="text-sm text-purple-600 font-medium mb-1">Award</div>
@@ -231,8 +231,8 @@ export default function SearchResults() {
         return (
           <Card 
             key={`company-${company.firm_nid}`}
-            className="cursor-pointer hover:shadow-lg transition-shadow"
-            onClick={() => navigate(`/companies/${company.firm_nid}`)}
+            className="hover:shadow-lg transition-shadow"
+            href={`/companies/${company.firm_nid}`}
           >
             <CardHeader>
               <div className="text-sm text-green-600 font-medium mb-1">Company</div>

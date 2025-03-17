@@ -177,8 +177,8 @@ export default function Awards() {
           data.map((award) => (
             <Card 
               key={award.award_link}
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate(`/awards/${award.award_link}`)}
+              className="hover:shadow-lg transition-shadow"
+              href={`/awards/${award.award_link}`}
             >
               <CardHeader>
                 <CardTitle>{award.award_title}</CardTitle>

@@ -147,8 +147,8 @@ export default function Home() {
                   {featuredTopics.map(topic => (
                     <Card 
                       key={topic.topic_number}
-                      className="cursor-pointer hover:shadow-lg transition-shadow"
-                      onClick={() => navigate(`/topics/${encodeURIComponent(topic.topic_number)}/${topic.solicitation_id}`)}
+                      className="hover:shadow-lg transition-shadow"
+                      href={`/topics/${encodeURIComponent(topic.topic_number)}/${topic.solicitation_id}`}
                     >
                       <CardHeader className="flex flex-row items-start justify-between">
                         <div>
@@ -212,8 +212,8 @@ export default function Home() {
                   {featuredAwards.map(award => (
                     <Card 
                       key={award.award_link}
-                      className="cursor-pointer hover:shadow-lg transition-shadow"
-                      onClick={() => navigate(`/awards/${award.award_link}`)}
+                      className="hover:shadow-lg transition-shadow"
+                      href={`/awards/${award.award_link}`}
                     >
                       <CardHeader className="flex flex-row items-start justify-between">
                         <div>
@@ -273,8 +273,8 @@ export default function Home() {
                   {featuredCompanies.map(company => (
                     <Card 
                       key={company.firm_nid}
-                      className="cursor-pointer hover:shadow-lg transition-shadow"
-                      onClick={() => navigate(`/companies/${company.firm_nid}`)}
+                      className="hover:shadow-lg transition-shadow"
+                      href={`/companies/${company.firm_nid}`}
                     >
                       <CardHeader>
                         <CardTitle>{company.company_name}</CardTitle>

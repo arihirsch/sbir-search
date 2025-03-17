@@ -167,8 +167,8 @@ export default function Topics() {
             data.map(topic => (
               <Card 
                 key={topic.topic_number}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => navigate(`/topics/${encodeURIComponent(topic.topic_number)}/${topic.solicitation_id}`)}
+                className="hover:shadow-lg transition-shadow"
+                href={`/topics/${encodeURIComponent(topic.topic_number)}/${topic.solicitation_id}`}
               >
                 <CardHeader className="flex flex-row items-start justify-between pb-2">
                   <div>

@@ -80,8 +80,8 @@ export default function Companies() {
           data.map((company) => (
             <Card 
               key={company.firm_nid}
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate(`/companies/${company.firm_nid}`)}
+              className="hover:shadow-lg transition-shadow"
+              href={`/companies/${company.firm_nid}`}
             >
               <CardHeader>
                 <CardTitle>{company.company_name}</CardTitle>
@@ -103,6 +103,7 @@ export default function Companies() {
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       {company.company_url}
                     </a>

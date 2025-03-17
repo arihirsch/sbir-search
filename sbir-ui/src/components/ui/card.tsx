@@ -1,15 +1,25 @@
 import * as React from "react"
-
+import { Link } from "react-router-dom"
 import { cn } from "@/lib/utils"
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+interface CardProps extends React.ComponentProps<"div"> {
+  href?: string;
+  linkProps?: React.AnchorHTMLAttributes<HTMLAnchorElement>;
+}
+
+function Card({ className, href, linkProps, ...props }: CardProps) {
+  const Comp = href ? Link : "div";
+  
   return (
-    <div
+    <Comp
       data-slot="card"
+      to={href}
       className={cn(
         "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+        href && "cursor-pointer no-underline text-inherit",
         className
       )}
+      {...(href ? { ...linkProps, style: { color: 'inherit', textDecoration: 'none' } } : {})}
       {...props}
     />
   )
