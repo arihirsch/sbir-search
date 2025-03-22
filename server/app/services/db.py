@@ -1,32 +1,70 @@
-import sqlite3
+import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from flask import g
+from supabase import create_client, Client
 
-SOLICITATIONS_DB = "server/solicitations.db"
-AWARDS_DB = "server/awards.db"
-COMPANIES_DB = "server/companies.db"
+def get_supabase_client() -> Client:
+    """Get or create a Supabase client."""
+    if not hasattr(g, 'supabase'):
+        url = os.environ.get("SUPABASE_URL")
+        key = os.environ.get("SUPABASE_KEY")
+        if not url or not key:
+            raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set in environment variables")
+        g.supabase = create_client(url, key)
+    return g.supabase
 
 def get_db_connection(db_name="solicitations"):
+    """
+    Get a PostgreSQL connection to the Supabase database.
+    
+    Args:
+        db_name: Used to determine which schema/table to use (not separate databases in Supabase)
+    
+    Returns:
+        A PostgreSQL connection object
+    """
     db_key = f'db_{db_name}'
     
     if not hasattr(g, db_key):
-        if db_name == "solicitations":
-            path = SOLICITATIONS_DB
-        elif db_name == "awards":
-            path = AWARDS_DB
-        elif db_name == "companies":
-            path = COMPANIES_DB
-        else:
-            raise ValueError(f"Unknown database: {db_name}")
-            
-        conn = sqlite3.connect(path)
-        conn.row_factory = sqlite3.Row
+        # Get connection parameters from environment variables
+        db_host = os.environ.get("SUPABASE_DB_HOST")
+        db_name_env = os.environ.get("SUPABASE_DB_NAME")
+        db_user = os.environ.get("SUPABASE_DB_USER")
+        db_password = os.environ.get("SUPABASE_DB_PASSWORD")
+        db_port = os.environ.get("SUPABASE_DB_PORT", "5432")
+        
+        # Debug prints
+        print(f"DB Host: {db_host}")
+        print(f"DB Name: {db_name_env}")
+        print(f"DB User: {db_user}")
+        print(f"DB Port: {db_port}")
+        
+        if not all([db_host, db_name_env, db_user, db_password]):
+            raise ValueError("Database connection parameters must be set in environment variables")
+        
+        # Connect to PostgreSQL
+        conn = psycopg2.connect(
+            host=db_host,
+            database=db_name_env,  # Use the environment variable value
+            user=db_user,
+            password=db_password,
+            port=db_port,
+            cursor_factory=RealDictCursor  # This makes cursor return dictionaries
+        )
+        
         setattr(g, db_key, conn)
     
     return getattr(g, db_key)
 
 def close_db(e=None):
-    for db_key in list(g.keys()):
+    """Close database connections."""
+    for db_key in list(vars(g).keys()):
         if db_key.startswith('db_'):
             db = g.pop(db_key, None)
             if db is not None:
-                db.close()
+                db.close()    
+    # Also close Supabase client if it exists
+    if hasattr(g, 'supabase'):
+        # Supabase client doesn't need explicit closing
+        g.pop('supabase', None)

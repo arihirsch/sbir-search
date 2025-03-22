@@ -24,5 +24,9 @@ def create_app():
     app.register_blueprint(awards.bp)
     app.register_blueprint(companies.bp)
     app.register_blueprint(llmsearch.bp)
+    
+    # Register database close function
+    from app.services.db import close_db
+    app.teardown_appcontext(close_db)
 
     return app 
