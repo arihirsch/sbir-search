@@ -1,33 +1,45 @@
 from flask import Blueprint, jsonify, request
-from app.services.db import get_db_connection
+from app.services.db import get_db_connection, get_db_cursor
 
 bp = Blueprint('companies', __name__, url_prefix='/api')
 
 @bp.route('/companies', methods=['GET'])
 def get_all_companies():
-    conn = get_db_connection(db_name="companies")
-    cursor = conn.cursor()
+    cursor = get_db_cursor("db3")  # Use db3 schema for companies
     
     limit = request.args.get('limit', default=50, type=int)
     offset = int(request.args.get('offset', default=0))
     
-    query = "SELECT * FROM companies"
+    # Use window function to get total count in the same query
+    query = """
+        SELECT *, COUNT(*) OVER() as total_count
+        FROM companies
+    """
     params = []
     
     # Only add LIMIT if specified
     if limit is not None:
-        query += " LIMIT ? OFFSET ?"
+        query += " LIMIT %s OFFSET %s"
         params.extend([limit, offset])
     elif offset > 0:
         # If offset is provided without limit, use a large limit
-        query += " LIMIT 1000000 OFFSET ?"
+        query += " LIMIT 1000000 OFFSET %s"
         params.append(offset)
     
     cursor.execute(query, params)
-    companies = [dict(row) for row in cursor.fetchall()]
+    results = cursor.fetchall()
     
-    cursor.execute("SELECT COUNT(*) FROM companies")
-    total_count = cursor.fetchone()[0]
+    # Extract the total count from the first row (if results exist)
+    total_count = results[0]['total_count'] if results else 0
+    
+    # Convert rows to dictionaries and remove the total_count field
+    companies = []
+    for row in results:
+        company_dict = dict(row)
+        # Remove the total_count field from each row
+        if 'total_count' in company_dict:
+            del company_dict['total_count']
+        companies.append(company_dict)
     
     return jsonify({
         'data': companies,
@@ -38,8 +50,7 @@ def get_all_companies():
 
 @bp.route('/companies/search', methods=['GET'])
 def search():
-    conn = get_db_connection(db_name="companies")
-    cursor = conn.cursor()
+    cursor = get_db_cursor("db3")  # Use db3 schema for companies
     
     search_term = request.args.get('q', default='', type=str)
     limit = request.args.get('limit', default=None, type=int)
@@ -48,44 +59,54 @@ def search():
     if not search_term:
         return jsonify({'error': 'No search term provided'}), 400
     
-    # Search across multiple fields
+    # Search across multiple fields with window function for count
     query = """
-        SELECT * FROM companies 
-        WHERE company_name LIKE ? OR
-            city LIKE ? OR
-            state LIKE ?
+        SELECT *, COUNT(*) OVER() as total_count
+        FROM companies 
+        WHERE company_name LIKE %s OR
+            city LIKE %s OR
+            state LIKE %s
     """
     params = [f'%{search_term}%'] * 3
     
     # Only add LIMIT if specified
     if limit is not None:
-        query += " LIMIT ? OFFSET ?"
+        query += " LIMIT %s OFFSET %s"
         params.extend([limit, offset])
     elif offset > 0:
         # If offset is provided without limit, use a large limit
-        query += " LIMIT 1000000 OFFSET ?"
+        query += " LIMIT 1000000 OFFSET %s"
         params.append(offset)
     
     cursor.execute(query, params)
-    results = [dict(row) for row in cursor.fetchall()]
-    conn.close()
+    results = cursor.fetchall()
+    
+    # Extract the total count from the first row (if results exist)
+    total_count = results[0]['total_count'] if results else 0
+    
+    # Convert rows to dictionaries and remove the total_count field
+    companies = []
+    for row in results:
+        company_dict = dict(row)
+        # Remove the total_count field from each row
+        if 'total_count' in company_dict:
+            del company_dict['total_count']
+        companies.append(company_dict)
     
     return jsonify({
-        'data': results,
+        'data': companies,
+        'total': total_count,
         'limit': limit,
         'offset': offset
     })
 
 @bp.route('/companies/<int:firm_nid>', methods=['GET'])
 def get_company(firm_nid):
-    conn = get_db_connection(db_name="companies")
-    cursor = conn.cursor()
-    
-    cursor.execute("SELECT * FROM companies WHERE firm_nid = ?", [firm_nid])
+    cursor = get_db_cursor("db3")  # Use db3 schema for companies
+    cursor.execute("SELECT * FROM companies WHERE firm_nid = %s", [firm_nid])
     company = cursor.fetchone()
     
     if company is None:
         return jsonify({'error': 'Company not found'}), 404
         
-    conn.close()
     return jsonify({'data': dict(company)})

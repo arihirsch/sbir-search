@@ -1,12 +1,11 @@
 from flask import Blueprint, jsonify, request
-from app.services.db import get_db_connection
+from app.services.db import get_db_connection, get_db_cursor
 
 bp = Blueprint('awards', __name__, url_prefix='/api')
 
 @bp.route('/awards', methods=['GET'])
 def get_all_awards():
-    conn = get_db_connection(db_name="awards")
-    cursor = conn.cursor()
+    cursor = get_db_cursor("db2")  # Use db2 schema for awards
     
     # Get query parameters
     limit = request.args.get('limit', default=50, type=int)
@@ -28,39 +27,39 @@ def get_all_awards():
     
     # Apply agency filter
     if agency:
-        query += " AND agency = ?"
+        query += " AND agency = %s"
         params.append(agency)
     
     # Apply program filter
     if program:
         if program.upper() == 'SBIR':
-            query += " AND program = ?"
+            query += " AND program = %s"
             params.append('SBIR')
         elif program.upper() == 'STTR':
-            query += " AND program = ?"
+            query += " AND program = %s"
             params.append('STTR')
     
     # Apply phase filter
     if phase:
         if phase == 'Phase I':
-            query += " AND phase = ?"
+            query += " AND phase = %s"
             params.append('Phase I')
         elif phase == 'Phase II':
-            query += " AND phase = ?"
+            query += " AND phase = %s"
             params.append('Phase II')
     
     # Apply year filter
     if year:
-        query += " AND award_year = ?"
+        query += " AND award_year = %s"
         params.append(int(year))
     
     # Apply amount range filter
     if min_amount is not None:
-        query += " AND award_amount >= ?"
+        query += " AND award_amount >= %s"
         params.append(min_amount)
     
     if max_amount is not None:
-        query += " AND award_amount <= ?"
+        query += " AND award_amount <= %s"
         params.append(max_amount)
     
     # Add ordering
@@ -68,11 +67,11 @@ def get_all_awards():
     
     # Only add LIMIT if specified
     if limit is not None:
-        query += " LIMIT ? OFFSET ?"
+        query += " LIMIT %s OFFSET %s"
         params.extend([limit, offset])
     elif offset > 0:
         # If offset is provided without limit, use a large limit
-        query += " LIMIT 1000000 OFFSET ?"
+        query += " LIMIT 1000000 OFFSET %s"
         params.append(offset)
     
     cursor.execute(query, params)
@@ -90,8 +89,6 @@ def get_all_awards():
             del award_dict['total_count']
         awards.append(award_dict)
     
-    conn.close()
-    
     return jsonify({
         'data': awards,
         'total': total_count,
@@ -101,8 +98,7 @@ def get_all_awards():
 
 @bp.route('/awards/search', methods=['GET'])
 def search():
-    conn = get_db_connection(db_name="awards")
-    cursor = conn.cursor()
+    cursor = get_db_cursor("db2")  # Use db2 schema for awards
     
     search_term = request.args.get('q', default='', type=str)
     limit = request.args.get('limit', default=None, type=int)
@@ -114,25 +110,24 @@ def search():
     # Search across multiple fields using correct column names from schema
     query = """
         SELECT * FROM awards 
-        WHERE firm LIKE ? OR
-            award_title LIKE ? OR
-            agency LIKE ? OR
-            abstract LIKE ?
+        WHERE firm LIKE %s OR
+            award_title LIKE %s OR
+            agency LIKE %s OR
+            abstract LIKE %s
     """
     params = [f'%{search_term}%'] * 4
     
     # Only add LIMIT if specified
     if limit is not None:
-        query += " LIMIT ? OFFSET ?"
+        query += " LIMIT %s OFFSET %s"
         params.extend([limit, offset])
     elif offset > 0:
         # If offset is provided without limit, use a large limit
-        query += " LIMIT 1000000 OFFSET ?"
+        query += " LIMIT 1000000 OFFSET %s"
         params.append(offset)
     
     cursor.execute(query, params)
     results = [dict(row) for row in cursor.fetchall()]
-    conn.close()
     
     return jsonify({
         'data': results,
@@ -142,22 +137,18 @@ def search():
 
 @bp.route('/awards/<int:award_link>', methods=['GET'])
 def get_award(award_link):
-    conn = get_db_connection(db_name="awards")
-    cursor = conn.cursor()
+    cursor = get_db_cursor("db2")  # Use db2 schema for awards
     
     # Get the award with company info
     cursor.execute("""
         SELECT * FROM awards
-        WHERE award_link = ?
+        WHERE award_link = %s
     """, [award_link])
     
     row = cursor.fetchone()
     award = dict(row) if row else None
     
     if not award:
-        conn.close()
         return jsonify({'error': 'Award not found'}), 404
-    
-    conn.close()
     
     return jsonify(award)  

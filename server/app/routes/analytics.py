@@ -1,12 +1,11 @@
 from flask import Blueprint, jsonify, request
-from app.services.db import get_db_connection
+from app.services.db import get_db_connection, get_db_cursor
 
 bp = Blueprint('analytics', __name__, url_prefix='/api')
 
 @bp.route('/stats', methods=['GET'])
 def get_stats():
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = get_db_cursor("db1")  # Use db1 schema for solicitations
     
     # Get counts by agency
     cursor.execute("""
@@ -27,15 +26,13 @@ def get_stats():
     total_subtopics = cursor.fetchone()[0]
     
     # Get awards stats
-    awards_conn = get_db_connection("awards")
-    awards_cursor = awards_conn.cursor()
+    awards_cursor = get_db_cursor("db2")  # Use db2 schema for awards
     
     awards_cursor.execute("SELECT COUNT(*) FROM awards")
     total_awards = awards_cursor.fetchone()[0]
     
     # Get companies stats
-    companies_conn = get_db_connection("companies")
-    companies_cursor = companies_conn.cursor()
+    companies_cursor = get_db_cursor("db3")  # Use db3 schema for companies
     
     companies_cursor.execute("SELECT COUNT(*) FROM companies")
     total_companies = companies_cursor.fetchone()[0]
@@ -47,28 +44,28 @@ def get_stats():
         cursor.execute("""
             SELECT COUNT(*) FROM solicitations s
             LEFT JOIN topics t ON s.solicitation_id = t.solicitation_id
-            WHERE s.solicitation_title LIKE ? OR
-                s.solicitation_number LIKE ? OR
-                t.topic_title LIKE ? OR
-                t.topic_description LIKE ?
+            WHERE s.solicitation_title LIKE %s OR
+                s.solicitation_number LIKE %s OR
+                t.topic_title LIKE %s OR
+                t.topic_description LIKE %s
         """, [f'%{search_term}%'] * 4)
         matching_solicitations = cursor.fetchone()[0]
         
         # Count matching awards
         awards_cursor.execute("""
             SELECT COUNT(*) FROM awards
-            WHERE firm LIKE ? OR
-                award_title LIKE ? OR
-                abstract LIKE ?
+            WHERE firm LIKE %s OR
+                award_title LIKE %s OR
+                abstract LIKE %s
         """, [f'%{search_term}%'] * 3)
         matching_awards = awards_cursor.fetchone()[0]
         
         # Count matching companies
         companies_cursor.execute("""
             SELECT COUNT(*) FROM companies
-            WHERE company_name LIKE ? OR
-                company_description LIKE ? OR
-                company_address LIKE ?
+            WHERE company_name LIKE %s OR
+                company_description LIKE %s OR
+                company_address LIKE %s
         """, [f'%{search_term}%'] * 3)
         matching_companies = companies_cursor.fetchone()[0]
         
@@ -85,8 +82,6 @@ def get_stats():
                 'companies': matching_companies
             }
         })
-    
-    conn.close()
     
     return jsonify({
         'total_solicitations': total_solicitations,

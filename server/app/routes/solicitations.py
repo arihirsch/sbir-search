@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from app.services.db import get_db_connection
+from app.services.db import get_db_connection, get_db_cursor
 from datetime import datetime
 import urllib.parse
 
@@ -7,8 +7,7 @@ bp = Blueprint('solicitations', __name__, url_prefix='/api')
 
 @bp.route('/solicitations', methods=['GET'])
 def get_all_solicitations():
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = get_db_cursor("db1")  # Use db1 schema for solicitations
     
     # Get query parameters
     limit = request.args.get('limit', default=None, type=int)
@@ -19,15 +18,17 @@ def get_all_solicitations():
     params = []
     
     if agency:
-        query += " WHERE agency = ?"
+        query += " WHERE agency = %s"
         params.append(agency)
     
     # Only add LIMIT if specified
     if limit is not None:
-        query += f" LIMIT {limit} OFFSET {offset}"
+        query += " LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
     elif offset > 0:
         # If offset is provided without limit, use a large limit
-        query += f" LIMIT 1000000 OFFSET {offset}"
+        query += " LIMIT 1000000 OFFSET %s"
+        params.append(offset)
     
     cursor.execute(query, params)
     solicitations = [dict(row) for row in cursor.fetchall()]
@@ -35,13 +36,11 @@ def get_all_solicitations():
     # Get total count
     count_query = "SELECT COUNT(*) FROM solicitations"
     if agency:
-        count_query += " WHERE agency = ?"
+        count_query += " WHERE agency = %s"
         cursor.execute(count_query, [agency])
     else:
         cursor.execute(count_query)
     total_count = cursor.fetchone()[0]
-    
-    conn.close()
     
     return jsonify({
         'data': solicitations,
@@ -52,8 +51,7 @@ def get_all_solicitations():
 
 @bp.route('/solicitations/search', methods=['GET'])
 def search_solicitations():
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = get_db_cursor("db1")  # Use db1 schema for solicitations
     
     search_term = request.args.get('q', default='', type=str)
     limit = request.args.get('limit', default=None, type=int)
@@ -68,25 +66,24 @@ def search_solicitations():
         FROM solicitations s
         LEFT JOIN topics t ON s.solicitation_id = t.solicitation_id
         WHERE 
-            s.solicitation_title LIKE ? OR
-            s.solicitation_number LIKE ? OR
-            t.topic_title LIKE ? OR
-            t.topic_description LIKE ?
+            s.solicitation_title LIKE %s OR
+            s.solicitation_number LIKE %s OR
+            t.topic_title LIKE %s OR
+            t.topic_description LIKE %s
     """
     params = [f'%{search_term}%'] * 4
     
     # Only add LIMIT if specified
     if limit is not None:
-        query += " LIMIT ? OFFSET ?"
+        query += " LIMIT %s OFFSET %s"
         params.extend([limit, offset])
     elif offset > 0:
         # If offset is provided without limit, use a large limit
-        query += " LIMIT 1000000 OFFSET ?"
+        query += " LIMIT 1000000 OFFSET %s"
         params.append(offset)
     
     cursor.execute(query, params)
     results = [dict(row) for row in cursor.fetchall()]
-    conn.close()
     
     return jsonify({
         'data': results,
@@ -96,40 +93,35 @@ def search_solicitations():
 
 @bp.route('/solicitations/<int:solicitation_id>', methods=['GET'])
 def get_solicitation(solicitation_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = get_db_cursor("db1")  # Use db1 schema for solicitations
     
     # Get the solicitation
     cursor.execute("""
         SELECT * FROM solicitations 
-        WHERE solicitation_id = ?
+        WHERE solicitation_id = %s
     """, [solicitation_id])
     
     row = cursor.fetchone()
     solicitation = dict(row) if row else None
     
     if not solicitation:
-        conn.close()
         return jsonify({'error': 'Solicitation not found'}), 404
     
     # Get associated topics
     cursor.execute("""
         SELECT * FROM topics 
-        WHERE solicitation_id = ?
+        WHERE solicitation_id = %s
     """, [solicitation_id])
     topics = [dict(row) for row in cursor.fetchall()]
     
     # Add topics to the response
     solicitation['topics'] = topics
     
-    conn.close()
-    
     return jsonify(solicitation)
 
 @bp.route('/topics', methods=['GET'])
 def get_all_topics():
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = get_db_cursor("db1")  # Use db1 schema for topics
     
     # Get query parameters
     limit = request.args.get('limit', default=50, type=int)
@@ -154,38 +146,38 @@ def get_all_topics():
     
     # Apply status filter
     if status == 'open':
-        query += """ AND (t.topic_open_date <= ? 
-                    AND (t.topic_closed_date >= ? OR t.topic_closed_date IS NULL))"""
+        query += """ AND (t.topic_open_date <= %s 
+                    AND (t.topic_closed_date >= %s OR t.topic_closed_date IS NULL))"""
         params.extend([current_date, current_date])
     elif status == 'closed':
-        query += " AND t.topic_closed_date < ?"
+        query += " AND t.topic_closed_date < %s"
         params.append(current_date)
     
     # Apply phase filter
     if phase == 'phase1':
-        query += " AND (s.phase = ? OR s.phase = ?)"
+        query += " AND (s.phase = %s OR s.phase = %s)"
         params.extend(['Phase I', 'BOTH'])
     elif phase == 'phase2':
-        query += " AND (s.phase = ? OR s.phase = ?)"
+        query += " AND (s.phase = %s OR s.phase = %s)"
         params.extend(['Phase II', 'BOTH'])
     elif phase == 'both':
-        query += " AND s.phase = ?"
+        query += " AND s.phase = %s"
         params.append('BOTH')
     
     # Apply program filter
     if program == 'sbir':
-        query += " AND (s.program = ? OR s.program = ?)"
+        query += " AND (s.program = %s OR s.program = %s)"
         params.extend(['SBIR', 'BOTH'])
     elif program == 'sttr':
-        query += " AND (s.program = ? OR s.program = ?)"
+        query += " AND (s.program = %s OR s.program = %s)"
         params.extend(['STTR', 'BOTH'])
     elif program == 'both':
-        query += " AND s.program = ?"
+        query += " AND s.program = %s"
         params.append('BOTH')
     
     # Apply agency filter
     if agency:
-        query += " AND s.agency = ?"
+        query += " AND s.agency = %s"
         params.append(agency)
     
     # Add ordering
@@ -193,11 +185,11 @@ def get_all_topics():
     
     # Only add LIMIT if specified
     if limit is not None:
-        query += " LIMIT ? OFFSET ?"
+        query += " LIMIT %s OFFSET %s"
         params.extend([limit, offset])
     elif offset > 0:
         # If offset is provided without limit, use a large limit
-        query += " LIMIT 1000000 OFFSET ?"
+        query += " LIMIT 1000000 OFFSET %s"
         params.append(offset)
     
     cursor.execute(query, params)
@@ -215,8 +207,6 @@ def get_all_topics():
             del topic_dict['total_count']
         topics.append(topic_dict)
     
-    conn.close()
-    
     return jsonify({
         'data': topics,
         'total': total_count,
@@ -226,42 +216,37 @@ def get_all_topics():
 
 @bp.route('/solicitations/<int:solicitation_id>/topics', methods=['GET'])
 def get_topics_from_solicitation(solicitation_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = get_db_cursor("db1")  # Use db1 schema for topics
     
     cursor.execute("""
         SELECT * FROM topics 
-        WHERE solicitation_id = ?
+        WHERE solicitation_id = %s
     """, [solicitation_id])
     
     topics = [dict(row) for row in cursor.fetchall()]
-    conn.close()
     
     return jsonify(topics)
 
 #use both topic number and solicitation id to get subtopics to ensure we get the correct subtopics
 @bp.route('/subtopics/<path:topic_number>/<int:solicitation_id>', methods=['GET'])
 def get_subtopics(topic_number, solicitation_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = get_db_cursor("db1")  # Use db1 schema for subtopics
     
     # Decode the URL-encoded topic number
     decoded_topic_number = urllib.parse.unquote(topic_number)
     
     cursor.execute("""
         SELECT * FROM subtopics 
-        WHERE topic_number = ? AND solicitation_id = ?
+        WHERE topic_number = %s AND solicitation_id = %s
     """, [decoded_topic_number, solicitation_id])
     
     subtopics = [dict(row) for row in cursor.fetchall()]
-    conn.close()
     
     return jsonify(subtopics)
 
 @bp.route('/topics/search', methods=['GET'])
 def search_topics():
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = get_db_cursor("db1")  # Use db1 schema for topics
     
     search_term = request.args.get('q', default='', type=str)
     limit = request.args.get('limit', default=None, type=int)
@@ -276,21 +261,21 @@ def search_topics():
         FROM topics t
         LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
         WHERE 
-            t.topic_title LIKE ? OR
-            t.topic_description LIKE ? OR
-            t.topic_number LIKE ? OR
-            t.branch LIKE ?
+            t.topic_title LIKE %s OR
+            t.topic_description LIKE %s OR
+            t.topic_number LIKE %s OR
+            t.branch LIKE %s
         ORDER BY t.topic_open_date DESC
     """
     params = [f'%{search_term}%'] * 4
     
     # Only add LIMIT if specified
     if limit is not None:
-        query += " LIMIT ? OFFSET ?"
+        query += " LIMIT %s OFFSET %s"
         params.extend([limit, offset])
     elif offset > 0:
         # If offset is provided without limit, use a large limit
-        query += " LIMIT 1000000 OFFSET ?"
+        query += " LIMIT 1000000 OFFSET %s"
         params.append(offset)
     
     cursor.execute(query, params)
@@ -301,15 +286,13 @@ def search_topics():
         SELECT COUNT(*) 
         FROM topics t
         WHERE 
-            t.topic_title LIKE ? OR
-            t.topic_description LIKE ? OR
-            t.topic_number LIKE ? OR
-            t.branch LIKE ?
+            t.topic_title LIKE %s OR
+            t.topic_description LIKE %s OR
+            t.topic_number LIKE %s OR
+            t.branch LIKE %s
     """, [f'%{search_term}%'] * 4)
     
     total_count = cursor.fetchone()[0]
-    
-    conn.close()
     
     return jsonify({
         'data': results,
@@ -320,8 +303,7 @@ def search_topics():
 
 @bp.route('/topics/<path:topic_number>/<int:solicitation_id>', methods=['GET'])
 def get_topic(topic_number, solicitation_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = get_db_cursor("db1")  # Use db1 schema for topics
     
     try:
         # Decode the URL-encoded topic number
@@ -332,7 +314,7 @@ def get_topic(topic_number, solicitation_id):
             SELECT t.*, s.agency, s.solicitation_number, s.solicitation_title
             FROM topics t
             LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
-            WHERE t.topic_number = ? AND t.solicitation_id = ?
+            WHERE t.topic_number = %s AND t.solicitation_id = %s
         """, [decoded_topic_number, solicitation_id])
         
         row = cursor.fetchone()
@@ -349,7 +331,7 @@ def get_topic(topic_number, solicitation_id):
                 subtopic_title,
                 subtopic_description
             FROM subtopics 
-            WHERE topic_number = ? AND solicitation_id = ?
+            WHERE topic_number = %s AND solicitation_id = %s
             ORDER BY subtopic_number
         """, [decoded_topic_number, solicitation_id])
         
@@ -360,5 +342,3 @@ def get_topic(topic_number, solicitation_id):
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    finally:
-        conn.close()

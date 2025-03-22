@@ -34,12 +34,6 @@ def get_db_connection(db_name="solicitations"):
         db_password = os.environ.get("SUPABASE_DB_PASSWORD")
         db_port = os.environ.get("SUPABASE_DB_PORT", "5432")
         
-        # Debug prints
-        print(f"DB Host: {db_host}")
-        print(f"DB Name: {db_name_env}")
-        print(f"DB User: {db_user}")
-        print(f"DB Port: {db_port}")
-        
         if not all([db_host, db_name_env, db_user, db_password]):
             raise ValueError("Database connection parameters must be set in environment variables")
         
@@ -56,6 +50,24 @@ def get_db_connection(db_name="solicitations"):
         setattr(g, db_key, conn)
     
     return getattr(g, db_key)
+
+def get_db_cursor(db_name="db1"):
+    """
+    Get a cursor for the specified schema in PostgreSQL.
+    
+    Args:
+        db_name: The schema name (db1, db2, db3)
+    
+    Returns:
+        A cursor object with the search path set to the specified schema
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Set the search path to the specified schema
+    cursor.execute(f"SET search_path TO {db_name}")
+    
+    return cursor
 
 def close_db(e=None):
     """Close database connections."""
