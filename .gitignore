@@ -23,6 +23,11 @@ sbir-ui/dist
 sbir-ui/dist-ssr
 sbir-ui/*.local
 
+server/.vercel
+server/solicitations.db
+server/awards.db
+server/companies.db
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
