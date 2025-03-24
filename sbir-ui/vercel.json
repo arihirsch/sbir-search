@@ -4,5 +4,9 @@
             "source": "/(.*)",
             "destination": "/index.html"
         }
-    ]
+    ],
+    "buildCommand": "yarn build",
+    "devCommand": "yarn dev",
+    "framework": "vite",
+    "outputDirectory": "dist"
 } 

@@ -13,7 +13,9 @@ import { useState } from 'react';
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [
+    //searchParams, 
+    setSearchParams] = useSearchParams();
   const { 
     topicFilter, 
     setTopicFilter, 
@@ -42,7 +44,7 @@ export default function Navbar() {
   
   const isTopicsRoute = location.pathname.startsWith('/topics');
   const isAwardsRoute = location.pathname.startsWith('/awards');
-  const isCompaniesRoute = location.pathname.startsWith('/companies');
+  //const isCompaniesRoute = location.pathname.startsWith('/companies');
   
   // Format currency for display
   const formatCurrency = (value: number) => {

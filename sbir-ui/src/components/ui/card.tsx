@@ -2,25 +2,45 @@ import * as React from "react"
 import { Link } from "react-router-dom"
 import { cn } from "@/lib/utils"
 
-interface CardProps extends React.ComponentProps<"div"> {
-  href?: string;
-  linkProps?: React.AnchorHTMLAttributes<HTMLAnchorElement>;
+type BaseCardProps = {
+  className?: string;
+  children?: React.ReactNode;
 }
 
-function Card({ className, href, linkProps, ...props }: CardProps) {
-  const Comp = href ? Link : "div";
-  
+type DivCardProps = BaseCardProps & Omit<React.HTMLAttributes<HTMLDivElement>, keyof BaseCardProps>
+type LinkCardProps = BaseCardProps & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof BaseCardProps> & {
+  href: string;
+}
+
+type CardProps = DivCardProps | LinkCardProps
+
+function Card(props: CardProps) {
+  if ('href' in props) {
+    const { href, className, ...rest } = props
+    return (
+      <Link
+        data-slot="card"
+        to={href}
+        className={cn(
+          "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border-gray py-6 shadow-sm",
+          "cursor-pointer no-underline text-inherit",
+          className
+        )}
+        style={{ color: 'inherit', textDecoration: 'none' }}
+        {...rest}
+      />
+    )
+  }
+
+  const { className, ...rest } = props
   return (
-    <Comp
+    <div
       data-slot="card"
-      to={href}
       className={cn(
         "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border-gray py-6 shadow-sm",
-        href && "cursor-pointer no-underline text-inherit",
         className
       )}
-      {...(href ? { ...linkProps, style: { color: 'inherit', textDecoration: 'none' } } : {})}
-      {...props}
+      {...rest}
     />
   )
 }

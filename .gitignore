@@ -22,6 +22,7 @@ sbir-ui/node_modules
 sbir-ui/dist
 sbir-ui/dist-ssr
 sbir-ui/*.local
+sbir-ui/.vercel
 
 server/.vercel
 server/solicitations.db
