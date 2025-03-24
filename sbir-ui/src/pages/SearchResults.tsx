@@ -64,17 +64,17 @@ export default function SearchResults() {
       if (data.results && Array.isArray(data.results)) {
         data.results.forEach((item: any) => {
           try {
-            if (data.database === 'solicitations' || data.database === 'topics') {
+            if (data.database === 'db1') {
               processedResults.push({
                 type: 'topic',
                 data: parseTopic(item)
               });
-            } else if (data.database === 'awards') {
+            } else if (data.database === 'db2') {
               processedResults.push({
                 type: 'award',
                 data: parseAward(item)
               });
-            } else if (data.database === 'companies') {
+            } else if (data.database === 'db3') {
               processedResults.push({
                 type: 'company',
                 data: parseCompany(item)
