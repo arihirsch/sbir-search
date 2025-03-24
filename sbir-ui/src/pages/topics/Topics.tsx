@@ -190,8 +190,8 @@ export default function Topics() {
                 </CardHeader>
                 <CardContent>
                   {topic.branch && <p><strong>Branch:</strong> {topic.branch}</p>}
-                  <p><strong>Open Date:</strong> {topic.topic_open_date}</p>
-                  <p><strong>Close Date:</strong> {topic.topic_closed_date || 'Not specified'}</p>
+                  <p><strong>Open Date:</strong> {topic.topic_open_date ? new Date(topic.topic_open_date).toISOString().split('T')[0] : 'Not specified'}</p>
+                  <p><strong>Close Date:</strong> {topic.topic_closed_date ? new Date(topic.topic_closed_date).toISOString().split('T')[0] : 'Not specified'}</p>
                   
                   <div className="mt-4">
                     <button

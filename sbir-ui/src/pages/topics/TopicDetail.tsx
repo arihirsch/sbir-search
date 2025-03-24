@@ -86,7 +86,7 @@ export default function TopicDetail() {
                         .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
                         .map((date, index) => (
                           <li key={index} className="text-green-600">
-                            {new Date(date).toLocaleDateString()}
+                            {new Date(date).toISOString().split('T')[0]}
                           </li>
                         ))}
                     </ul>
@@ -103,7 +103,7 @@ export default function TopicDetail() {
                         .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
                         .map((date, index) => (
                           <li key={index} className="text-gray-500">
-                            {new Date(date).toLocaleDateString()}
+                            {new Date(date).toISOString().split('T')[0]}
                           </li>
                         ))}
                     </ul>
@@ -139,8 +139,8 @@ export default function TopicDetail() {
         <CardContent>
           <p><strong>Topic Number:</strong> {topic.topic_number}</p>
           <p><strong>Branch:</strong> {topic.branch}</p>
-          <p><strong>Open Date:</strong> {topic.topic_open_date}</p>
-          <p><strong>Close Date:</strong> {topic.topic_closed_date || 'Not specified'}</p>
+          <p><strong>Open Date:</strong> {topic.topic_open_date ? new Date(topic.topic_open_date).toISOString().split('T')[0] : 'Not specified'}</p>
+          <p><strong>Close Date:</strong> {topic.topic_closed_date ? new Date(topic.topic_closed_date).toISOString().split('T')[0] : 'Not specified'}</p>
           <p>
             <strong>SBIR Topic Link:</strong>{' '}
             <a 

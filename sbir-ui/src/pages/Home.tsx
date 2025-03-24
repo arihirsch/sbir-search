@@ -165,7 +165,7 @@ export default function Home() {
                             {isTopicOpen(topic.topic_closed_date) ? 'Open' : 'Closed'}
                           </span>
                         </p>
-                        <p><strong>Close Date:</strong> {topic.topic_closed_date || 'Not specified'}</p>
+                        <p><strong>Close Date:</strong> {topic.topic_closed_date ? new Date(topic.topic_closed_date).toISOString().split('T')[0] : 'Not specified'}</p>
                         
                         <div className="mt-4">
                           <button
@@ -226,7 +226,7 @@ export default function Home() {
                         <p><strong>Agency:</strong> {award.agency}</p>
                         <p><strong>Amount:</strong> ${award.award_amount.toLocaleString()}</p>
                         <p><strong>Phase:</strong> {award.phase}</p>
-                        <p><strong>Award Date:</strong> {award.proposal_award_date}</p>
+                        <p><strong>Award Date:</strong> {award.proposal_award_date ? new Date(award.proposal_award_date).toISOString().split('T')[0] : 'Not specified'}</p>
                         
                         <div className="mt-4">
                           <button

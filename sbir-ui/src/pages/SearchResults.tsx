@@ -150,7 +150,7 @@ export default function SearchResults() {
                 <p><strong>Branch:</strong> {topic.branch}</p>
               </div>
               <p><strong>Topic Number:</strong> {topic.topic_number}</p>
-              <p><strong>Close Date:</strong> {topic.topic_closed_date || 'Not specified'}</p>
+              <p><strong>Close Date:</strong> {topic.topic_closed_date ? new Date(topic.topic_closed_date).toISOString().split('T')[0] : 'Not specified'}</p>
               
               <div className="mt-4">
                 <button
