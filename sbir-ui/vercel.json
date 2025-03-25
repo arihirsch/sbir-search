@@ -2,7 +2,7 @@
     "rewrites": [
         {
             "source": "/api/:path*",
-            "destination": "/api/:path*"
+            "destination": "https://sbir-search-backend.vercel.app/api/:path*"
         }
     ],
     "buildCommand": "yarn build",
