@@ -1,10 +1,10 @@
-import path from "node:path";
+/// <reference types="node" />
+import path from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath } from 'url'
 
-// For __dirname issue, replace with:
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 // https://vite.dev/config/
