@@ -31,7 +31,7 @@ import edLogo from '@/assets/agency-logos/ed.png';
 import iesLogo from '@/assets/agency-logos/ies.png';
 
 import dhsLogo from '@/assets/agency-logos/dhs.png';
-import stLogo from '@/assets/agency-logos/S&T.png';
+import stLogo from '@/assets/agency-logos/st.png';
 import cwmdLogo from '@/assets/agency-logos/cwmd.png';
 import dndoLogo from '@/assets/agency-logos/dndo.png';
 
