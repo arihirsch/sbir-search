@@ -13,6 +13,7 @@ def create_app():
                 "http://localhost:5173",
                 "https://*.vercel.app",
                 "https://sbir-search.vercel.app",
+                "https://sbir-search-vert.vercel.app"
             ],
             "methods": ["GET", "POST", "OPTIONS"],
             "allow_headers": ["Content-Type"],
