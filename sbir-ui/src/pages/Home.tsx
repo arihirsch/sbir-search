@@ -103,9 +103,13 @@ export default function Home() {
   const isTopicOpen = (closeDate: string | null): boolean => {
     if (!closeDate) return true; // If no close date, consider it open
     
+    // Normalize dates to compare only the date part (year, month, day)
     const today = new Date();
+    const todayNormalized = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const closeDateObj = new Date(closeDate);
-    return today <= closeDateObj;
+    const closeNormalized = new Date(closeDateObj.getFullYear(), closeDateObj.getMonth(), closeDateObj.getDate());
+    
+    return todayNormalized <= closeNormalized;
   };
 
   // Function to navigate to search results with the given query
@@ -117,7 +121,7 @@ export default function Home() {
         <div className="space-y-2">
           {/* Featured Searches Section */}
           <div>
-            <h2 className="text-2xl font-bold">Trending Intelligent Search</h2>
+            <h2 className="text-2xl font-bold">Trending Intelligent Searches</h2>
             <Card className="mb-0 border-0 shadow-none">
               <CardContent className="p-0">
                 <div className="grid grid-cols-1 gap-3">
