@@ -20,12 +20,13 @@ def create_app():
     })
 
     # Register blueprints
-    from app.routes import solicitations, analytics, awards, companies, llmsearch
+    from app.routes import solicitations, analytics, awards, companies, llmsearch, root
     app.register_blueprint(solicitations.bp)
     app.register_blueprint(analytics.bp)
     app.register_blueprint(awards.bp)
     app.register_blueprint(companies.bp)
     app.register_blueprint(llmsearch.bp)
+    app.register_blueprint(root.bp)
     
     # Register database close function
     from app.services.db import close_db
