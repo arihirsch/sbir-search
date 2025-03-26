@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { parseTopic, Topic } from "@/types/topic";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { useNavbar } from "@/contexts/NavbarContext";
 import AgencyLogo from "@/components/AgencyLogo";
 
 export default function Topics() {
   const [searchParams] = useSearchParams();
   const [data, setData] = useState<Topic[]>([]);
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [totalTopics, setTotalTopics] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -117,18 +114,6 @@ export default function Topics() {
     }
   }
 
-  const toggleDescription = (id: string) => {
-    setExpandedCards((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
-  };
-
   // Function to determine if a topic is open based on its close date
   const isTopicOpen = (closeDate: string | null): boolean => {
     if (!closeDate) return true; // If no close date, consider it open
@@ -192,28 +177,6 @@ export default function Topics() {
                   {topic.branch && <p><strong>Branch:</strong> {topic.branch}</p>}
                   <p><strong>Open Date:</strong> {topic.topic_open_date ? new Date(topic.topic_open_date).toISOString().split('T')[0] : 'Not specified'}</p>
                   <p><strong>Close Date:</strong> {topic.topic_closed_date ? new Date(topic.topic_closed_date).toISOString().split('T')[0] : 'Not specified'}</p>
-                  
-                  <div className="mt-4">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleDescription(topic.topic_number.toString());
-                      }}
-                      className="flex items-center text-sm text-gray-500 hover:text-gray-700"
-                    >
-                      {expandedCards.has(topic.topic_number.toString()) ? (
-                        <>Hide Description <ChevronUp className="ml-1 h-4 w-4" /></>
-                      ) : (
-                        <>Show Description <ChevronDown className="ml-1 h-4 w-4" /></>
-                      )}
-                    </button>
-                    
-                    {expandedCards.has(topic.topic_number.toString()) && (
-                      <div className="mt-2 text-sm text-gray-600">
-                        {topic.topic_description || "No description available"}
-                      </div>
-                    )}
-                  </div>
                 </CardContent>
               </Card>
             ))

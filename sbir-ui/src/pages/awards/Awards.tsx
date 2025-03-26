@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { Award, parseAward } from "@/types/award";
 import { useNavbar } from "@/contexts/NavbarContext";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,6 @@ import { Button } from "@/components/ui/button";
 export default function Awards() {
   const [searchParams] = useSearchParams();
   const [data, setData] = useState<Award[]>([]);
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [totalAwards, setTotalAwards] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -136,18 +134,6 @@ export default function Awards() {
     }
   }
 
-  const toggleDescription = (id: string) => {
-    setExpandedCards((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
-  };
-
   const handleNextPage = () => {
     setCurrentPage(prev => prev + 1);
     window.scrollTo(0, 0);
@@ -193,28 +179,6 @@ export default function Awards() {
                 )}
                 <p><strong>Phase:</strong> {award.phase}</p>
                 <p><strong>Program:</strong> {award.program}</p>
-
-                <div className="mt-4">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleDescription(award.award_link.toString());
-                    }}
-                    className="flex items-center text-sm text-gray-500 hover:text-gray-700"
-                  >
-                    {expandedCards.has(award.award_link.toString()) ? (
-                      <>Hide Abstract <ChevronUp className="ml-1 h-4 w-4" /></>
-                    ) : (
-                      <>Show Abstract <ChevronDown className="ml-1 h-4 w-4" /></>
-                    )}
-                  </button>
-                  
-                  {expandedCards.has(award.award_link.toString()) && (
-                    <div className="mt-2 text-sm text-gray-600">
-                      {award.abstract || "No abstract available"}
-                    </div>
-                  )}
-                </div>
               </CardContent>
             </Card>
           ))
