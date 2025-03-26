@@ -105,7 +105,7 @@ export default function Home() {
     
     const today = new Date();
     const closeDateObj = new Date(closeDate);
-    return today <= closeDateObj;
+    return today < closeDateObj;
   };
 
   // Function to navigate to search results with the given query
