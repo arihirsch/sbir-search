@@ -101,13 +101,16 @@ export default function Home() {
 
   // Function to determine if a topic is open based on its close date
   const isTopicOpen = (closeDate: string | null): boolean => {
-    if (!closeDate) return true; // If no close date, consider it open
+    if (!closeDate) {
+      console.log('No close date provided, returning true');
+      return true;
+    }
     
-    // Normalize dates to compare only the date part (year, month, day)
+    // Use UTC methods to avoid timezone issues
     const today = new Date();
-    const todayNormalized = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayNormalized = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
     const closeDateObj = new Date(closeDate);
-    const closeNormalized = new Date(closeDateObj.getFullYear(), closeDateObj.getMonth(), closeDateObj.getDate());
+    const closeNormalized = new Date(Date.UTC(closeDateObj.getUTCFullYear(), closeDateObj.getUTCMonth(), closeDateObj.getUTCDate()));
     
     return todayNormalized <= closeNormalized;
   };
