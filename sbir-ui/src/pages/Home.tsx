@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronDown, ChevronUp, ArrowRight, Search } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 import { Topic, parseTopic } from "@/types/topic";
 import { Award, parseAward } from "@/types/award";
 import { Company, parseCompany } from "@/types/company";
@@ -36,7 +36,6 @@ export default function Home() {
   const [featuredTopics, setFeaturedTopics] = useState<Topic[]>([]);
   const [featuredAwards, setFeaturedAwards] = useState<Award[]>([]);
   const [featuredCompanies, setFeaturedCompanies] = useState<Company[]>([]);
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -86,18 +85,6 @@ export default function Home() {
     
     fetchFeaturedData();
   }, []);
-
-  const toggleDescription = (id: string) => {
-    setExpandedCards((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
-  };
 
   // Function to determine if a topic is open based on its close date
   const isTopicOpen = (closeDate: string | null): boolean => {
@@ -173,28 +160,6 @@ export default function Home() {
                           </span>
                         </p>
                         <p><strong>Close Date:</strong> {topic.topic_closed_date ? new Date(topic.topic_closed_date).toISOString().split('T')[0] : 'Not specified'}</p>
-                        
-                        <div className="mt-4">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleDescription(topic.topic_number);
-                            }}
-                            className="flex items-center text-sm text-gray-500 hover:text-gray-700"
-                          >
-                            {expandedCards.has(topic.topic_number) ? (
-                              <>Hide Description <ChevronUp className="ml-1 h-4 w-4" /></>
-                            ) : (
-                              <>Show Description <ChevronDown className="ml-1 h-4 w-4" /></>
-                            )}
-                          </button>
-                          
-                          {expandedCards.has(topic.topic_number) && (
-                            <div className="mt-2 text-sm text-gray-600">
-                              {topic.topic_description || "No description available"}
-                            </div>
-                          )}
-                        </div>
                       </CardContent>
                     </Card>
                   ))}
@@ -234,28 +199,6 @@ export default function Home() {
                         <p><strong>Amount:</strong> ${award.award_amount.toLocaleString()}</p>
                         <p><strong>Phase:</strong> {award.phase}</p>
                         <p><strong>Award Date:</strong> {award.proposal_award_date ? new Date(award.proposal_award_date).toISOString().split('T')[0] : 'Not specified'}</p>
-                        
-                        <div className="mt-4">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleDescription(award.award_link.toString());
-                            }}
-                            className="flex items-center text-sm text-gray-500 hover:text-gray-700"
-                          >
-                            {expandedCards.has(award.award_link.toString()) ? (
-                              <>Hide Abstract <ChevronUp className="ml-1 h-4 w-4" /></>
-                            ) : (
-                              <>Show Abstract <ChevronDown className="ml-1 h-4 w-4" /></>
-                            )}
-                          </button>
-                          
-                          {expandedCards.has(award.award_link.toString()) && (
-                            <div className="mt-2 text-sm text-gray-600">
-                              {award.abstract || "No abstract available"}
-                            </div>
-                          )}
-                        </div>
                       </CardContent>
                     </Card>
                   ))}
