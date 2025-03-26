@@ -105,7 +105,7 @@ export default function Home() {
     
     const today = new Date();
     const closeDateObj = new Date(closeDate);
-    return today < closeDateObj;
+    return today <= closeDateObj;
   };
 
   // Function to navigate to search results with the given query
@@ -117,7 +117,7 @@ export default function Home() {
         <div className="space-y-2">
           {/* Featured Searches Section */}
           <div>
-            <h2 className="text-2xl font-bold">Trending Intelligent Searches</h2>
+            <h2 className="text-2xl font-bold">Trending Intelligent Search</h2>
             <Card className="mb-0 border-0 shadow-none">
               <CardContent className="p-0">
                 <div className="grid grid-cols-1 gap-3">
