@@ -151,28 +151,6 @@ export default function SearchResults() {
               </div>
               <p><strong>Topic Number:</strong> {topic.topic_number}</p>
               <p><strong>Close Date:</strong> {topic.topic_closed_date ? new Date(topic.topic_closed_date).toISOString().split('T')[0] : 'Not specified'}</p>
-              
-              <div className="mt-4">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleDescription(`topic-${topic.topic_number}`);
-                  }}
-                  className="flex items-center text-sm text-gray-500 hover:text-gray-700"
-                >
-                  {expandedCards.has(`topic-${topic.topic_number}`) ? (
-                    <>Hide Description <ChevronUp className="ml-1 h-4 w-4" /></>
-                  ) : (
-                    <>Show Description <ChevronDown className="ml-1 h-4 w-4" /></>
-                  )}
-                </button>
-                
-                {expandedCards.has(`topic-${topic.topic_number}`) && (
-                  <div className="mt-2 text-sm text-gray-600">
-                    {topic.topic_description || "No description available"}
-                  </div>
-                )}
-              </div>
             </CardContent>
           </Card>
         );
@@ -199,28 +177,6 @@ export default function SearchResults() {
               <p><strong>Company:</strong> {award.firm}</p>
               <p><strong>Amount:</strong> ${award.award_amount.toLocaleString()}</p>
               <p><strong>Phase:</strong> {award.phase}</p>
-              
-              <div className="mt-4">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleDescription(`award-${award.award_link}`);
-                  }}
-                  className="flex items-center text-sm text-gray-500 hover:text-gray-700"
-                >
-                  {expandedCards.has(`award-${award.award_link}`) ? (
-                    <>Hide Abstract <ChevronUp className="ml-1 h-4 w-4" /></>
-                  ) : (
-                    <>Show Abstract <ChevronDown className="ml-1 h-4 w-4" /></>
-                  )}
-                </button>
-                
-                {expandedCards.has(`award-${award.award_link}`) && (
-                  <div className="mt-2 text-sm text-gray-600">
-                    {award.abstract || "No abstract available"}
-                  </div>
-                )}
-              </div>
             </CardContent>
           </Card>
         );
