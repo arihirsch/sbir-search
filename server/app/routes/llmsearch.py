@@ -40,7 +40,7 @@ def llm_search():
     try:
         # Get query parameters
         user_input = request.args.get('q')
-        limit = request.args.get('limit', default=None, type=int)
+        limit = request.args.get('limit', default=100, type=int)
         
         if not user_input:
             return jsonify({"error": "Missing query parameter 'q'"}), HTTPStatus.BAD_REQUEST

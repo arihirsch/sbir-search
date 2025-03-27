@@ -277,7 +277,9 @@ export default function SearchResults() {
           {loading ? (
             <p className="text-gray-600">Searching...</p>
           ) : (
-            <p className="text-gray-600">Found {results.length} results for "{searchTerm}"</p>
+            <p className="text-gray-600">
+              Found {results.length >= 100 ? '100+' : results.length} results for "{searchTerm}"
+            </p>
           )}
         </div>
       )}
