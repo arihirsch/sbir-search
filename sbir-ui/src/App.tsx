@@ -18,7 +18,7 @@ function App() {
       <Router>
           <TitleBar />
           <Navbar />
-          <div className="fixed top-24 left-0 right-0 bottom-0 bg-white z-30 overflow-y-auto">
+          <div className="fixed top-24 left-0 right-0 bottom-0 bg-background z-30 overflow-y-auto">
             <div className="max-w-7xl mx-auto px-4 py-8">
             <Routes>
               <Route path="/" element={<Home />} />

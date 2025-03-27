@@ -15,11 +15,11 @@ export default function TitleBar() {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-14 bg-white z-50">
-      <div className="max-w-7xl mx-auto px-4 h-full border-b border-gray-400 flex items-center justify-between">
+    <div className="fixed top-0 left-0 right-0 h-14 bg-background z-50">
+      <div className="max-w-7xl mx-auto px-4 h-full border-b border-border flex items-center justify-between">
         <div className="flex-1 flex justify-start">
           <Link to="/">
-            <h2 className="text-2xl font-semibold text-black cursor-pointer">SBIRSpy</h2>
+            <h2 className="text-2xl font-semibold text-black dark:text-white cursor-pointer">SBIRSpy</h2>
           </Link>
         </div>
         
@@ -32,13 +32,13 @@ export default function TitleBar() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           </div>
         </form>
         
         <div className="flex-1 flex justify-end">
           <Link to="/about">
-            <span className="text-base text-black hover:text-gray-600 cursor-pointer">
+            <span className="text-base text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer">
               About
             </span>
           </Link>

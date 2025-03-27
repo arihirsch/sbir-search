@@ -231,26 +231,24 @@ export default function SearchResults() {
       {searchTerm && (
         <div className="text-center mb-8">
           {loading ? (
-            <p className="text-gray-600">Searching...</p>
+            <div className="flex flex-col items-center justify-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-2"></div>
+              <p className="text-gray-600 dark:text-gray-200">Searching with AI...</p>
+            </div>
           ) : (
-            <p className="text-gray-600">
-              Found {results.length >= 100 ? '100+' : results.length} results for "{searchTerm}"
+            <p className="text-gray-600 dark:text-gray-200">
+              Found {results.length >= 100 ? '100+' : results.length} results for &quot;{searchTerm}&quot;
             </p>
           )}
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {loading ? (
-          <div className="col-span-2 text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            <p className="mt-2 text-gray-600">Searching with AI...</p>
-          </div>
-        ) : results.length > 0 ? (
+        {!loading && results.length > 0 ? (
           results.map(result => renderResultCard(result))
-        ) : searchTerm ? (
+        ) : !loading && searchTerm ? (
           <div className="col-span-2 text-center py-12">
-            <p className="text-gray-600">No results found. Try a different search term.</p>
+            <p className="text-gray-600 dark:text-gray-200">No results found. Try a different search term.</p>
           </div>
         ) : null}
       </div>

@@ -146,7 +146,7 @@ export default function Awards() {
 
   return (
     <main>
-      <div className="text-center mb-8 text-gray-600">
+      <div className="text-center mb-8 text-gray-600 dark:text-gray-200">
         {loading ? (
           "Loading awards..."
         ) : (

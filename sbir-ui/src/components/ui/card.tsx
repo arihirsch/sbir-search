@@ -22,7 +22,7 @@ function Card(props: CardProps) {
         data-slot="card"
         to={href}
         className={cn(
-          "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border-gray py-6 shadow-sm",
+          "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border border-gray-200 dark:border-gray-700 py-6 shadow-sm",
           "cursor-pointer no-underline text-inherit",
           className
         )}
@@ -37,7 +37,7 @@ function Card(props: CardProps) {
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border-gray py-6 shadow-sm",
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border border-gray-200 dark:border-gray-700 py-6 shadow-sm",
         className
       )}
       {...rest}

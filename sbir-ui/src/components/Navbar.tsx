@@ -232,18 +232,18 @@ export default function Navbar() {
   };
   
   return (
-    <div className="fixed top-14 left-0 right-0 h-14 bg-white z-40">
-      <div className="max-w-7xl mx-auto px-4 h-full border-b border-gray-200">
+    <div className="fixed top-14 left-0 right-0 h-14 bg-background z-40">
+      <div className="max-w-7xl mx-auto px-4 h-full border-b border-gray-200 dark:border-gray-700">
         {/* Scrollable container for mobile */}
         <div className="h-full overflow-x-auto scrollbar-hide">
           <div className="h-full flex items-center justify-between min-w-max">
             {/* Left side with main navigation and filters */}
             <div className="flex items-center">
               <Select value={getCurrentSection()} onValueChange={handleSectionChange}>
-                <SelectTrigger className="w-36 text-sm bg-white">
+                <SelectTrigger className="w-36 text-sm bg-background">
                   <SelectValue placeholder="Category..." />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
+                <SelectContent className="bg-white dark:bg-black">
                   <SelectItem value="topics">Topics</SelectItem>
                   <SelectItem value="awards">Awards</SelectItem>
                   <SelectItem value="companies">Companies</SelectItem>
@@ -255,10 +255,10 @@ export default function Navbar() {
                 <>
                   <div className="ml-4">
                     <Select value={topicFilter} onValueChange={handleFilterChange}>
-                      <SelectTrigger className="w-32 text-sm bg-white">
+                      <SelectTrigger className="w-32 text-sm bg-background">
                         <SelectValue placeholder="Status..." />
                       </SelectTrigger>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-white dark:bg-black">
                         <SelectItem value="open">Open</SelectItem>
                         <SelectItem value="closed">Closed</SelectItem>
                       </SelectContent>
@@ -267,10 +267,10 @@ export default function Navbar() {
                   
                   <div className="ml-4">
                     <Select value={phaseFilter} onValueChange={handlePhaseChange}>
-                      <SelectTrigger className="w-32 text-sm bg-white">
+                      <SelectTrigger className="w-32 text-sm bg-background">
                         <SelectValue placeholder="Phase..." />
                       </SelectTrigger>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-white dark:bg-black">
                         <SelectItem value="phase1">Phase I</SelectItem>
                         <SelectItem value="phase2">Phase II</SelectItem>
                         <SelectItem value="both">Both</SelectItem>
@@ -280,10 +280,10 @@ export default function Navbar() {
                   
                   <div className="ml-4">
                     <Select value={programFilter} onValueChange={handleProgramChange}>
-                      <SelectTrigger className="w-32 text-sm bg-white">
+                      <SelectTrigger className="w-32 text-sm bg-background">
                         <SelectValue placeholder="Program..." />
                       </SelectTrigger>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-white dark:bg-black">
                         <SelectItem value="sbir">SBIR</SelectItem>
                         <SelectItem value="sttr">STTR</SelectItem>
                       </SelectContent>
@@ -292,10 +292,10 @@ export default function Navbar() {
                   
                   <div className="ml-4">
                     <Select value={agencyFilter} onValueChange={handleAgencyChange}>
-                      <SelectTrigger className="w-32 text-sm bg-white">
+                      <SelectTrigger className="w-32 text-sm bg-background">
                         <SelectValue placeholder="Agency..." />
                       </SelectTrigger>
-                      <SelectContent className="bg-white max-h-60">
+                      <SelectContent className="bg-white dark:bg-black max-h-60">
                         <SelectItem value="HHS">HHS</SelectItem>
                         <SelectItem value="DOD">DOD</SelectItem>
                         <SelectItem value="NASA">NASA</SelectItem>
@@ -319,10 +319,10 @@ export default function Navbar() {
                   {/* Year filter - first */}
                   <div className="ml-4">
                     <Select value={awardYearFilter} onValueChange={handleAwardYearChange}>
-                      <SelectTrigger className="w-32 text-sm bg-white">
+                      <SelectTrigger className="w-32 text-sm bg-background">
                         <SelectValue placeholder="Year..." />
                       </SelectTrigger>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-white dark:bg-black">
                         <SelectItem value="2025">2025</SelectItem>
                         <SelectItem value="2024">2024</SelectItem>
                         <SelectItem value="2023">2023</SelectItem>
@@ -353,10 +353,10 @@ export default function Navbar() {
                   {/* Phase filter - second */}
                   <div className="ml-4">
                     <Select value={awardPhaseFilter} onValueChange={handleAwardPhaseChange}>
-                      <SelectTrigger className="w-32 text-sm bg-white">
+                      <SelectTrigger className="w-32 text-sm bg-background">
                         <SelectValue placeholder="Phase..." />
                       </SelectTrigger>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-white dark:bg-black">
                         <SelectItem value="Phase I">Phase I</SelectItem>
                         <SelectItem value="Phase II">Phase II</SelectItem>
                       </SelectContent>
@@ -366,10 +366,10 @@ export default function Navbar() {
                   {/* Program filter - third */}
                   <div className="ml-4">
                     <Select value={awardProgramFilter} onValueChange={handleAwardProgramChange}>
-                      <SelectTrigger className="w-32 text-sm bg-white">
+                      <SelectTrigger className="w-32 text-sm bg-background">
                         <SelectValue placeholder="Program..." />
                       </SelectTrigger>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-white dark:bg-black">
                         <SelectItem value="SBIR">SBIR</SelectItem>
                         <SelectItem value="STTR">STTR</SelectItem>
                       </SelectContent>
@@ -379,10 +379,10 @@ export default function Navbar() {
                   {/* Agency filter - fourth */}
                   <div className="ml-4">
                     <Select value={awardAgencyFilter} onValueChange={handleAwardAgencyChange}>
-                      <SelectTrigger className="w-32 text-sm bg-white">
+                      <SelectTrigger className="w-32 text-sm bg-background">
                         <SelectValue placeholder="Agency..." />
                       </SelectTrigger>
-                      <SelectContent className="bg-white max-h-60">
+                      <SelectContent className="bg-white dark:bg-black max-h-60">
                         <SelectItem value="HHS">HHS</SelectItem>
                         <SelectItem value="DOD">DOD</SelectItem>
                         <SelectItem value="NASA">NASA</SelectItem>
