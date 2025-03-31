@@ -28,7 +28,9 @@
           "topic_description": "TEXT",
           "sbir_topic_link": "TEXT",
           "topic_open_date": "TEXT",
-          "topic_closed_date": "TEXT"
+          "topic_closed_date": "TEXT",
+          "tpoc_name": "TEXT",
+          "tpoc_email": "TEXT"
         },
         "primary_key": ["topic_number", "solicitation_id"],
         "foreign_keys": {

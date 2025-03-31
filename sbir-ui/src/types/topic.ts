@@ -7,6 +7,8 @@ export type Topic = {
   sbir_topic_link: string;
   topic_open_date: string;
   topic_closed_date: string | null;
+  tpoc_name: string | null;
+  tpoc_email: string | null;
   subtopics?: Subtopic[];
 };
 
@@ -20,6 +22,8 @@ export function parseTopic(data: any): Topic {
     sbir_topic_link: data.sbir_topic_link,
     topic_open_date: data.topic_open_date,
     topic_closed_date: data.topic_closed_date,
+    tpoc_name: data.tpoc_name,
+    tpoc_email: data.tpoc_email,
     subtopics: data.subtopics,
   };
 }

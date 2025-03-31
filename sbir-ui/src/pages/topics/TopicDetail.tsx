@@ -141,6 +141,18 @@ export default function TopicDetail() {
           <p><strong>Branch:</strong> {topic.branch}</p>
           <p><strong>Open Date:</strong> {topic.topic_open_date ? new Date(topic.topic_open_date).toISOString().split('T')[0] : 'Not specified'}</p>
           <p><strong>Close Date:</strong> {topic.topic_closed_date ? new Date(topic.topic_closed_date).toISOString().split('T')[0] : 'Not specified'}</p>
+          {topic.tpoc_name && <p><strong>Topic Point of Contact:</strong> {topic.tpoc_name}</p>}
+          {topic.tpoc_email && (
+            <p>
+              <strong>TPOC Email:</strong>{' '}
+              <a 
+                href={`mailto:${topic.tpoc_email}`}
+                className="text-blue-600 hover:text-blue-800 underline"
+              >
+                {topic.tpoc_email}
+              </a>
+            </p>
+          )}
           <p>
             <strong>SBIR Topic Link:</strong>{' '}
             <a 
