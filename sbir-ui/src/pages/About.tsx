@@ -39,7 +39,7 @@ export default function About() {
         
         <section className="mt-10 pt-6 border-t border-gray-200">
           <p className="text-center">
-            Contact us at <a href="mailto:millen@sbirspy.com" className="text-blue-600 hover:underline">hello@sbirspy.com</a> with feedback and suggestions.
+            Contact us at <a href="mailto:millen@sbirspy.com" className="text-blue-600 hover:underline">millen@sbirspy.com</a> with feedback and suggestions.
           </p>
           <p className="text-center mt-4">
             Built by <a href="https://www.linkedin.com/in/millen-anand/" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">Millen Anand</a> and <a href="https://www.linkedin.com/in/ari-hirsch-77551418a/" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">Ari Hirsch</a>.

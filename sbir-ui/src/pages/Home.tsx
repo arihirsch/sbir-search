@@ -10,8 +10,8 @@ import AgencyLogo from "@/components/AgencyLogo";
 // Configuration for featured items - just update these IDs to change what's displayed
 const FEATURED_CONFIG = {
   topics: [
-    { topicNumber: "MDA254-D001", solicitationId: "1263" },
-    { topicNumber: "A254-015", solicitationId: "1263" }
+    { topicNumber: "A254-P026", solicitationId: "1262" },
+    { topicNumber: "A254-020", solicitationId: "1263" }
   ],
   awards: [
     { id: "202272" },
@@ -102,6 +102,27 @@ export default function Home() {
     return todayNormalized <= closeNormalized;
   };
 
+  // Function to determine if a topic is pre-release based on its open date
+  const isTopicPreRelease = (openDate: string): boolean => {
+    const today = new Date();
+    const todayNormalized = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+    const openDateObj = new Date(openDate);
+    const openNormalized = new Date(Date.UTC(openDateObj.getUTCFullYear(), openDateObj.getUTCMonth(), openDateObj.getUTCDate()));
+    
+    return todayNormalized < openNormalized;
+  };
+
+  // Function to get topic status text and color
+  const getTopicStatus = (topic: Topic): { text: string; color: string } => {
+    if (isTopicPreRelease(topic.topic_open_date)) {
+      return { text: 'Pre-Release', color: 'text-blue-600' };
+    }
+    if (isTopicOpen(topic.topic_closed_date)) {
+      return { text: 'Open', color: 'text-green-600' };
+    }
+    return { text: 'Closed', color: 'text-red-600' };
+  };
+
   // Function to navigate to search results with the given query
   const navigateToSearch = (query: string) => {
     navigate(`/search?q=${encodeURIComponent(query)}`);
@@ -155,10 +176,11 @@ export default function Home() {
                         <p><strong>Branch:</strong> {topic.branch}</p>
                         <p>
                           <strong>Status:</strong>{' '}
-                          <span className={isTopicOpen(topic.topic_closed_date) ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
-                            {isTopicOpen(topic.topic_closed_date) ? 'Open' : 'Closed'}
+                          <span className={`${getTopicStatus(topic).color} font-medium`}>
+                            {getTopicStatus(topic).text}
                           </span>
                         </p>
+                        <p><strong>Open Date:</strong> {new Date(topic.topic_open_date).toISOString().split('T')[0]}</p>
                         <p><strong>Close Date:</strong> {topic.topic_closed_date ? new Date(topic.topic_closed_date).toISOString().split('T')[0] : 'Not specified'}</p>
                       </CardContent>
                     </Card>
