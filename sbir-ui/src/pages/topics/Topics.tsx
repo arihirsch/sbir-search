@@ -123,6 +123,27 @@ export default function Topics() {
     return today <= closeDateObj;
   };
 
+  // Function to determine if a topic is pre-release based on its open date
+  const isTopicPreRelease = (openDate: string): boolean => {
+    const today = new Date();
+    const todayNormalized = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+    const openDateObj = new Date(openDate);
+    const openNormalized = new Date(Date.UTC(openDateObj.getUTCFullYear(), openDateObj.getUTCMonth(), openDateObj.getUTCDate()));
+    
+    return todayNormalized < openNormalized;
+  };
+
+  // Function to get topic status text and color
+  const getTopicStatus = (topic: Topic): { text: string; colorClasses: string } => {
+    if (isTopicPreRelease(topic.topic_open_date)) {
+      return { text: 'Pre-Release', colorClasses: 'bg-blue-100 text-blue-800' };
+    }
+    if (isTopicOpen(topic.topic_closed_date)) {
+      return { text: 'Open', colorClasses: 'bg-green-100 text-green-800' };
+    }
+    return { text: 'Closed', colorClasses: 'bg-red-100 text-red-800' };
+  };
+
   const handleNextPage = () => {
     setCurrentPage(prev => prev + 1);
     window.scrollTo(0, 0);
@@ -163,13 +184,11 @@ export default function Topics() {
                   <div className="flex items-start gap-2">
                     <AgencyLogo agency={topic.branch} size="md" />
                     <div 
-                      className={`px-2 py-1 mt-2 text-xs font-medium rounded-full ${
-                        isTopicOpen(topic.topic_closed_date) 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
+                      className={`px-3 py-1.5 mt-2 text-xs font-medium rounded-full whitespace-nowrap ${
+                        getTopicStatus(topic).colorClasses
                       }`}
                     >
-                      {isTopicOpen(topic.topic_closed_date) ? 'Open' : 'Closed'}
+                      {getTopicStatus(topic).text}
                     </div>
                   </div>
                 </CardHeader>

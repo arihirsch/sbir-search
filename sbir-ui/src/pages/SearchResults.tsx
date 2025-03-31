@@ -116,6 +116,27 @@ export default function SearchResults() {
     return today <= closeDateObj;
   };
 
+  // Function to determine if a topic is pre-release based on its open date
+  const isTopicPreRelease = (openDate: string): boolean => {
+    const today = new Date();
+    const todayNormalized = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+    const openDateObj = new Date(openDate);
+    const openNormalized = new Date(Date.UTC(openDateObj.getUTCFullYear(), openDateObj.getUTCMonth(), openDateObj.getUTCDate()));
+    
+    return todayNormalized < openNormalized;
+  };
+
+  // Function to get topic status text and color
+  const getTopicStatus = (topic: Topic): { text: string; colorClasses: string } => {
+    if (isTopicPreRelease(topic.topic_open_date)) {
+      return { text: 'Pre-Release', colorClasses: 'bg-blue-100 text-blue-800' };
+    }
+    if (isTopicOpen(topic.topic_closed_date)) {
+      return { text: 'Open', colorClasses: 'bg-green-100 text-green-800' };
+    }
+    return { text: 'Closed', colorClasses: 'bg-red-100 text-red-800' };
+  };
+
   // Render different card types based on result type
   const renderResultCard = (result: SearchResult) => {
     switch (result.type) {
@@ -134,13 +155,11 @@ export default function SearchResults() {
                   <CardTitle>{topic.topic_title}</CardTitle>
                 </div>
                 <div 
-                  className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    isTopicOpen(topic.topic_closed_date) 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
+                  className={`px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap ${
+                    getTopicStatus(topic).colorClasses
                   }`}
                 >
-                  {isTopicOpen(topic.topic_closed_date) ? 'Open' : 'Closed'}
+                  {getTopicStatus(topic).text}
                 </div>
               </div>
             </CardHeader>
