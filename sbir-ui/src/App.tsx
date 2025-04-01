@@ -11,6 +11,7 @@ import AwardDetail from './pages/awards/AwardDetail';
 import CompanyDetail from './pages/companies/CompanyDetail';
 import SearchResults from './pages/SearchResults.tsx';
 import { NavbarProvider } from './contexts/NavbarContext';
+import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
             </Routes>
             </div>
           </div>
+          <Analytics />
       </Router>
     </NavbarProvider>
   );
