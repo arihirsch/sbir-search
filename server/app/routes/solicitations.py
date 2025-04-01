@@ -152,6 +152,9 @@ def get_all_topics():
     elif status == 'closed':
         query += " AND t.topic_closed_date < %s"
         params.append(current_date)
+    elif status == 'prerelease':
+        query += " AND t.topic_open_date > %s"
+        params.append(current_date)
     
     # Apply phase filter
     if phase == 'phase1':

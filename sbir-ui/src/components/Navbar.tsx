@@ -255,10 +255,11 @@ export default function Navbar() {
                 <>
                   <div className="ml-4">
                     <Select value={topicFilter} onValueChange={handleFilterChange}>
-                      <SelectTrigger className="w-32 text-sm bg-background">
+                      <SelectTrigger className="min-w-[8rem] text-sm bg-background">
                         <SelectValue placeholder="Status..." />
                       </SelectTrigger>
                       <SelectContent className="bg-white dark:bg-black">
+                        <SelectItem value="prerelease">Pre-Release</SelectItem>
                         <SelectItem value="open">Open</SelectItem>
                         <SelectItem value="closed">Closed</SelectItem>
                       </SelectContent>
