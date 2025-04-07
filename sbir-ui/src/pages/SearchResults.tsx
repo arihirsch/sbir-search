@@ -12,6 +12,18 @@ import AgencyLogo from "@/components/AgencyLogo";
 type SearchResult = {
   type: 'topic' | 'award' | 'company';
   data: Topic | Award | Company;
+  similarity_score?: number;
+};
+
+type VectorSearchResponse = {
+  topics: {
+    results: Topic[];
+    summary: string;
+  };
+  awards: {
+    results: Award[];
+    summary: string;
+  };
 };
 
 export default function SearchResults() {
@@ -21,6 +33,7 @@ export default function SearchResults() {
   const [loading, setLoading] = useState(true);
   const [sqlQuery, setSqlQuery] = useState<string>('');
   const [database, setDatabase] = useState<string>('');
+  const [vectorResults, setVectorResults] = useState<VectorSearchResponse | null>(null);
   const navigate = useNavigate();
   
   // Get search term from URL params
@@ -38,58 +51,55 @@ export default function SearchResults() {
   async function fetchResults() {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/llmsearch?q=${encodeURIComponent(searchTerm)}`
-      );
+      // Fetch both traditional and vector search results
+      const [llmResponse, vectorResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/llmsearch?q=${encodeURIComponent(searchTerm)}`),
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/vectorsearch?q=${encodeURIComponent(searchTerm)}`)
+      ]);
       
-      const data = await response.json();
+      const llmData = await llmResponse.json();
+      const vectorData = await vectorResponse.json();
       
-      if (data.error) {
-        console.error("LLM search error:", data.error);
-        setResults([]);
-        return;
-      }
-      
-      // Store the SQL query and database for display
-      setSqlQuery(data.sql_query || '');
-      setDatabase(data.database || '');
-      
-      // Log SQL query and database to console instead of displaying in UI
-      console.log("Database:", data.database);
-      console.log("SQL Query:", data.sql_query);
-      
-      // Process results based on the database type
-      const processedResults: SearchResult[] = [];
-      
-      if (data.results && Array.isArray(data.results)) {
-        data.results.forEach((item: any) => {
-          try {
-            if (data.database === 'db1') {
+      if (llmData.error) {
+        console.error("LLM search error:", llmData.error);
+      } else {
+        // Store the SQL query and database for display
+        setSqlQuery(llmData.sql_query || '');
+        setDatabase(llmData.database || '');
+        
+        // Process traditional search results
+        const processedResults: SearchResult[] = [];
+        if (llmData.results) {
+          for (const row of llmData.results) {
+            if (llmData.database === 'db1') {
               processedResults.push({
                 type: 'topic',
-                data: parseTopic(item)
+                data: parseTopic(row)
               });
-            } else if (data.database === 'db2') {
+            } else if (llmData.database === 'db2') {
               processedResults.push({
                 type: 'award',
-                data: parseAward(item)
+                data: parseAward(row)
               });
-            } else if (data.database === 'db3') {
+            } else if (llmData.database === 'db3') {
               processedResults.push({
                 type: 'company',
-                data: parseCompany(item)
+                data: parseCompany(row)
               });
             }
-          } catch (e) {
-            console.error("Error parsing result:", e);
           }
-        });
+        }
+        setResults(processedResults);
       }
       
-      setResults(processedResults);
+      if (vectorData.error) {
+        console.error("Vector search error:", vectorData.error);
+      } else {
+        setVectorResults(vectorData);
+      }
+      
     } catch (error) {
-      console.error('Failed to fetch search results:', error);
-      setResults([]);
+      console.error("Error fetching results:", error);
     } finally {
       setLoading(false);
     }
@@ -258,6 +268,33 @@ export default function SearchResults() {
             <p className="text-gray-600 dark:text-gray-200">
               Found {results.length >= 100 ? '100+' : results.length} results for &quot;{searchTerm}&quot;
             </p>
+          )}
+        </div>
+      )}
+
+      {/* Display vector search summaries if available */}
+      {vectorResults && (
+        <div className="mb-8 space-y-6">
+          {vectorResults.topics?.summary && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Related Topics Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 dark:text-gray-200">{vectorResults.topics.summary}</p>
+              </CardContent>
+            </Card>
+          )}
+          
+          {vectorResults.awards?.summary && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Related Awards Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 dark:text-gray-200">{vectorResults.awards.summary}</p>
+              </CardContent>
+            </Card>
           )}
         </div>
       )}
