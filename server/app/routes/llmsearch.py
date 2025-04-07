@@ -114,6 +114,8 @@ def natural_language_to_sql(user_input, schema_info):
     Some fields may be null, so we may have to account for that in the query using OR statements.
 
     States are abbreviated. For example, Texas is TX, California is CA, etc.
+
+    Do not search for the Space Force branch in the database. It is under the Air Force.
     
     IMPORTANT: For general searches or topic-related queries, use the "db1" schema and specifically query the "topics" table. 
     The topics table contains the most relevant information for general searches.
@@ -213,7 +215,7 @@ def cosine_similarity(a: List[float], b: List[float]) -> float:
     norm_b = np.linalg.norm(b)
     return dot_product / (norm_a * norm_b)
 
-def search_similar_embeddings(embedding: List[float], table: str, limit: int = 5) -> List[Dict[str, Any]]:
+def search_similar_embeddings(embedding: List[float], table: str, limit: int = 50) -> List[Dict[str, Any]]:
     """
     Search for similar embeddings in the specified table using cosine similarity.
     """
@@ -261,6 +263,8 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> s
             Title: {result.get('topic_title', '')}
             Description: {result.get('topic_description', '')}
             Agency: {result.get('agency', '')}
+            Branch: {result.get('branch', '')}
+            Close Date: {result.get('topic_closed_date', '')}
             """
         else:  # awards
             results_text += f"""
@@ -272,21 +276,22 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> s
             """
     
     prompt = f"""
-    Based on the user query and search results below, provide a concise summary that answers the user's question.
-    Focus on synthesizing the key information and highlighting the most relevant details.
-
+    Based on the user query and search results below, provide a concise response that answers the user's question.
+    Focus on synthesizing information specific to the user's query based on the search results.
+    DO NOT list the results, even if the user asks for them. Talk about general trends or information that you can glean from the results.
+    Use the dates of the results to understand trends over time and generally focus on more recent results.
+    Keep the response under 100 words.
+    
     User Query: {query}
 
     Search Results:
     {results_text}
-
-    Please provide a clear, concise summary that directly addresses the user's question.
     """
     
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a helpful assistant that summarizes search results in a clear and concise manner."},
+            {"role": "system", "content": "You are a SBIR expert that can answer questions about the database, and synthesize information from the search results."},
             {"role": "user", "content": prompt}
         ],
         temperature=0.2
@@ -302,7 +307,7 @@ def vector_search():
     try:
         # Get query parameters
         user_input = request.args.get('q')
-        limit = request.args.get('limit', default=5, type=int)
+        limit = request.args.get('limit', default=50, type=int)
         
         if not user_input:
             return jsonify({"error": "Missing query parameter 'q'"}), HTTPStatus.BAD_REQUEST

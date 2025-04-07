@@ -272,11 +272,12 @@ export default function SearchResults() {
         </div>
       )}
 
-      {/* Display vector search summaries if available */}
+      {/* Vector Search Results */}
       {vectorResults && (
-        <div className="mb-8 space-y-6">
+        <div className="mb-8">
+          {/* AI Summary */}
           {vectorResults.topics?.summary && (
-            <Card>
+            <Card className="mb-6">
               <CardHeader>
                 <CardTitle>Related Topics Summary</CardTitle>
               </CardHeader>
@@ -286,19 +287,28 @@ export default function SearchResults() {
             </Card>
           )}
           
-          {vectorResults.awards?.summary && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Related Awards Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 dark:text-gray-200">{vectorResults.awards.summary}</p>
-              </CardContent>
-            </Card>
-          )}
+          {/* Vector Search Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {vectorResults.topics?.results?.map((topic) => (
+              renderResultCard({
+                type: 'topic',
+                data: topic
+              })
+            ))}
+          </div>
         </div>
       )}
 
+      {/* Separator */}
+      {vectorResults && results.length > 0 && (
+        <div className="my-8 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-center -mt-3">
+            <span className="bg-white dark:bg-gray-900 px-4 text-sm text-gray-500">LLM Search Results</span>
+          </div>
+        </div>
+      )}
+
+      {/* LLM Search Results */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {!loading && results.length > 0 ? (
           results.map(result => renderResultCard(result))
