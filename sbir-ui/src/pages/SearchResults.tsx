@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { Topic, parseTopic } from "@/types/topic";
 import { Award, parseAward } from "@/types/award";
 import { Company, parseCompany } from "@/types/company";
@@ -15,25 +12,17 @@ type SearchResult = {
   similarity_score?: number;
 };
 
-type VectorSearchResponse = {
-  topics: {
-    results: Topic[];
-    summary: string;
-  };
-  awards: {
-    results: Award[];
-    summary: string;
-  };
+type SearchResponse = {
+  results: Topic[];
+  summary: string;
+  count: number;
 };
 
 export default function SearchResults() {
   const [searchParams] = useSearchParams();
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [sqlQuery, setSqlQuery] = useState<string>('');
-  const [database, setDatabase] = useState<string>('');
-  const [vectorResults, setVectorResults] = useState<VectorSearchResponse | null>(null);
+  const [searchResponse, setSearchResponse] = useState<SearchResponse | null>(null);
   const navigate = useNavigate();
   
   // Get search term from URL params
@@ -51,71 +40,28 @@ export default function SearchResults() {
   async function fetchResults() {
     setLoading(true);
     try {
-      // Fetch both traditional and vector search results
-      const [llmResponse, vectorResponse] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/llmsearch?q=${encodeURIComponent(searchTerm)}`),
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/vectorsearch?q=${encodeURIComponent(searchTerm)}`)
-      ]);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/search?q=${encodeURIComponent(searchTerm)}`);
+      const data = await response.json();
       
-      const llmData = await llmResponse.json();
-      const vectorData = await vectorResponse.json();
-      
-      if (llmData.error) {
-        console.error("LLM search error:", llmData.error);
+      if (data.error) {
+        console.error("Search error:", data.error);
       } else {
-        // Store the SQL query and database for display
-        setSqlQuery(llmData.sql_query || '');
-        setDatabase(llmData.database || '');
+        setSearchResponse(data);
         
-        // Process traditional search results
-        const processedResults: SearchResult[] = [];
-        if (llmData.results) {
-          for (const row of llmData.results) {
-            if (llmData.database === 'db1') {
-              processedResults.push({
-                type: 'topic',
-                data: parseTopic(row)
-              });
-            } else if (llmData.database === 'db2') {
-              processedResults.push({
-                type: 'award',
-                data: parseAward(row)
-              });
-            } else if (llmData.database === 'db3') {
-              processedResults.push({
-                type: 'company',
-                data: parseCompany(row)
-              });
-            }
-          }
-        }
+        // Process results
+        const processedResults: SearchResult[] = data.results.map((row: Topic) => ({
+          type: 'topic',
+          data: parseTopic(row),
+        }));
+        
         setResults(processedResults);
       }
-      
-      if (vectorData.error) {
-        console.error("Vector search error:", vectorData.error);
-      } else {
-        setVectorResults(vectorData);
-      }
-      
     } catch (error) {
       console.error("Error fetching results:", error);
     } finally {
       setLoading(false);
     }
   }
-
-  const toggleDescription = (id: string) => {
-    setExpandedCards((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
-  };
 
   // Function to determine if a topic is open based on its close date
   const isTopicOpen = (closeDate: string | null): boolean => {
@@ -266,49 +212,25 @@ export default function SearchResults() {
             </div>
           ) : (
             <p className="text-gray-600 dark:text-gray-200">
-              Found {results.length >= 100 ? '100+' : results.length} results for &quot;{searchTerm}&quot;
+              Found {searchResponse?.count || 0} results for &quot;{searchTerm}&quot;
             </p>
           )}
         </div>
       )}
 
-      {/* Vector Search Results */}
-      {vectorResults && (
-        <div className="mb-8">
-          {/* AI Summary */}
-          {vectorResults.topics?.summary && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>Related Topics Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 dark:text-gray-200">{vectorResults.topics.summary}</p>
-              </CardContent>
-            </Card>
-          )}
-          
-          {/* Vector Search Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {vectorResults.topics?.results?.map((topic) => (
-              renderResultCard({
-                type: 'topic',
-                data: topic
-              })
-            ))}
-          </div>
-        </div>
+      {/* AI Summary */}
+      {searchResponse?.summary && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Search Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 dark:text-gray-200">{searchResponse.summary}</p>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Separator */}
-      {vectorResults && results.length > 0 && (
-        <div className="my-8 border-t border-gray-200 dark:border-gray-700">
-          <div className="text-center -mt-3">
-            <span className="bg-white dark:bg-gray-900 px-4 text-sm text-gray-500">LLM Search Results</span>
-          </div>
-        </div>
-      )}
-
-      {/* LLM Search Results */}
+      {/* Search Results */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {!loading && results.length > 0 ? (
           results.map(result => renderResultCard(result))

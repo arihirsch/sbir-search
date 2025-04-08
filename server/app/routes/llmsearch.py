@@ -17,7 +17,7 @@ def get_schema_info():
     Returns the schema as a JSON string.
     """
     schema_file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
-                                    'schemas', 'database_schema.json')
+                                    'schemas', 'llm_schema.json')
     
     try:
         with open(schema_file_path, 'r') as schema_file:
@@ -42,7 +42,7 @@ def llm_search():
     try:
         # Get query parameters
         user_input = request.args.get('q')
-        limit = request.args.get('limit', default=100, type=int)
+        limit = request.args.get('limit', default=None, type=int)
         
         if not user_input:
             return jsonify({"error": "Missing query parameter 'q'"}), HTTPStatus.BAD_REQUEST
@@ -71,8 +71,6 @@ def llm_search():
                 topic_dict = dict(row)
                 results.append(topic_dict)
             
-            #current_app.logger.info(f"Results: {results}")
-
             return jsonify({
                 "results": results,
                 "sql_query": sql_query,
@@ -101,49 +99,63 @@ def natural_language_to_sql(user_input, schema_info):
     client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
     
     prompt = f"""
-    Convert the following natural language query into an SQL query based on this database schema.
-    This is intended to be used by a user with a search input, so bias towards adding more fields to the query.
-    
-    We have three separate schemas in our PostgreSQL database:
-    1. "db1" - Contains information about solicitations, topics, and subtopics
-    2. "db2" - Contains information about awards given to companies
-    3. "db3" - Contains information about companies that have received awards
-    
-    Based on the user's query, determine which schema to use and generate the appropriate SQL query.
+    You are an expert system designed to convert natural language queries into SQL statements that retrieve structured information from a PostgreSQL database.
 
-    Some fields may be null, so we may have to account for that in the query using OR statements.
+    **STRICT REQUIREMENTS**:
+    - ONLY use highly structured fields such as: `year`, `phase`, `agency`, `branch`, `state`, etc.
+    - DO NOT use or search unstructured or free-text fields such as `description`, `title`, `topic_number`, `topic_description`, `abstract`, etc.
+    - DO NOT perform full-text search or use `ILIKE`/`LIKE` on descriptive fields.
+    - DO NOT query on topic numbers or solicitation numbers unless explicitly requested and mapped to structured fields.
 
-    States are abbreviated. For example, Texas is TX, California is CA, etc.
+    **USAGE BIAS**:
+    - This is meant to power a user-facing search. Favor including more constraints when relevant (e.g., include year, branch, and phase if mentioned).
+    - When the user query is ambiguous or general, prefer broader structured matches over free text logic.
 
-    Do not search for the Space Force branch in the database. It is under the Air Force.
-    
-    IMPORTANT: For general searches or topic-related queries, use the "db1" schema and specifically query the "topics" table. 
-    The topics table contains the most relevant information for general searches.
-    If there is not a clear match to awards or companies, default to querying the topics table in the db1 schema.
-    Never query the solicitations table directly, even if a user asks for solicitations. Query the topics table instead.
-    You may need to join the topics table with the solicitations table to get the full picture of a topic like this:
+    **DATABASE OVERVIEW**:
+    There are three PostgreSQL schemas:
+    1. `db1`: Contains solicitations, topics, and subtopics.
+    - For general or topic-based queries, always use the `topics` table in `db1`.
+    - NEVER query the `solicitations` table directly.
+    - To enrich topic results with solicitation info, JOIN as follows:
+        ```sql
         SELECT t.*, s.agency, s.solicitation_number, s.solicitation_title
         FROM topics t
         LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
-    
-    Schema: {schema_info}
-    
-    Query: {user_input}
-    
-    Return your response in the following JSON format:
+        ```
+    2. `db2`: Contains awards information.
+    3. `db3`: Contains company information (companies that have received awards).
+
+    **SPECIAL RULES**:
+    - If the user asks about the "Space Force", map this to the Air Force branch (USAF).
+    - States are stored as 2-letter abbreviations (e.g., TX for Texas, CA for California).
+    - Some fields may be `NULL`. Use appropriate logic like `OR field IS NULL` if filtering on such fields.
+
+    **DEFAULTS**:
+    - If it's unclear which schema to use, default to querying the `topics` table in `db1`.
+    - Never return empty queries. Make a best-effort match using structured fields.
+
+    ---
+
+    **Schema**:
+    {schema_info}
+
+    **User Query**:
+    "{user_input}"
+
+    ---
+
+    Respond in this exact JSON format:
     {{
-      "database": "schema_name",
-      "sql": "SQL query"
+    "database": "db1" | "db2" | "db3",
+    "sql": "SQL query here"
     }}
-    
-    Where schema_name is one of: "db1", "db2", or "db3".
     """
     
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are an AI that converts natural language to SQL. Return only the JSON with database and SQL query without any explanation. For general searches, prioritize querying the topics table in the db1 schema."},
+                {"role": "system","content": "You are an AI that converts natural language into SQL queries. Respond ONLY with a JSON object containing the target database (db1, db2, or db3) and a valid SQL query. Do NOT include any commentary or explanation. For general or ambiguous queries, default to querying the 'topics' table in the db1 schema. Avoid querying unstructured text fields like descriptions or titles—use only structured fields such as year, phase, agency, and branch."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,  # Lower temperature for more deterministic results
@@ -209,15 +221,19 @@ def get_query_embedding(query: str) -> List[float]:
 def cosine_similarity(a: List[float], b: List[float]) -> float:
     """
     Calculate cosine similarity between two vectors.
+    Returns a value between 0 and 1, where 1 means identical vectors.
     """
     dot_product = np.dot(a, b)
     norm_a = np.linalg.norm(a)
     norm_b = np.linalg.norm(b)
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
     return dot_product / (norm_a * norm_b)
 
-def search_similar_embeddings(embedding: List[float], table: str, limit: int = 50) -> List[Dict[str, Any]]:
+def search_similar_embeddings(embedding: List[float], table: str, limit: int = None) -> List[Dict[str, Any]]:
     """
     Search for similar embeddings in the specified table using cosine similarity.
+    Returns results sorted by similarity score (most similar first).
     """
     # Get cursor with access to both the target schema and public
     cursor = get_db_cursor("public")  # Start with public schema for vector operations
@@ -229,23 +245,26 @@ def search_similar_embeddings(embedding: List[float], table: str, limit: int = 5
     embedding_str = "[" + ",".join(map(str, embedding)) + "]"
     
     # Use cosine distance for similarity search, using vector from extensions schema
+    # The <=> operator returns cosine distance (1 - cosine similarity)
     query = f"""
         SELECT *, 
-            (embedding <=> %s::vector) as similarity
+            (embedding <=> %s::vector) as distance
         FROM {table}
         WHERE embedding IS NOT NULL
-        ORDER BY similarity ASC
+        ORDER BY distance ASC
         LIMIT %s
     """
     
     cursor.execute(query, (embedding_str, limit))
     results = [dict(row) for row in cursor.fetchall()]
     
-    # Convert similarity to a score between 0 and 1
+    # Convert distance to similarity score (1 - distance)
     for result in results:
-        result['similarity_score'] = 1 - float(result['similarity'])
-        del result['similarity']
+        result['similarity_score'] = 1 - float(result['distance'])
+        del result['distance']
     
+    # Results are already ordered by distance (ASC), which means most similar first
+    # since we converted distance to similarity score
     return results
 
 def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> str:
@@ -276,12 +295,15 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> s
             """
     
     prompt = f"""
-    Based on the user query and search results below, provide a concise response that answers the user's question.
-    Focus on synthesizing information specific to the user's query based on the search results.
-    DO NOT list the results, even if the user asks for them. Talk about general trends or information that you can glean from the results.
-    Use the dates of the results to understand trends over time and generally focus on more recent results.
-    Keep the response under 100 words.
-    
+    You are a technical summarizer. Based on the user query and the search results below, generate a precise, domain-specific summary that addresses the core of the user's question.
+
+    - Extract **highly technical insights** or **relevant findings** inferred from the results.
+    - DO NOT enumerate or list individual results, even if explicitly requested.
+    - Identify **patterns**, **trends**, or **emergent themes**, especially from **recent results**.
+    - Use result dates to highlight changes or developments over time, and be specific about the dates.
+    - Assume the user wants **actionable or analytical** insights—not a verbose or general overview.
+    - Limit the output to **under 100 words**. Avoid filler or repetition.
+
     User Query: {query}
 
     Search Results:
@@ -294,7 +316,7 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> s
             {"role": "system", "content": "You are a SBIR expert that can answer questions about the database, and synthesize information from the search results."},
             {"role": "user", "content": prompt}
         ],
-        temperature=0.2
+        temperature=0.0
     )
     
     return response.choices[0].message.content.strip()
@@ -303,11 +325,14 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> s
 def vector_search():
     """
     Perform vector similarity search based on user query.
+    If results_to_rank is provided, rank those results by semantic similarity.
+    Otherwise, perform a full vector search.
     """
     try:
         # Get query parameters
         user_input = request.args.get('q')
-        limit = request.args.get('limit', default=50, type=int)
+        limit = request.args.get('limit', default=None, type=int)
+        results_to_rank = request.args.get('results_to_rank', type=list)
         
         if not user_input:
             return jsonify({"error": "Missing query parameter 'q'"}), HTTPStatus.BAD_REQUEST
@@ -315,7 +340,36 @@ def vector_search():
         # Generate embedding for the query
         query_embedding = get_query_embedding(user_input)
         
-        # Search in both topics and awards tables
+        # If results_to_rank is provided, use those results for ranking
+        if results_to_rank:
+            # Calculate similarity scores for each result
+            for result in results_to_rank:
+                if 'embedding' in result:
+                    try:
+                        if isinstance(result['embedding'], str):
+                            embedding_array = np.array(json.loads(result['embedding']))
+                        else:
+                            embedding_array = np.array(result['embedding'])
+                        result['similarity_score'] = float(cosine_similarity(query_embedding, embedding_array))
+                    except Exception as e:
+                        current_app.logger.warning(f"Error calculating similarity for result: {str(e)}")
+                        result['similarity_score'] = 0.0
+            
+            # Sort results by similarity score (most similar first)
+            results_to_rank.sort(key=lambda x: x.get('similarity_score', 0), reverse=True)
+            
+            # Limit results if needed
+            if limit:
+                results_to_rank = results_to_rank[:limit]
+            
+            return jsonify({
+                "topics": {
+                    "results": results_to_rank,
+                    "summary": generate_summary(user_input, results_to_rank, "topics")
+                }
+            })
+        
+        # Otherwise, perform regular vector search
         topics_results = search_similar_embeddings(query_embedding, "topics", limit)
         #awards_results = search_similar_embeddings(query_embedding, "awards", limit)
         
@@ -336,5 +390,74 @@ def vector_search():
         
     except Exception as e:
         current_app.logger.error(f"Vector search error: {str(e)}")
+        return jsonify({"error": f"Server error: {str(e)}"}), HTTPStatus.INTERNAL_SERVER_ERROR
+
+@bp.route('/search', methods=['GET'])
+def search():
+    """
+    Combined search endpoint that uses both LLM and vector search.
+    First uses LLM search to filter by structured fields, then uses vector search
+    to rank the filtered results by semantic similarity.
+    """
+    try:
+        # Get query parameters
+        user_input = request.args.get('q')
+        limit = request.args.get('limit', default=None, type=int)
+        #similarity_threshold = request.args.get('similarity_threshold', default=0.3, type=float)
+        
+        if not user_input:
+            return jsonify({"error": "Missing query parameter 'q'"}), HTTPStatus.BAD_REQUEST
+        
+        # First, perform LLM search to get filtered results
+        llm_response = llm_search()
+        if llm_response.status_code != HTTPStatus.OK:
+            return llm_response
+        
+        llm_data = llm_response.get_json()
+        if 'error' in llm_data:
+            return jsonify(llm_data), llm_response.status_code
+        
+        # Get the filtered results
+        filtered_results = llm_data.get('results', [])
+        
+        # Generate embedding for the query
+        query_embedding = get_query_embedding(user_input)
+        
+        # Calculate similarity scores for filtered results
+        for result in filtered_results:
+            if 'embedding' in result:
+                # Convert string embedding to numpy array
+                try:
+                    if isinstance(result['embedding'], str):
+                        embedding_array = np.array(json.loads(result['embedding']))
+                    else:
+                        embedding_array = np.array(result['embedding'])
+                    
+                    # Calculate similarity score
+                    result['similarity_score'] = float(cosine_similarity(query_embedding, embedding_array))
+                except Exception as e:
+                    current_app.logger.warning(f"Error calculating similarity for result: {str(e)}")
+                    result['similarity_score'] = 0.0
+        
+        # Sort results by similarity score
+        filtered_results.sort(key=lambda x: x.get('similarity_score', 0), reverse=True)
+        
+        # Apply maximum limit of 50 results
+        if limit is None or limit > 50:
+            limit = 50
+        filtered_results = filtered_results[:limit]
+        
+        # Generate summary for the top 20 results only
+        summary = generate_summary(user_input, filtered_results[:20], "topics")
+        
+        # Return the ranked results with summary
+        return jsonify({
+            "results": filtered_results,
+            "summary": summary,
+            "count": len(filtered_results)
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"Combined search error: {str(e)}")
         return jsonify({"error": f"Server error: {str(e)}"}), HTTPStatus.INTERNAL_SERVER_ERROR
 
