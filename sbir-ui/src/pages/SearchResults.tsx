@@ -5,6 +5,7 @@ import { Topic, parseTopic } from "@/types/topic";
 import { Award, parseAward } from "@/types/award";
 import { Company, parseCompany } from "@/types/company";
 import AgencyLogo from "@/components/AgencyLogo";
+import { track } from '@vercel/analytics';
 
 type SearchResult = {
   type: 'topic' | 'award' | 'company';
@@ -31,6 +32,12 @@ export default function SearchResults() {
   useEffect(() => {
     if (searchTerm) {
       fetchResults();
+      // Track search event
+      track('search', { 
+        query: searchTerm,
+        timestamp: new Date().toISOString(),
+        resultCount: searchResponse?.count || 0
+      });
     } else {
       setResults([]);
       setLoading(false);
@@ -39,6 +46,9 @@ export default function SearchResults() {
 
   async function fetchResults() {
     setLoading(true);
+    // Clear previous search response when starting new search
+    setSearchResponse(null);
+    
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/search?q=${encodeURIComponent(searchTerm)}`);
       const data = await response.json();
@@ -49,10 +59,25 @@ export default function SearchResults() {
         setSearchResponse(data);
         
         // Process results
-        const processedResults: SearchResult[] = data.results.map((row: Topic) => ({
-          type: 'topic',
-          data: parseTopic(row),
-        }));
+        const processedResults: SearchResult[] = data.results.map((row: any) => {
+          // Determine type based on database response
+          if (data.database === 'db1') {
+            return {
+              type: 'topic',
+              data: parseTopic(row),
+            };
+          } else if (data.database === 'db2') {
+            return {
+              type: 'award',
+              data: parseAward(row),
+            };
+          } else if (data.database === 'db3') {
+            return {
+              type: 'company',
+              data: parseCompany(row),
+            };
+          }
+        });
         
         setResults(processedResults);
       }
@@ -212,7 +237,7 @@ export default function SearchResults() {
             </div>
           ) : (
             <p className="text-gray-600 dark:text-gray-200">
-              Found {searchResponse?.count || 0} results for &quot;{searchTerm}&quot;
+              Found {searchResponse?.count !== undefined && searchResponse.count >= 100 ? "100+" : searchResponse?.count || 0} results for &quot;{searchTerm}&quot;
             </p>
           )}
         </div>

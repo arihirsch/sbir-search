@@ -4,9 +4,9 @@
         "solicitations": {
           "columns": {
             "solicitation_id": "INTEGER PRIMARY KEY",
-            "program": "TEXT",
-            "phase": "TEXT",
-            "agency": "TEXT",
+            "program": "SBIR, STTR, or BOTH",
+            "phase": "Phase 1, Phase 2, or BOTH",
+            "agency": "DOD, HHS, NASA, NSF, USDA, EPA, ED, DHS, DOT, DOE, DOC",
             "branch": "TEXT",
             "solicitation_year": "INTEGER",
             "release_date": "TEXT",
@@ -67,17 +67,14 @@
         "awards": {
           "columns": {
             "award_link": "INTEGER PRIMARY KEY",
-            "agency": "TEXT",
+            "agency": "DOD, HHS, NASA, NSF, USDA, EPA, ED, DHS, DOT, DOE, DOC",
             "branch": "TEXT",
-            "phase": "TEXT",
-            "program": "TEXT",
-            "agency_tracking_number": "TEXT",
-            "contract": "TEXT",
+            "phase": "Phase 1, Phase 2, or BOTH",
+            "program": "SBIR, STTR, or BOTH",
             "proposal_award_date": "TEXT",
             "contract_end_date": "TEXT",
             "solicitation_number": "TEXT",
             "solicitation_year": "INTEGER",
-            "topic_code": "TEXT",
             "award_year": "INTEGER",
             "award_amount": "DECIMAL(15,4)",
             "duns": "TEXT",
@@ -86,21 +83,15 @@
             "socially_economically_disadvantaged": "TEXT",
             "women_owned": "TEXT",
             "number_employees": "INTEGER",
-            "company_url": "TEXT",
             "city": "TEXT",
             "state": "TEXT",
             "zip": "TEXT",
             "poc_name": "TEXT",
             "poc_title": "TEXT",
-            "poc_phone": "TEXT",
-            "poc_email": "TEXT",
             "pi_name": "TEXT",
             "pi_title": "TEXT",
-            "pi_phone": "TEXT",
-            "pi_email": "TEXT",
             "ri_name": "TEXT",
-            "ri_poc_name": "TEXT",
-            "ri_poc_phone": "TEXT"
+            "ri_poc_name": "TEXT"
           }
         }
       }
@@ -110,13 +101,11 @@
         "companies": {
           "columns": {
             "firm_nid": "INTEGER PRIMARY KEY",
-            "sbir_url": "TEXT",
             "uei": "TEXT",
             "duns": "TEXT",
             "city": "TEXT",
             "state": "TEXT",
             "zip": "TEXT",
-            "company_url": "TEXT",
             "hubzone_owned": "TEXT",
             "socially_economically_disadvantaged": "TEXT",
             "woman_owned": "TEXT",
@@ -135,8 +124,7 @@
       {
         "from": "awards.awards",
         "to": "solicitations.topics",
-        "type": "many-to-one",
-        "description": "Awards are associated with topics via topic_code and solicitation_number"
+        "type": "many-to-one"
       }
     ],
     "usage_examples": [

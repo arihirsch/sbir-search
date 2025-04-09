@@ -81,7 +81,7 @@ def natural_language_to_sql(user_input, schema_info):
 
     **STRICT REQUIREMENTS**:
     - ONLY use highly structured fields such as: `year`, `phase`, `agency`, `branch`, `state`, etc.
-    - DO NOT use or search unstructured or free-text fields such as `description`, `title`, `topic_number`, `topic_description`, `abstract`, etc.
+    - DO NOT use or search unstructured or free-text fields such as `description`, `title`, `topic_number`, `topic_description`, `abstract`, `topic_code`, etc.
     - DO NOT perform full-text search or use `ILIKE`/`LIKE` on descriptive fields.
     - DO NOT query on topic numbers or solicitation numbers unless explicitly requested and mapped to structured fields.
 
@@ -101,6 +101,8 @@ def natural_language_to_sql(user_input, schema_info):
         LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
         ```
     2. `db2`: Contains awards information.
+    - NEVER query fields for textual information, and never use `ILIKE`/`LIKE` on descriptive fields.
+    - For general queries, ```SELECT * FROM awards``` is sufficient.
     3. `db3`: Contains company information (companies that have received awards).
 
     **SPECIAL RULES**:
@@ -281,6 +283,7 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> s
     - Use result dates to highlight changes or developments over time, and be specific about the dates.
     - Assume the user wants **actionable or analytical** insights—not a verbose or general overview.
     - Limit the output to **under 100 words**. Avoid filler or repetition.
+    - If there are no results, return "No results found."
 
     User Query: {query}
 
@@ -398,6 +401,9 @@ def search():
         sql_query = llm_data.get('sql_query')
         db_name = llm_data.get('database')
         
+        # Determine which table to use based on database
+        table_name = "topics" if db_name == "db1" else "awards" if db_name == "db2" else "companies" if db_name == "db3" else None
+        
         # Generate embedding for the query
         query_embedding = get_query_embedding(user_input)
         embedding_str = "[" + ",".join(map(str, query_embedding)) + "]"
@@ -419,13 +425,14 @@ def search():
         results = [dict(row) for row in cursor.fetchall()]
         
         # Generate summary for the top 20 results only
-        summary = generate_summary(user_input, results[:20], "topics")
+        summary = generate_summary(user_input, results[:20], table_name)
         
         # Return the ranked results with summary
         return jsonify({
             "results": results,
             "summary": summary,
-            "count": len(results)
+            "count": len(results),
+            "database": db_name  # Add database info to response
         })
         
     except Exception as e:
