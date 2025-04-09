@@ -33,7 +33,7 @@ def get_schema_info():
 @bp.route('/llmsearch', methods=['GET'])
 def llm_search():
     """
-    Convert natural language query to SQL and return results.
+    Convert natural language query to SQL and return the query and database name.
     
     Query parameters:
     - q: The natural language query
@@ -59,32 +59,10 @@ def llm_search():
         if limit is not None and "LIMIT" not in sql_query.upper():
             sql_query = f"{sql_query} LIMIT {limit}"
         
-        # Execute query and get results
-        cursor = get_db_cursor(db_name=db_name)
-        
-        try:
-            cursor.execute(sql_query)
-            response = cursor.fetchall()
-
-            results = []
-            for row in response:
-                topic_dict = dict(row)
-                results.append(topic_dict)
-            
-            return jsonify({
-                "results": results,
-                "sql_query": sql_query,
-                "database": db_name,
-                "count": len(results)
-            })
-        except Exception as e:
-            current_app.logger.error(f"SQL execution error: {str(e)}")
-            # Return more detailed error information
-            return jsonify({
-                "error": f"SQL execution error: {str(e)}",
-                "sql_query": sql_query,
-                "database": db_name
-            }), HTTPStatus.BAD_REQUEST
+        return jsonify({
+            "sql_query": sql_query,
+            "database": db_name
+        })
         
     except Exception as e:
         current_app.logger.error(f"LLM search error: {str(e)}")
@@ -158,7 +136,7 @@ def natural_language_to_sql(user_input, schema_info):
                 {"role": "system","content": "You are an AI that converts natural language into SQL queries. Respond ONLY with a JSON object containing the target database (db1, db2, or db3) and a valid SQL query. Do NOT include any commentary or explanation. For general or ambiguous queries, default to querying the 'topics' table in the db1 schema. Avoid querying unstructured text fields like descriptions or titles—use only structured fields such as year, phase, agency, and branch."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.2,  # Lower temperature for more deterministic results
+            temperature=0.0,  # Lower temperature for more deterministic results
             response_format={"type": "json_object"}  # Ensure JSON response
         )
         
@@ -316,7 +294,7 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> s
             {"role": "system", "content": "You are a SBIR expert that can answer questions about the database, and synthesize information from the search results."},
             {"role": "user", "content": prompt}
         ],
-        temperature=0.0
+        temperature=0.1
     )
     
     return response.choices[0].message.content.strip()
@@ -396,19 +374,18 @@ def vector_search():
 def search():
     """
     Combined search endpoint that uses both LLM and vector search.
-    First uses LLM search to filter by structured fields, then uses vector search
-    to rank the filtered results by semantic similarity.
+    First uses LLM search to get the SQL query, then executes it with vector similarity
+    directly in the database.
     """
     try:
         # Get query parameters
         user_input = request.args.get('q')
         limit = request.args.get('limit', default=None, type=int)
-        #similarity_threshold = request.args.get('similarity_threshold', default=0.3, type=float)
         
         if not user_input:
             return jsonify({"error": "Missing query parameter 'q'"}), HTTPStatus.BAD_REQUEST
         
-        # First, perform LLM search to get filtered results
+        # First, get the SQL query from LLM search
         llm_response = llm_search()
         if llm_response.status_code != HTTPStatus.OK:
             return llm_response
@@ -417,44 +394,38 @@ def search():
         if 'error' in llm_data:
             return jsonify(llm_data), llm_response.status_code
         
-        # Get the filtered results
-        filtered_results = llm_data.get('results', [])
+        # Get the SQL query and database name
+        sql_query = llm_data.get('sql_query')
+        db_name = llm_data.get('database')
         
         # Generate embedding for the query
         query_embedding = get_query_embedding(user_input)
+        embedding_str = "[" + ",".join(map(str, query_embedding)) + "]"
         
-        # Calculate similarity scores for filtered results
-        for result in filtered_results:
-            if 'embedding' in result:
-                # Convert string embedding to numpy array
-                try:
-                    if isinstance(result['embedding'], str):
-                        embedding_array = np.array(json.loads(result['embedding']))
-                    else:
-                        embedding_array = np.array(result['embedding'])
-                    
-                    # Calculate similarity score
-                    result['similarity_score'] = float(cosine_similarity(query_embedding, embedding_array))
-                except Exception as e:
-                    current_app.logger.warning(f"Error calculating similarity for result: {str(e)}")
-                    result['similarity_score'] = 0.0
+        # Get the base query without ORDER BY and LIMIT clauses
+        base_query = sql_query.split("ORDER BY")[0].split("LIMIT")[0].strip()
         
-        # Sort results by similarity score
-        filtered_results.sort(key=lambda x: x.get('similarity_score', 0), reverse=True)
+        # Add vector similarity to the query, using the IVFFlat index
+        vector_query = f"""
+            {base_query}
+            ORDER BY embedding <=> %s::vector
+            LIMIT %s
+        """
         
-        # Apply maximum limit of 50 results
-        if limit is None or limit > 50:
-            limit = 50
-        filtered_results = filtered_results[:limit]
+        # Execute the query
+        cursor = get_db_cursor(db_name=db_name)
+        cursor.execute("SET search_path TO extensions, public, db1, db2, db3;")
+        cursor.execute(vector_query, (embedding_str, limit or 100))
+        results = [dict(row) for row in cursor.fetchall()]
         
         # Generate summary for the top 20 results only
-        summary = generate_summary(user_input, filtered_results[:20], "topics")
+        summary = generate_summary(user_input, results[:20], "topics")
         
         # Return the ranked results with summary
         return jsonify({
-            "results": filtered_results,
+            "results": results,
             "summary": summary,
-            "count": len(filtered_results)
+            "count": len(results)
         })
         
     except Exception as e:
