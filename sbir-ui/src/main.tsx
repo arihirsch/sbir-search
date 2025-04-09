@@ -8,9 +8,9 @@ import App from './App.tsx'
 // Initialize PostHog
 if (import.meta.env.PROD) {
   posthog.init(
-    import.meta.env.REACT_APP_PUBLIC_POSTHOG_KEY,
+    import.meta.env.VITE_POSTHOG_PUBLIC_KEY,
     {
-      api_host: import.meta.env.REACT_APP_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
+      api_host: import.meta.env.VITE_POSTHOG_HOST,
       // Enable debug mode in development
       debug: import.meta.env.DEV,
       // Disable in development
