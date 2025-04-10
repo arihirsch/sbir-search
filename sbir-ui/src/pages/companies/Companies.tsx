@@ -99,13 +99,13 @@ export default function Companies() {
                   <p>
                     <strong>Website:</strong>{" "}
                     <a 
-                      href={company.company_url} 
+                      href={company.company_url.startsWith('http') ? company.company_url : `http://${company.company_url}`}
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:underline"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {company.company_url}
+                      {company.company_url.replace(/^https?:\/\//, '').replace(/^www\./, '')}
                     </a>
                   </p>
                 )}

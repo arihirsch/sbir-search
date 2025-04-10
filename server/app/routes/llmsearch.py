@@ -104,6 +104,9 @@ def natural_language_to_sql(user_input, schema_info):
     - NEVER query fields for textual information, and never use `ILIKE`/`LIKE` on descriptive fields.
     - For general queries, ```SELECT * FROM awards``` is sufficient.
     3. `db3`: Contains company information (companies that have received awards).
+    - ONLY query city, state, and number of awards. NOTHING ELSE, even if specifically requested.
+    - NEVER query fields for textual information, and never use `ILIKE`/`LIKE` on descriptive fields.
+    - For general queries, ```SELECT * FROM companies``` is sufficient.
 
     **SPECIAL RULES**:
     - If the user asks about the "Space Force", map this to the Air Force branch (USAF).
@@ -265,13 +268,19 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> s
             Branch: {result.get('branch', '')}
             Close Date: {result.get('topic_closed_date', '')}
             """
-        else:  # awards
+        elif table == "awards":  # awards
             results_text += f"""
             Result {i}:
             Company: {result.get('firm', '')}
             Award Title: {result.get('award', '')}
             Amount: {result.get('award_amount', '')}
             Abstract: {result.get('abstract', '')}
+            """
+        elif table == "companies":  # companies
+            results_text += f"""
+            Result {i}:
+            Company: {result.get('company_name', '')}
+            Location: {result.get('city', '')}, {result.get('state', '')}
             """
     
     prompt = f"""

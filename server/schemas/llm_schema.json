@@ -101,8 +101,7 @@
         "companies": {
           "columns": {
             "firm_nid": "INTEGER PRIMARY KEY",
-            "uei": "TEXT",
-            "duns": "TEXT",
+            "company_name": "TEXT",
             "city": "TEXT",
             "state": "TEXT",
             "zip": "TEXT",

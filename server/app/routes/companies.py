@@ -14,6 +14,7 @@ def get_all_companies():
     query = """
         SELECT *, COUNT(*) OVER() as total_count
         FROM companies
+        ORDER BY number_awards DESC
     """
     params = []
     
