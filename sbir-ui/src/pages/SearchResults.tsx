@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Topic, parseTopic } from "@/types/topic";
 import { Award, parseAward } from "@/types/award";
 import { Company, parseCompany } from "@/types/company";
 import AgencyLogo from "@/components/AgencyLogo";
-import { track } from '@vercel/analytics';
+import posthog from 'posthog-js';
 
 type SearchResult = {
   type: 'topic' | 'award' | 'company';
@@ -14,9 +14,10 @@ type SearchResult = {
 };
 
 type SearchResponse = {
-  results: Topic[];
+  results: Topic[] | Award[] | Company[];
   summary: string;
   count: number;
+  database?: 'db1' | 'db2' | 'db3';
 };
 
 export default function SearchResults() {
@@ -24,19 +25,23 @@ export default function SearchResults() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchResponse, setSearchResponse] = useState<SearchResponse | null>(null);
-  const navigate = useNavigate();
   
   // Get search term from URL params
   const searchTerm = searchParams.get("q") || '';
 
   useEffect(() => {
     if (searchTerm) {
-      fetchResults();
-      // Track search event
-      track('search', { 
-        query: searchTerm,
-        timestamp: new Date().toISOString(),
-        resultCount: searchResponse?.count || 0
+      const startTime = performance.now();
+      fetchResults().finally(() => {
+        const duration = performance.now() - startTime;
+        // Track search completed
+        posthog.capture('search_completed', {
+          search_term: searchTerm,
+          duration_ms: Math.round(duration),
+          result_count: searchResponse?.count || 0,
+          has_results: (searchResponse?.count || 0) > 0,
+          database: searchResponse?.database || null
+        });
       });
     } else {
       setResults([]);
@@ -55,11 +60,16 @@ export default function SearchResults() {
       
       if (data.error) {
         console.error("Search error:", data.error);
+        // Track search error
+        posthog.capture('search_error', {
+          search_term: searchTerm,
+          error: data.error
+        });
       } else {
         setSearchResponse(data);
         
         // Process results
-        const processedResults: SearchResult[] = data.results.map((row: any) => {
+        const processedResults: SearchResult[] = data.results.map((row: Record<string, unknown>) => {
           // Determine type based on database response
           if (data.database === 'db1') {
             return {
@@ -83,6 +93,11 @@ export default function SearchResults() {
       }
     } catch (error) {
       console.error("Error fetching results:", error);
+      // Track search failure
+      posthog.capture('search_error', {
+        search_term: searchTerm,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     } finally {
       setLoading(false);
     }
@@ -128,6 +143,7 @@ export default function SearchResults() {
             key={`topic-${topic.topic_number}`}
             className="hover:shadow-lg transition-shadow"
             href={`/topics/${encodeURIComponent(topic.topic_number)}/${topic.solicitation_id}`}
+            onClick={() => handleResultClick(result)}
           >
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -163,6 +179,7 @@ export default function SearchResults() {
             key={`award-${award.award_link}`}
             className="hover:shadow-lg transition-shadow"
             href={`/awards/${award.award_link}`}
+            onClick={() => handleResultClick(result)}
           >
             <CardHeader>
               <div className="text-sm text-purple-600 font-medium mb-1">Award</div>
@@ -189,6 +206,7 @@ export default function SearchResults() {
             key={`company-${company.firm_nid}`}
             className="hover:shadow-lg transition-shadow"
             href={`/companies/${company.firm_nid}`}
+            onClick={() => handleResultClick(result)}
           >
             <CardHeader>
               <div className="text-sm text-green-600 font-medium mb-1">Company</div>
@@ -224,6 +242,17 @@ export default function SearchResults() {
       default:
         return null;
     }
+  };
+
+  // Also track when users click on results
+  const handleResultClick = (result: SearchResult) => {
+    posthog.capture('search_result_click', {
+      search_term: searchTerm,
+      result_type: result.type,
+      result_id: result.type === 'topic' ? (result.data as Topic).topic_number :
+                result.type === 'award' ? (result.data as Award).award_link :
+                (result.data as Company).firm_nid
+    });
   };
 
   return (

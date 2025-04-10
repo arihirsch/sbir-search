@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Input } from './ui/input';
 import { useState } from 'react';
 import { Search } from 'lucide-react';
+import posthog from 'posthog-js';
 
 export default function TitleBar() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -10,6 +11,11 @@ export default function TitleBar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
+      // Track search initiated
+      posthog.capture('search_initiated', {
+        search_term: searchTerm.trim(),
+        source: 'title_bar'
+      });
       navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
