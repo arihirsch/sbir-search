@@ -32,6 +32,9 @@ export default function SearchResults() {
   useEffect(() => {
     if (searchTerm) {
       const startTime = performance.now();
+      posthog.capture('search_initiated', {
+        search_term: searchTerm
+      });
       fetchResults().finally(() => {
         const duration = performance.now() - startTime;
         // Track search completed
