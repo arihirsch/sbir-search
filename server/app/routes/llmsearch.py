@@ -52,8 +52,9 @@ def llm_search():
         
         # Generate SQL from natural language and determine which database to use
         sql_result = natural_language_to_sql(user_input, schema_info)
-        sql_query = sql_result["sql"]
-        db_name = sql_result["database"]
+        cleaned_sql_result = clean_sql_result(user_input, sql_result)
+        sql_query = cleaned_sql_result["sql"]
+        db_name = cleaned_sql_result["database"]
         
         # Add safety limit to query if not present
         if limit is not None and "LIMIT" not in sql_query.upper():
@@ -190,6 +191,55 @@ def natural_language_to_sql(user_input, schema_info):
         current_app.logger.error(f"OpenAI API error: {str(e)}")
         raise Exception(f"Failed to generate SQL: {str(e)}")
 
+def clean_sql_result(user_input: str, sql_result: str) -> str:
+    """
+    Clean the SQL result to remove any non-structured fields.
+    """
+    # Things to check/fix
+    # don't filter on branch if the branch isn't explicitly mentioned
+    # single word or short phrases
+    # make sure sql query only selects from the right fields
+
+    # first check if user input contains "topic" or "solicitation"
+    if "topic" in user_input.lower() or "solicitation" in user_input.lower():
+        if sql_result["database"] != "db1":
+            sql_result["database"] = "db1"
+            if "topics" not in sql_result["sql"].lower():
+                sql_result["sql"] = f"SELECT * FROM topics"
+    
+    # check if user input contains "award" or "grant"
+    if "award" in user_input.lower() or "grant" in user_input.lower():
+        if sql_result["database"] != "db2":
+            sql_result["database"] = "db2"
+            if "awards" not in sql_result["sql"].lower():
+                sql_result["sql"] = f"SELECT * FROM awards"
+
+    # check if user input contains "company" or "firm"
+    if "company" in user_input.lower() or "firm" in user_input.lower() or "companies" in user_input.lower():
+        if sql_result["database"] != "db3":
+            sql_result["database"] = "db3"
+            if "companies" not in sql_result["sql"].lower():
+                sql_result["sql"] = f"SELECT * FROM companies"
+
+    if sql_result["database"] == "db1":
+        if "t.topic_closed_date IS NULL" in sql_result["sql"] and "t.topic_closed_date > CURRENT_DATE" not in sql_result["sql"]:
+            sql_result["sql"] = sql_result["sql"].replace("t.topic_closed_date IS NULL", "t.topic_closed_date IS NULL OR t.topic_closed_date > CURRENT_DATE")
+            print("cleaned topic closed date")
+        if "LIKE" in sql_result["sql"].lower():
+            sql_result["sql"] = f"SELECT * FROM topics"
+
+    if sql_result["database"] == "db2":
+        if "LIKE" in sql_result["sql"].lower():
+            sql_result["sql"] = f"SELECT * FROM awards"
+
+    if sql_result["database"] == "db3":
+        if "company_name = " in sql_result["sql"].lower():
+            sql_result["sql"] = f"SELECT * FROM companies"
+        if "LIKE" in sql_result["sql"].lower():
+            sql_result["sql"] = f"SELECT * FROM companies"
+
+    return sql_result
+
 def get_query_embedding(query: str) -> List[float]:
     """
     Generate embedding for a query using OpenAI's embedding model.
@@ -287,6 +337,7 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> s
     You are a technical summarizer. Based on the user query and the search results below, generate a precise, domain-specific summary that addresses the core of the user's question.
 
     - Extract **highly technical insights** or **relevant findings** inferred from the results.
+    - Take into account the intent of the user's query and the results to generate a summary.
     - DO NOT enumerate or list individual results, even if explicitly requested.
     - Identify **patterns**, **trends**, or **emergent themes**, especially from **recent results**.
     - Use result dates to highlight changes or developments over time, and be specific about the dates.
