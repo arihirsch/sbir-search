@@ -20,7 +20,7 @@ export default function About() {
         <section className="mb-8">
           <h2 className="text-1xl font-semibold mb-4">Current Features</h2>
           <ul className="list-disc pl-6 space-y-2">
-            <li>LLM enabled search that goes far beyond simple keyword search</li>
+            <li>LLM enabled semantic search that goes far beyond the simple keyword search on the SBIR website</li>
             <li>Current and past SBIR/STTR topics</li>
             <li>Prior award information</li>
             <li>Company profiles</li>

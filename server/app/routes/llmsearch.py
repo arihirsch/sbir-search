@@ -481,6 +481,7 @@ def search():
         # Execute the query
         cursor = get_db_cursor(db_name=db_name)
         cursor.execute("SET search_path TO extensions, public, db1, db2, db3;")
+        cursor.execute("SET ivfflat.probes = 10;")
         cursor.execute(vector_query, (embedding_str, limit or 100))
         results = [dict(row) for row in cursor.fetchall()]
         
