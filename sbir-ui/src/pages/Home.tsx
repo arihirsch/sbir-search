@@ -10,8 +10,8 @@ import AgencyLogo from "@/components/AgencyLogo";
 // Configuration for featured items - just update these IDs to change what's displayed
 const FEATURED_CONFIG = {
   topics: [
-    { topicNumber: "A254-P026", solicitationId: "1262" },
-    { topicNumber: "A254-020", solicitationId: "1263" }
+    { topicNumber: "A254-P030", solicitationId: "1285" },
+    { topicNumber: "OSD252-D03", solicitationId: "1289" }
   ],
   awards: [
     { id: "202272" },

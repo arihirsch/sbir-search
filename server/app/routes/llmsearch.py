@@ -151,7 +151,7 @@ def natural_language_to_sql(user_input, schema_info):
         # Parse the JSON response
         try:
             result = json.loads(result_text)
-            print(result)
+            print("NL2SQL:",result)
             
             # Validate the response format
             if "database" not in result or "sql" not in result:
@@ -176,7 +176,7 @@ def natural_language_to_sql(user_input, schema_info):
             # modify it to query the topics table by default
             if result["database"] == "db1" and "topics" not in result["sql"].lower():
                 current_app.logger.info("Modifying query to use topics table")
-                result["sql"] = f"SELECT * FROM topics WHERE topic_title LIKE '%{user_input}%' OR topic_description LIKE '%{user_input}%'"
+                result["sql"] = f"SELECT * FROM topics"
                 
             return result
         except json.JSONDecodeError:
@@ -215,11 +215,11 @@ def clean_sql_result(user_input: str, sql_result: str) -> str:
                 sql_result["sql"] = f"SELECT * FROM awards"
 
     # check if user input contains "company" or "firm"
-    if "company" in user_input.lower() or "firm" in user_input.lower() or "companies" in user_input.lower():
-        if sql_result["database"] != "db3":
-            sql_result["database"] = "db3"
-            if "companies" not in sql_result["sql"].lower():
-                sql_result["sql"] = f"SELECT * FROM companies"
+    #if "company" in user_input.lower() or "firm" in user_input.lower() or "companies" in user_input.lower():
+    #    if sql_result["database"] != "db3":
+    #        sql_result["database"] = "db3"
+    #        if "companies" not in sql_result["sql"].lower():
+    #            sql_result["sql"] = f"SELECT * FROM companies"
 
     if sql_result["database"] == "db1":
         if "t.topic_closed_date IS NULL" in sql_result["sql"] and "t.topic_closed_date > CURRENT_DATE" not in sql_result["sql"]:
@@ -481,9 +481,18 @@ def search():
         # Execute the query
         cursor = get_db_cursor(db_name=db_name)
         cursor.execute("SET search_path TO extensions, public, db1, db2, db3;")
-        cursor.execute("SET ivfflat.probes = 10;")
+
+        # Log start time
+        start_time = datetime.now()
+        
+        # Execute vector search
         cursor.execute(vector_query, (embedding_str, limit or 100))
         results = [dict(row) for row in cursor.fetchall()]
+        
+        # Log end time and calculate duration
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        current_app.logger.info(f"Vector search completed in {duration:.2f}s with {len(results)} results")
         
         # Generate summary for the top 20 results only
         summary = generate_summary(user_input, results[:20], table_name)
