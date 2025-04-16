@@ -501,6 +501,7 @@ def search():
         start_time = datetime.now()
         
         # Execute vector search
+        cursor.execute("SET ivfflat.probes = 5;")
         cursor.execute(vector_query, (embedding_str, limit or 100))
         results = [dict(row) for row in cursor.fetchall()]
         
