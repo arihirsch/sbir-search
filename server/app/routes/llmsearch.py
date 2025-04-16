@@ -321,32 +321,36 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> s
     """
     client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
     
+    def trim(text, max_len=1600):
+        return text[:max_len] + "..." if len(text) > max_len else text
+
     # Format results for the prompt
-    results_text = ""
+    lines = []
     for i, result in enumerate(results, 1):
         if table == "topics":
-            results_text += f"""
+            lines.append(f"""
             Result {i}:
             Title: {result.get('topic_title', '')}
-            Description: {result.get('topic_description', '')}
+            Description: {trim(result.get('topic_description', ''))}
             Agency: {result.get('agency', '')}
             Branch: {result.get('branch', '')}
             Close Date: {result.get('topic_closed_date', '')}
-            """
+            """)
         elif table == "awards":  # awards
-            results_text += f"""
+            lines.append(f"""
             Result {i}:
             Company: {result.get('firm', '')}
-            Award Title: {result.get('award', '')}
+            Award Title: {result.get('award_title', '')}
             Amount: {result.get('award_amount', '')}
-            Abstract: {result.get('abstract', '')}
-            """
+            Abstract: {trim(result.get('abstract', ''))}
+            """)
         elif table == "companies":  # companies
-            results_text += f"""
+            lines.append(f"""
             Result {i}:
             Company: {result.get('company_name', '')}
             Location: {result.get('city', '')}, {result.get('state', '')}
-            """
+            """)
+    results_text = "\n".join(lines)
     
     prompt = f"""
     You are a technical summarizer. Based on the user query and the search results below, generate a precise, domain-specific summary that addresses the core of the user's question.
@@ -367,7 +371,7 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> s
     """
     
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         messages=[
             {"role": "system", "content": "You are a SBIR expert that can answer questions about the database, and synthesize information from the search results."},
             {"role": "user", "content": prompt}
@@ -456,6 +460,9 @@ def search():
     directly in the database.
     """
     try:
+        # Log start time
+        start_time = datetime.now()
+        
         # Get query parameters
         user_input = request.args.get('q')
         limit = request.args.get('limit', default=None, type=int)
@@ -465,6 +472,12 @@ def search():
         
         # First, get the SQL query from LLM search
         llm_response = llm_search()
+
+        # Log end time and calculate duration
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        current_app.logger.info(f"LLM search completed in {duration:.2f}s")
+
         if llm_response.status_code != HTTPStatus.OK:
             return llm_response
         
@@ -496,22 +509,24 @@ def search():
         # Execute the query
         cursor = get_db_cursor(db_name=db_name)
         cursor.execute("SET search_path TO extensions, public, db1, db2, db3;")
-
-        # Log start time
-        start_time = datetime.now()
         
         # Execute vector search
         cursor.execute("SET ivfflat.probes = 5;")
         cursor.execute(vector_query, (embedding_str, limit or 100))
         results = [dict(row) for row in cursor.fetchall()]
-        
+
         # Log end time and calculate duration
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds()
         current_app.logger.info(f"Vector search completed in {duration:.2f}s with {len(results)} results")
         
         # Generate summary for the top 20 results only
-        summary = generate_summary(user_input, results[:20], table_name)
+        summary = generate_summary(user_input, results[:10], table_name)
+
+        # Log end time and calculate duration
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        current_app.logger.info(f"Search completed in {duration:.2f}s with {len(results)} results")
         
         # Return the ranked results with summary
         return jsonify({
