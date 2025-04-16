@@ -101,6 +101,18 @@ def natural_language_to_sql(user_input, schema_info):
         FROM topics t
         LEFT JOIN solicitations s ON t.solicitation_id = s.solicitation_id
         ```
+    - If a user asks for open topics, use the following query:
+        ```sql
+        SELECT * FROM topics WHERE topic_open_date < CURRENT_DATE OR topic_open_date IS NULL
+        ```
+    - If a user asks for closed topics, use the following query:
+        ```sql
+        SELECT * FROM topics WHERE topic_closed_date < CURRENT_DATE OR topic_closed_date IS NULL
+        ```
+    - If a user asks for pre-release topics, use the following query:
+        ```sql
+        SELECT * FROM topics WHERE topic_open_date > CURRENT_DATE
+        ```
     2. `db2`: Contains awards information.
     - NEVER query fields for textual information, and never use `ILIKE`/`LIKE` on descriptive fields.
     - For general queries, ```SELECT * FROM awards``` is sufficient.
@@ -225,6 +237,9 @@ def clean_sql_result(user_input: str, sql_result: str) -> str:
         if "t.topic_closed_date IS NULL" in sql_result["sql"] and "t.topic_closed_date > CURRENT_DATE" not in sql_result["sql"]:
             sql_result["sql"] = sql_result["sql"].replace("t.topic_closed_date IS NULL", "t.topic_closed_date IS NULL OR t.topic_closed_date > CURRENT_DATE")
             print("cleaned topic closed date")
+        if "t.topic_open_date = ''" in sql_result["sql"]:
+            sql_result["sql"] = sql_result["sql"].replace("t.topic_open_date = ''", "t.topic_open_date < CURRENT_DATE")
+            print("cleaned topic open date")
         if "LIKE" in sql_result["sql"].lower():
             sql_result["sql"] = f"SELECT * FROM topics"
 
