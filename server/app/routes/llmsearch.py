@@ -52,10 +52,11 @@ def llm_search():
         
         # Generate SQL from natural language and determine which database to use
         sql_result = natural_language_to_sql(user_input, schema_info)
+        print("sql_result:",sql_result)
         cleaned_sql_result = clean_sql_result(user_input, sql_result)
         sql_query = cleaned_sql_result["sql"]
         db_name = cleaned_sql_result["database"]
-        
+        print("db_name_cleaned:",db_name)
         # Add safety limit to query if not present
         if limit is not None and "LIMIT" not in sql_query.upper():
             sql_query = f"{sql_query} LIMIT {limit}"
@@ -220,11 +221,11 @@ def clean_sql_result(user_input: str, sql_result: str) -> str:
                 sql_result["sql"] = f"SELECT * FROM topics"
     
     # check if user input contains "award" or "grant"
-    if "award" in user_input.lower() or "grant" in user_input.lower():
-        if sql_result["database"] != "db2":
-            sql_result["database"] = "db2"
-            if "awards" not in sql_result["sql"].lower():
-                sql_result["sql"] = f"SELECT * FROM awards"
+    #if "award" in user_input.lower() or "grant" in user_input.lower():
+    #    if sql_result["database"] != "db2":
+    #        sql_result["database"] = "db2"
+    #        if "awards" not in sql_result["sql"].lower():
+    #            sql_result["sql"] = f"SELECT * FROM awards"
 
     # check if user input contains "company" or "firm"
     #if "company" in user_input.lower() or "firm" in user_input.lower() or "companies" in user_input.lower():
@@ -505,7 +506,6 @@ def search():
             ORDER BY embedding <=> %s::vector
             LIMIT %s
         """
-        
         # Execute the query
         cursor = get_db_cursor(db_name=db_name)
         cursor.execute("SET search_path TO extensions, public, db1, db2, db3;")
@@ -514,6 +514,10 @@ def search():
         cursor.execute("SET ivfflat.probes = 5;")
         cursor.execute(vector_query, (embedding_str, limit or 100))
         results = [dict(row) for row in cursor.fetchall()]
+        print("results:",results[0]["company_name"])
+
+        print("db_name:",db_name)
+        print("table_name:",table_name)
 
         # Log end time and calculate duration
         end_time = datetime.now()
