@@ -352,7 +352,6 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> s
             Number of Awards: {result.get('number_awards', '')}
             """)
     results_text = "\n".join(lines)
-    print("results_text:",results_text)
     prompt = f"""
     You are a technical summarizer. Based on the user query and the search results below, generate a precise, domain-specific summary that addresses the core of the user's question.
 
@@ -522,7 +521,7 @@ def search():
         
         # Generate summary for the top 20 results only
         summary = generate_summary(user_input, results[:10], table_name)
-        print("results:",results[0]["company_name"])
+        #print("results:",results[0]["company_name"])
 
         # Log end time and calculate duration
         end_time = datetime.now()
