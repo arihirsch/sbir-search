@@ -52,11 +52,10 @@ def llm_search():
         
         # Generate SQL from natural language and determine which database to use
         sql_result = natural_language_to_sql(user_input, schema_info)
-        print("sql_result:",sql_result)
         cleaned_sql_result = clean_sql_result(user_input, sql_result)
         sql_query = cleaned_sql_result["sql"]
         db_name = cleaned_sql_result["database"]
-        print("db_name_cleaned:",db_name)
+
         # Add safety limit to query if not present
         if limit is not None and "LIMIT" not in sql_query.upper():
             sql_query = f"{sql_query} LIMIT {limit}"
@@ -350,9 +349,10 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> s
             Result {i}:
             Company: {result.get('company_name', '')}
             Location: {result.get('city', '')}, {result.get('state', '')}
+            Number of Awards: {result.get('number_awards', '')}
             """)
     results_text = "\n".join(lines)
-    
+    print("results_text:",results_text)
     prompt = f"""
     You are a technical summarizer. Based on the user query and the search results below, generate a precise, domain-specific summary that addresses the core of the user's question.
 
@@ -514,10 +514,6 @@ def search():
         cursor.execute("SET ivfflat.probes = 5;")
         cursor.execute(vector_query, (embedding_str, limit or 100))
         results = [dict(row) for row in cursor.fetchall()]
-        print("results:",results[0]["company_name"])
-
-        print("db_name:",db_name)
-        print("table_name:",table_name)
 
         # Log end time and calculate duration
         end_time = datetime.now()
@@ -526,6 +522,7 @@ def search():
         
         # Generate summary for the top 20 results only
         summary = generate_summary(user_input, results[:10], table_name)
+        print("results:",results[0]["company_name"])
 
         # Log end time and calculate duration
         end_time = datetime.now()
