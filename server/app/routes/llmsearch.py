@@ -95,6 +95,7 @@ def natural_language_to_sql(user_input, schema_info):
     1. `db1`: Contains solicitations, topics, and subtopics.
     - For general or topic-based queries, always use the `topics` table in `db1`.
     - NEVER query the `solicitations` table directly.
+    - For general or ambiguous queries, ```SELECT * FROM topics``` is sufficient.
     - To enrich topic results with solicitation info, JOIN as follows:
         ```sql
         SELECT t.*, s.agency, s.solicitation_number, s.solicitation_title
