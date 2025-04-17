@@ -104,11 +104,11 @@ def natural_language_to_sql(user_input, schema_info):
         ```
     - If a user asks for open topics, use the following query:
         ```sql
-        SELECT * FROM topics WHERE topic_open_date < CURRENT_DATE OR topic_open_date IS NULL
+        SELECT * FROM topics WHERE topic_closed_date > CURRENT_DATE OR topic_closed_date IS NULL
         ```
     - If a user asks for closed topics, use the following query:
         ```sql
-        SELECT * FROM topics WHERE topic_closed_date < CURRENT_DATE OR topic_closed_date IS NULL
+        SELECT * FROM topics WHERE topic_closed_date < CURRENT_DATE
         ```
     - If a user asks for pre-release topics, use the following query:
         ```sql
