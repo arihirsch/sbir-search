@@ -13,6 +13,7 @@ export default function Topics() {
   const [totalTopics, setTotalTopics] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
   const pageSize = 50; // Match the backend default
   const { 
     topicFilter, 
@@ -25,6 +26,9 @@ export default function Topics() {
     setAgencyFilter
   } = useNavbar();
   const navigate = useNavigate();
+
+  // Get search term from URL params
+  const searchTerm = searchParams.get("q") || '';
 
   // Sync URL filters with context on initial load
   useEffect(() => {
@@ -64,13 +68,18 @@ export default function Topics() {
 
   useEffect(() => {
     fetchData();
-  }, [searchParams, topicFilter, phaseFilter, programFilter, agencyFilter, currentPage]);
+  }, [searchParams, topicFilter, phaseFilter, programFilter, agencyFilter, currentPage, searchTerm]);
 
   async function fetchData() {
     setLoading(true);
     try {
       // Build query parameters
       const queryParams = new URLSearchParams();
+      
+      // Add search query if present
+      if (searchTerm) {
+        queryParams.append('q', searchTerm);
+      }
       
       // Add status filter if present
       if (topicFilter) {
@@ -107,6 +116,7 @@ export default function Topics() {
       setData(responseData.data.map(parseTopic));
       setTotalTopics(responseData.total);
       setHasMore(responseData.total > currentPage * pageSize);
+      setSummary(responseData.summary);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -156,6 +166,20 @@ export default function Topics() {
 
   return (
       <div>
+        {/* Add Summary Card */}
+        {searchTerm && summary && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Search Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 dark:text-gray-200">
+                {summary}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="text-center mb-8 text-gray-600 dark:text-gray-200">
           {loading ? (
             "Loading topics..."

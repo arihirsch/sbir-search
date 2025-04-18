@@ -9,7 +9,6 @@ import TitleBar from './components/TitleBar.tsx';
 import TopicDetail from './pages/topics/TopicDetail';
 import AwardDetail from './pages/awards/AwardDetail';
 import CompanyDetail from './pages/companies/CompanyDetail';
-import SearchResults from './pages/SearchResults.tsx';
 import { NavbarProvider } from './contexts/NavbarContext';
 import { Analytics } from '@vercel/analytics/react';
 
@@ -27,7 +26,6 @@ function App() {
               <Route path="/awards" element={<Awards />} />
               <Route path="/companies" element={<Companies />} />
               <Route path="/about" element={<About />} />
-              <Route path="/search" element={<SearchResults />} />
               <Route path="/topics/:topicNumber/:solicitationId" element={<TopicDetail />} />
               <Route path="/awards/:id" element={<AwardDetail />} />
               <Route path="/companies/:id" element={<CompanyDetail />} />

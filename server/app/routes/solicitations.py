@@ -130,6 +130,7 @@ def get_all_topics():
     phase = request.args.get('phase', default=None, type=str)
     program = request.args.get('program', default=None, type=str)
     agency = request.args.get('agency', default=None, type=str)
+    search_query = request.args.get('q', default=None, type=str)
     
     # Format the current date to match the database format (YYYY-MM-DD)
     current_date = datetime.now().strftime('%Y-%m-%d')
@@ -183,17 +184,30 @@ def get_all_topics():
         query += " AND s.agency = %s"
         params.append(agency)
     
-    # Add ordering
-    query += " ORDER BY t.topic_open_date DESC"
+    # If there's a search query, use vector similarity
+    if search_query:
+        print("search_query", search_query)
+        # Generate embedding for the query
+        from app.routes.llmsearch import get_query_embedding
+        query_embedding = get_query_embedding(search_query)
+        embedding_str = "[" + ",".join(map(str, query_embedding)) + "]"
+        
+        # Add vector similarity to the query with threshold
+        query += """
+            AND (t.embedding <=> %s::vector) < 0.85
+            ORDER BY t.embedding <=> %s::vector
+        """
+        params.extend([embedding_str, embedding_str])
+    else:
+        # Default ordering by topic open date
+        query += " ORDER BY t.topic_open_date DESC"
     
-    # Only add LIMIT if specified
-    if limit is not None:
-        query += " LIMIT %s OFFSET %s"
-        params.extend([limit, offset])
-    elif offset > 0:
-        # If offset is provided without limit, use a large limit
-        query += " LIMIT 1000000 OFFSET %s"
-        params.append(offset)
+    # Add pagination
+    query += " LIMIT %s OFFSET %s"
+    params.extend([limit, offset])
+    
+    cursor.execute("SET search_path TO extensions, public, db1, db2, db3;")    
+    cursor.execute("SET ivfflat.probes = 5;")
     
     cursor.execute(query, params)
     results = cursor.fetchall()
@@ -210,11 +224,27 @@ def get_all_topics():
             del topic_dict['total_count']
         topics.append(topic_dict)
     
+    # Generate summary if there's a search query
+    summary = None
+    if search_query and topics:
+        from app.routes.llmsearch import generate_summary
+        # Create filter context
+        filters = {
+            'status': status,
+            'phase': phase,
+            'program': program,
+            'agency': agency
+        }
+        summary = generate_summary(search_query, topics[:10], "topics", filters)
+        print("topics", topics[0]['topic_title'])
+    
     return jsonify({
         'data': topics,
+        'database': 'db1',
         'total': total_count,
         'limit': limit,
-        'offset': offset
+        'offset': offset,
+        'summary': summary
     })
 
 @bp.route('/solicitations/<int:solicitation_id>/topics', methods=['GET'])

@@ -316,7 +316,7 @@ def search_similar_embeddings(embedding: List[float], table: str, limit: int = N
     # since we converted distance to similarity score
     return results
 
-def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> str:
+def generate_summary(query: str, results: List[Dict[str, Any]], table: str, filters: Dict[str, str] = None) -> str:
     """
     Generate a summary of the search results using OpenAI.
     """
@@ -353,24 +353,36 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str) -> s
             Number of Awards: {result.get('number_awards', '')}
             """)
     results_text = "\n".join(lines)
+
+    # Format filter context for the prompt
+    filter_context = ""
+    if filters:
+        filter_context = "\nApplied Filters:\n"
+        for key, value in filters.items():
+            if value:  # Only include non-empty filters
+                filter_context += f"- {key}: {value}\n"
+
     prompt = f"""
     You are a technical summarizer. Based on the user query and the search results below, generate a precise, domain-specific summary that addresses the core of the user's question.
 
-    - Extract **highly technical insights** or **relevant findings** inferred from the results.
+    - Extract **highly technical insights** or **relevant findings** and **actionable or analytical** insights inferred from the results.
     - Take into account the intent of the user's query and the results to generate a summary.
     - DO NOT enumerate or list individual results, even if explicitly requested.
     - Identify **patterns**, **trends**, or **emergent themes**, especially from **recent results**.
     - Use result dates to highlight changes or developments over time, and be specific about the dates.
-    - Assume the user wants **actionable or analytical** insights—not a verbose or general overview.
     - Limit the output to **under 100 words**. Avoid filler or repetition.
     - If there are no results, return "No results found."
+    - When filters are applied, acknowledge them naturally in the summary and explain how they affect the results.
+    - When filters are applied, if the number of results is greater than 0 (even if they are not the most relevant), summarize the results.
+    - When filters are applied, and ONLY IF the number of results is exactly zero, explain that no strong matches were found given the filters in natural language.
 
     User Query: {query}
+    {filter_context}
 
     Search Results:
     {results_text}
     """
-    
+    print("results_text:",results_text)
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[

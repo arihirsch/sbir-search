@@ -22,6 +22,9 @@ type NavbarContextType = {
   setAwardAmountRange: (range: number[]) => void;
   isAmountRangeActive: boolean;
   setIsAmountRangeActive: (active: boolean) => void;
+  
+  currentSection: string;
+  setCurrentSection: (section: string) => void;
 };
 
 const NavbarContext = createContext<NavbarContextType | undefined>(undefined);
@@ -38,6 +41,8 @@ export function NavbarProvider({ children }: { children: ReactNode }) {
   const [awardYearFilter, setAwardYearFilter] = useState<string>('');
   const [awardAmountRange, setAwardAmountRange] = useState<number[]>([0, 2500000]);
   const [isAmountRangeActive, setIsAmountRangeActive] = useState<boolean>(false);
+  
+  const [currentSection, setCurrentSection] = useState<string>('topics');
 
   return (
     <NavbarContext.Provider value={{ 
@@ -61,7 +66,10 @@ export function NavbarProvider({ children }: { children: ReactNode }) {
       awardAmountRange,
       setAwardAmountRange,
       isAmountRangeActive,
-      setIsAmountRangeActive
+      setIsAmountRangeActive,
+      
+      currentSection,
+      setCurrentSection
     }}>
       {children}
     </NavbarContext.Provider>

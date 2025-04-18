@@ -12,6 +12,7 @@ export default function Awards() {
   const [totalAwards, setTotalAwards] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
   const pageSize = 50; // Match the backend default
   const { 
     awardAgencyFilter, 
@@ -29,6 +30,9 @@ export default function Awards() {
   } = useNavbar();
   const navigate = useNavigate();
 
+  // Get search term from URL params
+  const searchTerm = searchParams.get("q") || '';
+
   // Sync URL filters with context on initial load
   useEffect(() => {
     const urlAgency = searchParams.get("agency");
@@ -39,7 +43,7 @@ export default function Awards() {
     
     const urlProgram = searchParams.get("program");
     if (urlProgram && urlProgram !== awardProgramFilter) {
-        setAwardProgramFilter(urlProgram);
+      setAwardProgramFilter(urlProgram);
       setCurrentPage(1); // Reset to first page when filter changes
     }
     
@@ -78,13 +82,18 @@ export default function Awards() {
 
   useEffect(() => {
     fetchData();
-  }, [searchParams, awardAgencyFilter, awardProgramFilter, awardPhaseFilter, awardYearFilter, awardAmountRange, isAmountRangeActive, currentPage]);
+  }, [searchParams, awardAgencyFilter, awardProgramFilter, awardPhaseFilter, awardYearFilter, awardAmountRange, isAmountRangeActive, currentPage, searchTerm]);
 
   async function fetchData() {
     setLoading(true);
     try {
       // Build query parameters
       const queryParams = new URLSearchParams();
+      
+      // Add search query if present
+      if (searchTerm) {
+        queryParams.append('q', searchTerm);
+      }
       
       // Add agency filter if present
       if (awardAgencyFilter) {
@@ -127,6 +136,7 @@ export default function Awards() {
       setData(responseData.data.map(parseAward));
       setTotalAwards(responseData.total);
       setHasMore(responseData.total > currentPage * pageSize);
+      setSummary(responseData.summary);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -146,6 +156,20 @@ export default function Awards() {
 
   return (
     <main>
+      {/* Add Summary Card */}
+      {searchTerm && summary && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Search Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 dark:text-gray-200">
+              {summary}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="text-center mb-8 text-gray-600 dark:text-gray-200">
         {loading ? (
           "Loading awards..."

@@ -8,7 +8,7 @@ import {
 } from './ui/select';
 import { Slider } from './ui/slider';
 import { useNavbar } from '../contexts/NavbarContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Navbar() {
   const location = useLocation();
@@ -34,7 +34,9 @@ export default function Navbar() {
     awardAmountRange,
     setAwardAmountRange,
     isAmountRangeActive,
-    setIsAmountRangeActive
+    setIsAmountRangeActive,
+    currentSection,
+    setCurrentSection
   } = useNavbar();
   
   // Local state for slider value before committing
@@ -42,7 +44,18 @@ export default function Navbar() {
   
   const isTopicsRoute = location.pathname.startsWith('/topics');
   const isAwardsRoute = location.pathname.startsWith('/awards');
-  //const isCompaniesRoute = location.pathname.startsWith('/companies');
+  const isCompaniesRoute = location.pathname.startsWith('/companies');
+  
+  // Update currentSection based on route
+  useEffect(() => {
+    if (isTopicsRoute) {
+      setCurrentSection('topics');
+    } else if (isAwardsRoute) {
+      setCurrentSection('awards');
+    } else if (isCompaniesRoute) {
+      setCurrentSection('companies');
+    }
+  }, [isTopicsRoute, isAwardsRoute, isCompaniesRoute, setCurrentSection]);
   
   // Format currency for display
   const formatCurrency = (value: number) => {
@@ -53,19 +66,8 @@ export default function Navbar() {
     }).format(value);
   };
   
-  // Determine current section based on route
-  const getCurrentSection = () => {
-    // Extract the first part of the path (e.g., "topics" from "/topics/123")
-    const pathSegments = location.pathname.split('/').filter(Boolean);
-    const mainSection = pathSegments[0] || '';
-    
-    if (mainSection === 'topics') return 'topics';
-    if (mainSection === 'awards') return 'awards';
-    if (mainSection === 'companies') return 'companies';
-    return ''; // Return empty string for home page or unknown routes
-  };
-  
   const handleSectionChange = (value: string) => {
+    setCurrentSection(value);
     navigate(`/${value}`);
   };
   
@@ -239,7 +241,7 @@ export default function Navbar() {
           <div className="h-full flex items-center justify-between min-w-max">
             {/* Left side with main navigation and filters */}
             <div className="flex items-center">
-              <Select value={getCurrentSection()} onValueChange={handleSectionChange}>
+              <Select value={currentSection} onValueChange={handleSectionChange}>
                 <SelectTrigger className="w-36 text-sm bg-background">
                   <SelectValue placeholder="Category..." />
                 </SelectTrigger>

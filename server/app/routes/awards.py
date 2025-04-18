@@ -16,6 +16,7 @@ def get_all_awards():
     year = request.args.get('year', default=None, type=str)
     min_amount = request.args.get('minAmount', default=None, type=int)
     max_amount = request.args.get('maxAmount', default=None, type=int)
+    search_query = request.args.get('q', default=None, type=str)
     
     # Base query with window function for count
     query = """
@@ -62,17 +63,29 @@ def get_all_awards():
         query += " AND award_amount <= %s"
         params.append(max_amount)
     
-    # Add ordering
-    query += " ORDER BY award_year DESC"
+    # If there's a search query, use vector similarity
+    if search_query:
+        # Generate embedding for the query
+        from app.routes.llmsearch import get_query_embedding
+        query_embedding = get_query_embedding(search_query)
+        embedding_str = "[" + ",".join(map(str, query_embedding)) + "]"
+        
+        # Add vector similarity to the query with threshold
+        query += """
+            AND (embedding <=> %s::vector) < 0.85
+            ORDER BY embedding <=> %s::vector
+        """
+        params.extend([embedding_str, embedding_str])
+    else:
+        # Default ordering by award year
+        query += " ORDER BY award_year DESC"
     
-    # Only add LIMIT if specified
-    if limit is not None:
-        query += " LIMIT %s OFFSET %s"
-        params.extend([limit, offset])
-    elif offset > 0:
-        # If offset is provided without limit, use a large limit
-        query += " LIMIT 1000000 OFFSET %s"
-        params.append(offset)
+    # Add pagination
+    query += " LIMIT %s OFFSET %s"
+    params.extend([limit, offset])
+    
+    cursor.execute("SET search_path TO extensions, public, db1, db2, db3;")    
+    cursor.execute("SET ivfflat.probes = 10;")
     
     cursor.execute(query, params)
     results = cursor.fetchall()
@@ -89,11 +102,28 @@ def get_all_awards():
             del award_dict['total_count']
         awards.append(award_dict)
     
+    # Generate summary if there's a search query
+    summary = None
+    if search_query and awards:
+        from app.routes.llmsearch import generate_summary
+        # Create filter context
+        filters = {
+            'agency': agency,
+            'program': program,
+            'phase': phase,
+            'year': year,
+            'min_amount': min_amount,
+            'max_amount': max_amount
+        }
+        summary = generate_summary(search_query, awards[:10], "awards", filters)
+    
     return jsonify({
         'data': awards,
+        'database': 'db2',
         'total': total_count,
         'limit': limit,
-        'offset': offset
+        'offset': offset,
+        'summary': summary
     })
 
 @bp.route('/awards/search', methods=['GET'])

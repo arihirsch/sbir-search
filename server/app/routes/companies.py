@@ -7,25 +7,42 @@ bp = Blueprint('companies', __name__, url_prefix='/api')
 def get_all_companies():
     cursor = get_db_cursor("db3")  # Use db3 schema for companies
     
+    # Get query parameters
     limit = request.args.get('limit', default=50, type=int)
     offset = int(request.args.get('offset', default=0))
+    search_query = request.args.get('q', default=None, type=str)
     
-    # Use window function to get total count in the same query
+    # Base query with window function for count
     query = """
         SELECT *, COUNT(*) OVER() as total_count
         FROM companies
-        ORDER BY number_awards DESC
+        WHERE 1=1
     """
     params = []
     
-    # Only add LIMIT if specified
-    if limit is not None:
-        query += " LIMIT %s OFFSET %s"
-        params.extend([limit, offset])
-    elif offset > 0:
-        # If offset is provided without limit, use a large limit
-        query += " LIMIT 1000000 OFFSET %s"
-        params.append(offset)
+    # If there's a search query, use vector similarity
+    if search_query:
+        # Generate embedding for the query
+        from app.routes.llmsearch import get_query_embedding
+        query_embedding = get_query_embedding(search_query)
+        embedding_str = "[" + ",".join(map(str, query_embedding)) + "]"
+        
+        # Add vector similarity to the query with threshold
+        query += """
+            AND (embedding <=> %s::vector) < 0.85
+            ORDER BY embedding <=> %s::vector
+        """
+        params.extend([embedding_str, embedding_str])
+    else:
+        # Default ordering by number of awards
+        query += " ORDER BY number_awards DESC"
+    
+    # Add pagination
+    query += " LIMIT %s OFFSET %s"
+    params.extend([limit, offset])
+    
+    cursor.execute("SET search_path TO extensions, public, db1, db2, db3;")    
+    cursor.execute("SET ivfflat.probes = 5;")
     
     cursor.execute(query, params)
     results = cursor.fetchall()
@@ -42,12 +59,20 @@ def get_all_companies():
             del company_dict['total_count']
         companies.append(company_dict)
     
+    # Generate summary if there's a search query
+    summary = None
+    if search_query and companies:
+        from app.routes.llmsearch import generate_summary
+        summary = generate_summary(search_query, companies[:10], "companies")
+    
     return jsonify({
         'data': companies,
+        'database': 'db3',
         'total': total_count,
         'limit': limit,
-        'offset': offset
-    }) 
+        'offset': offset,
+        'summary': summary
+    })
 
 @bp.route('/companies/search', methods=['GET'])
 def search():

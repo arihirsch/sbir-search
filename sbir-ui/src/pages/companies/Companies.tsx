@@ -11,8 +11,12 @@ export default function Companies() {
   const [totalCompanies, setTotalCompanies] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
   const pageSize = 50; // Match the backend default
   const navigate = useNavigate();
+
+  // Get search term from URL params
+  const searchTerm = searchParams.get("q") || '';
 
   // Reset page when search params change
   useEffect(() => {
@@ -21,13 +25,18 @@ export default function Companies() {
 
   useEffect(() => {
     fetchData();
-  }, [searchParams, currentPage]);
+  }, [searchParams, currentPage, searchTerm]);
 
   async function fetchData() {
     setLoading(true);
     try {
       // Build query parameters
-      const queryParams = new URLSearchParams(searchParams);
+      const queryParams = new URLSearchParams();
+      
+      // Add search query if present
+      if (searchTerm) {
+        queryParams.append('q', searchTerm);
+      }
       
       // Add pagination parameters
       queryParams.append('limit', pageSize.toString());
@@ -44,6 +53,7 @@ export default function Companies() {
       setData(responseData.data.map(parseCompany));
       setTotalCompanies(responseData.total);
       setHasMore(responseData.total > currentPage * pageSize);
+      setSummary(responseData.summary);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -63,6 +73,20 @@ export default function Companies() {
 
   return (
     <main>
+      {/* Add Summary Card */}
+      {searchTerm && summary && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Search Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 dark:text-gray-200">
+              {summary}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="text-center mb-8 text-gray-600 dark:text-gray-200">
         {loading ? (
           "Loading companies..."

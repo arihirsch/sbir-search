@@ -3,10 +3,12 @@ import { Input } from './ui/input';
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import posthog from 'posthog-js';
+import { useNavbar } from '@/contexts/NavbarContext';
 
 export default function TitleBar() {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
+  const { currentSection } = useNavbar();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,9 +16,12 @@ export default function TitleBar() {
       // Track search initiated
       posthog.capture('search_initiated', {
         search_term: searchTerm.trim(),
+        search_type: currentSection,
         source: 'title_bar'
       });
-      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+      
+      // Navigate to the appropriate section with search query
+      navigate(`/${currentSection}?q=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
 
@@ -33,7 +38,7 @@ export default function TitleBar() {
           <div className="relative">
             <Input
               type="search"
-              placeholder="Search for topics, awards, or companies..."
+              placeholder={`Search ${currentSection}...`}
               className="w-full pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
