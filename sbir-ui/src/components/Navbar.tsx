@@ -68,7 +68,10 @@ export default function Navbar() {
   
   const handleSectionChange = (value: string) => {
     setCurrentSection(value);
-    navigate(`/${value}`);
+    // Get the current search term from URL
+    const searchTerm = searchParams.get('q');
+    // Navigate to the new section, preserving the search term if it exists
+    navigate(`/${value}${searchTerm ? `?q=${searchTerm}` : ''}`);
   };
   
   const handleFilterChange = (value: string) => {
