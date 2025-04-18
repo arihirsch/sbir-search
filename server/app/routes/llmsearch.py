@@ -382,7 +382,6 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str, filt
     Search Results:
     {results_text}
     """
-    print("results_text:",results_text)
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[

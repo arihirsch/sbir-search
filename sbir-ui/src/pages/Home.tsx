@@ -6,6 +6,7 @@ import { Award, parseAward } from "@/types/award";
 import { Company, parseCompany } from "@/types/company";
 import { useNavigate, Link } from "react-router-dom";
 import AgencyLogo from "@/components/AgencyLogo";
+import { useNavbar } from "@/contexts/NavbarContext";
 
 // Configuration for featured items - just update these IDs to change what's displayed
 const FEATURED_CONFIG = {
@@ -23,13 +24,42 @@ const FEATURED_CONFIG = {
   ]
 };
 
-// Featured search examples
+// Featured search examples with section, query, and filters
 const FEATURED_SEARCHES = [
-  "List topics that are currently open",
-  "List all solicitations from the DOD for 2024",
-  "Search for awards related to artificial intelligence",
-  "Find companies in California with more than 3 awards",
-  "My company manufactures optical sensors, list the relevant topics to me",
+  {
+    section: 'topics',
+    displayQuery: 'List topics that are currently in pre-release',
+    query: '',
+    filters: {
+      status: 'prerelease'
+    }
+  },
+  {
+    section: 'topics',
+    query: 'List all solicitations from the DOD for 2024',
+    filters: {
+      agency: 'DOD',
+      year: '2024'
+    }
+  },
+  {
+    section: 'awards',
+    query: 'Search for awards related to artificial intelligence',
+    filters: {}
+  },
+  {
+    section: 'companies',
+    query: 'Find companies in California with more than 3 awards',
+    filters: {
+      state: 'CA',
+      min_awards: 3
+    }
+  },
+  {
+    section: 'topics',
+    query: 'My company manufactures optical sensors, list the relevant topics to me',
+    filters: {}
+  }
 ];
 
 export default function Home() {
@@ -38,6 +68,7 @@ export default function Home() {
   const [featuredCompanies, setFeaturedCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { setCurrentSection, setTopicFilter, setPhaseFilter, setProgramFilter, setAgencyFilter } = useNavbar();
 
   useEffect(() => {
     // Load featured data from the backend
@@ -123,9 +154,41 @@ export default function Home() {
     return { text: 'Closed', color: 'text-red-600' };
   };
 
-  // Function to navigate to search results with the given query
-  const navigateToSearch = (query: string) => {
-    navigate(`/search?q=${encodeURIComponent(query)}`);
+  // Function to navigate to search results with the given query and filters
+  const navigateToSearch = (searchItem: typeof FEATURED_SEARCHES[0]) => {
+    // Set the current section
+    setCurrentSection(searchItem.section);
+    
+    // Reset all filters first
+    setTopicFilter('');
+    setPhaseFilter('');
+    setProgramFilter('');
+    setAgencyFilter('');
+    
+    // Apply the specific filters for this search
+    if (searchItem.filters.status) {
+      setTopicFilter(searchItem.filters.status);
+    }
+    if (searchItem.filters.agency) {
+      setAgencyFilter(searchItem.filters.agency);
+    }
+    
+    // Construct URL with query and filters
+    const params = new URLSearchParams();
+    params.set('q', searchItem.query);
+    
+    if (searchItem.filters.status) {
+      params.set('filter', searchItem.filters.status);
+    }
+    if (searchItem.filters.agency) {
+      params.set('agency', searchItem.filters.agency);
+    }
+    if (searchItem.filters.year) {
+      params.set('year', searchItem.filters.year);
+    }
+    
+    // Navigate to the appropriate section with the search query and filters
+    navigate(`/${searchItem.section}?${params.toString()}`);
   };
 
   return (
@@ -136,14 +199,14 @@ export default function Home() {
             <Card className="mb-0 border-0 shadow-none">
               <CardContent className="p-0">
                 <div className="grid grid-cols-1 gap-3">
-                  {FEATURED_SEARCHES.map((query, index) => (
+                  {FEATURED_SEARCHES.map((searchItem, index) => (
                     <div 
                       key={index}
-                      onClick={() => navigateToSearch(query)}
+                      onClick={() => navigateToSearch(searchItem)}
                       className="flex items-center p-3 rounded-md hover:bg-gray-100 cursor-pointer transition-colors"
                     >
                       <Search className="h-5 w-5 text-gray-500 mr-3" />
-                      <span>{query}</span>
+                      <span>{searchItem.query ? searchItem.query : searchItem.displayQuery}</span>
                     </div>
                   ))}
                 </div>
