@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Award, parseAward } from "@/types/award";
 import { useNavbar } from "@/contexts/NavbarContext";
 import { Button } from "@/components/ui/button";
 import posthog from 'posthog-js';
 import { Loader2 } from "lucide-react";
+import AgencyLogo from "@/components/AgencyLogo";
 
 export default function Awards() {
   const [searchParams] = useSearchParams();
@@ -229,19 +230,23 @@ export default function Awards() {
               className="hover:shadow-lg transition-shadow"
               href={`/awards/${award.award_link}`}
             >
-              <CardHeader>
-                <CardTitle>{award.award_title}</CardTitle>
+              <CardHeader className="pb-2">
+                <div className="text-purple-500 font-bold text-sm mb-2">Award</div>
+                <div>
+                  <CardTitle>{award.award_title}</CardTitle>
+                  <CardDescription className="mt-2">Award #{award.award_link}</CardDescription>
+                </div>
               </CardHeader>
               <CardContent>
-                <p><strong>Company:</strong> {award.firm}</p>
-                <p><strong>Amount:</strong> ${award.award_amount.toLocaleString()}</p>
-                <p><strong>Year:</strong> {award.award_year}</p>
-                <p><strong>Agency:</strong> {award.agency}</p>
-                {award.branch && award.branch.trim() !== "" && (
-                  <p><strong>Branch:</strong> {award.branch}</p>
-                )}
-                <p><strong>Phase:</strong> {award.phase}</p>
-                <p><strong>Program:</strong> {award.program}</p>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <AgencyLogo agency={award.agency} size="sm" />
+                    <p><strong>Agency:</strong> {award.agency}</p>
+                  </div>
+                  <p><strong>Company:</strong> {award.firm}</p>
+                  <p><strong>Amount:</strong> ${award.award_amount.toLocaleString()}</p>
+                  <p><strong>Phase:</strong> {award.phase}</p>
+                </div>
               </CardContent>
             </Card>
           ))

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Company, parseCompany } from "@/types/company";
 import { Button } from "@/components/ui/button";
 import posthog from 'posthog-js';
@@ -163,32 +163,40 @@ export default function Companies() {
               className="hover:shadow-lg transition-shadow"
               href={`/companies/${company.firm_nid}`}
             >
-              <CardHeader>
-                <CardTitle>{company.company_name}</CardTitle>
+              <CardHeader className="pb-2">
+                <div className="text-green-600 font-bold text-sm mb-2">Company</div>
+                <div>
+                  <CardTitle>{company.company_name}</CardTitle>
+                  {(company.hubzone_owned === "Yes" || 
+                    company.woman_owned === "Yes" || 
+                    company.socially_economically_disadvantaged === "Yes") && (
+                    <CardDescription className="mt-1">
+                      {company.socially_economically_disadvantaged === "Yes" ? "Socially/Economically Disadvantaged" :
+                       company.woman_owned === "Yes" ? "Woman-Owned Business" :
+                       company.hubzone_owned === "Yes" ? "HUBZone Business" : ""}
+                    </CardDescription>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
-                <p><strong>Location:</strong> {company.city}, {company.state}</p>
-                <p><strong>Number of Awards:</strong> {company.number_awards}</p>
-                {company.hubzone_owned === "Yes" && (
-                  <p><strong>HUBZone Owned</strong></p>
-                )}
-                {company.woman_owned === "Yes" && (
-                  <p><strong>Woman Owned</strong></p>
-                )}
-                {company.company_url && (
-                  <p>
-                    <strong>Website:</strong>{" "}
-                    <a 
-                      href={company.company_url.startsWith('http') ? company.company_url : `http://${company.company_url}`}
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {company.company_url.replace(/^https?:\/\//, '').replace(/^www\./, '')}
-                    </a>
-                  </p>
-                )}
+                <div>
+                  <p><strong>Location:</strong> {company.city}, {company.state}</p>
+                  <p><strong>Total SBIR Awards:</strong> {company.number_awards}</p>
+                  {company.company_url && (
+                    <p>
+                      <strong>Website:</strong>{" "}
+                      <a 
+                        href={company.company_url.startsWith('http') ? company.company_url : `http://${company.company_url}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {company.company_url.replace(/^https?:\/\//, '').replace(/^www\./, '')}
+                      </a>
+                    </p>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))
