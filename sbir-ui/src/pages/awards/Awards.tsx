@@ -187,10 +187,12 @@ export default function Awards() {
   return (
     <main>
       {/* Loading State */}
-      {loading && searchTerm && (
+      {loading && (
         <div className="flex flex-col items-center justify-center py-8 gap-2">
           <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-          <p className="text-gray-600 dark:text-gray-300">Searching with AI...</p>
+          <p className="text-gray-600 dark:text-gray-300">
+            {searchTerm ? "Searching with AI..." : "Loading..."}
+          </p>
         </div>
       )}
 

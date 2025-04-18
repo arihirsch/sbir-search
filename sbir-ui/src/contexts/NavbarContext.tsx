@@ -9,6 +9,8 @@ type NavbarContextType = {
   setProgramFilter: (filter: string) => void;
   agencyFilter: string;
   setAgencyFilter: (filter: string) => void;
+  topicYearFilter: string;
+  setTopicYearFilter: (filter: string) => void;
   
   awardAgencyFilter: string;
   setAwardAgencyFilter: (filter: string) => void;
@@ -23,6 +25,13 @@ type NavbarContextType = {
   isAmountRangeActive: boolean;
   setIsAmountRangeActive: (active: boolean) => void;
   
+  companyStateFilter: string;
+  setCompanyStateFilter: (filter: string) => void;
+  companyAwardsRange: number[];
+  setCompanyAwardsRange: (range: number[]) => void;
+  isAwardsRangeActive: boolean;
+  setIsAwardsRangeActive: (active: boolean) => void;
+  
   currentSection: string;
   setCurrentSection: (section: string) => void;
   resetFilters: () => void;
@@ -35,6 +44,7 @@ export function NavbarProvider({ children }: { children: ReactNode }) {
   const [phaseFilter, setPhaseFilter] = useState<string>('');
   const [programFilter, setProgramFilter] = useState<string>('');
   const [agencyFilter, setAgencyFilter] = useState<string>('');
+  const [topicYearFilter, setTopicYearFilter] = useState<string>('');
   
   const [awardAgencyFilter, setAwardAgencyFilter] = useState<string>('');
   const [awardProgramFilter, setAwardProgramFilter] = useState<string>('');
@@ -43,6 +53,10 @@ export function NavbarProvider({ children }: { children: ReactNode }) {
   const [awardAmountRange, setAwardAmountRange] = useState<number[]>([0, 2500000]);
   const [isAmountRangeActive, setIsAmountRangeActive] = useState<boolean>(false);
   
+  const [companyStateFilter, setCompanyStateFilter] = useState<string>('');
+  const [companyAwardsRange, setCompanyAwardsRange] = useState<number[]>([0, 500]);
+  const [isAwardsRangeActive, setIsAwardsRangeActive] = useState<boolean>(false);
+  
   const [currentSection, setCurrentSection] = useState<string>('');
 
   const resetFilters = () => {
@@ -50,12 +64,16 @@ export function NavbarProvider({ children }: { children: ReactNode }) {
     setPhaseFilter('');
     setProgramFilter('');
     setAgencyFilter('');
+    setTopicYearFilter('');
     setAwardAgencyFilter('');
     setAwardProgramFilter('');
     setAwardPhaseFilter('');
     setAwardYearFilter('');
     setAwardAmountRange([0, 2500000]);
     setIsAmountRangeActive(false);
+    setCompanyStateFilter('');
+    setCompanyAwardsRange([0, 500]);
+    setIsAwardsRangeActive(false);
     setCurrentSection('');
   };
 
@@ -69,6 +87,8 @@ export function NavbarProvider({ children }: { children: ReactNode }) {
       setProgramFilter,
       agencyFilter,
       setAgencyFilter,
+      topicYearFilter,
+      setTopicYearFilter,
       
       awardAgencyFilter,
       setAwardAgencyFilter,
@@ -82,6 +102,13 @@ export function NavbarProvider({ children }: { children: ReactNode }) {
       setAwardAmountRange,
       isAmountRangeActive,
       setIsAmountRangeActive,
+      
+      companyStateFilter,
+      setCompanyStateFilter,
+      companyAwardsRange,
+      setCompanyAwardsRange,
+      isAwardsRangeActive,
+      setIsAwardsRangeActive,
       
       currentSection,
       setCurrentSection,

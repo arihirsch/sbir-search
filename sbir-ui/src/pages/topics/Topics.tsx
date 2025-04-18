@@ -25,7 +25,9 @@ export default function Topics() {
     programFilter,
     setProgramFilter,
     agencyFilter,
-    setAgencyFilter
+    setAgencyFilter,
+    topicYearFilter,
+    setTopicYearFilter
   } = useNavbar();
   const navigate = useNavigate();
 
@@ -57,20 +59,27 @@ export default function Topics() {
       setAgencyFilter(urlAgency);
       setCurrentPage(1); // Reset to first page when filter changes
     }
+
+    const urlYear = searchParams.get("year");
+    if (urlYear && urlYear !== topicYearFilter) {
+      setTopicYearFilter(urlYear);
+      setCurrentPage(1);
+    }
   }, [searchParams]);
 
   // Add effect to reset page when filters change
   useEffect(() => {
     // Skip the initial render
     if (topicFilter !== undefined || phaseFilter !== undefined || 
-        programFilter !== undefined || agencyFilter !== undefined) {
+        programFilter !== undefined || agencyFilter !== undefined ||
+        topicYearFilter !== undefined) {
       setCurrentPage(1);
     }
-  }, [topicFilter, phaseFilter, programFilter, agencyFilter]);
+  }, [topicFilter, phaseFilter, programFilter, agencyFilter, topicYearFilter]);
 
   useEffect(() => {
     fetchData();
-  }, [searchParams, topicFilter, phaseFilter, programFilter, agencyFilter, currentPage, searchTerm]);
+  }, [searchParams, topicFilter, phaseFilter, programFilter, agencyFilter, topicYearFilter, currentPage, searchTerm]);
 
   async function fetchData() {
     setLoading(true);
@@ -110,6 +119,11 @@ export default function Topics() {
       // Add agency filter if present
       if (agencyFilter) {
         queryParams.append('agency', agencyFilter);
+      }
+
+      // Add year filter if present
+      if (topicYearFilter) {
+        queryParams.append('year', topicYearFilter);
       }
       
       // Add pagination parameters
@@ -197,10 +211,12 @@ export default function Topics() {
   return (
       <div>
         {/* Loading State */}
-        {loading && searchTerm && (
+        {loading && (
           <div className="flex flex-col items-center justify-center py-8 gap-2">
             <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-            <p className="text-gray-600 dark:text-gray-300">Searching with AI...</p>
+            <p className="text-gray-600 dark:text-gray-300">
+              {searchTerm ? "Searching with AI..." : "Loading..."}
+            </p>
           </div>
         )}
 

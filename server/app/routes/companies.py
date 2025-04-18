@@ -11,6 +11,9 @@ def get_all_companies():
     limit = request.args.get('limit', default=50, type=int)
     offset = int(request.args.get('offset', default=0))
     search_query = request.args.get('q', default=None, type=str)
+    state = request.args.get('state', default=None, type=str)
+    min_awards = request.args.get('minAwards', default=None, type=int)
+    max_awards = request.args.get('maxAwards', default=None, type=int)
     
     # Base query with window function for count
     query = """
@@ -19,6 +22,22 @@ def get_all_companies():
         WHERE 1=1
     """
     params = []
+    
+    # Add state filter if provided
+    if state:
+        query += " AND state = %s"
+        params.append(state)
+    
+    # Add awards range filter if provided
+    if min_awards is not None:
+        query += " AND number_awards >= %s"
+        params.append(min_awards)
+    if max_awards is not None:
+        if max_awards != 500:  # Handle 500+ case
+            query += " AND number_awards <= %s"
+            params.append(max_awards)
+
+    print(params)
     
     # If there's a search query, use vector similarity
     if search_query:

@@ -130,6 +130,7 @@ def get_all_topics():
     phase = request.args.get('phase', default=None, type=str)
     program = request.args.get('program', default=None, type=str)
     agency = request.args.get('agency', default=None, type=str)
+    year = request.args.get('year', default=None, type=str)
     search_query = request.args.get('q', default=None, type=str)
     
     # Format the current date to match the database format (YYYY-MM-DD)
@@ -183,6 +184,11 @@ def get_all_topics():
     if agency:
         query += " AND s.agency = %s"
         params.append(agency)
+
+    # Apply year filter
+    if year:
+        query += " AND EXTRACT(YEAR FROM t.topic_open_date) = %s"
+        params.append(year)
     
     # If there's a search query, use vector similarity
     if search_query:

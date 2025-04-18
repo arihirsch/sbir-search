@@ -5,6 +5,7 @@ import { Company, parseCompany } from "@/types/company";
 import { Button } from "@/components/ui/button";
 import posthog from 'posthog-js';
 import { Loader2 } from "lucide-react";
+import { useNavbar } from "@/contexts/NavbarContext";
 
 export default function Companies() {
   const [searchParams] = useSearchParams();
@@ -16,6 +17,11 @@ export default function Companies() {
   const [summary, setSummary] = useState<string | null>(null);
   const pageSize = 50; // Match the backend default
   const navigate = useNavigate();
+  const { 
+    companyStateFilter,
+    companyAwardsRange,
+    isAwardsRangeActive
+  } = useNavbar();
 
   // Get search term from URL params
   const searchTerm = searchParams.get("q") || '';
@@ -27,7 +33,7 @@ export default function Companies() {
 
   useEffect(() => {
     fetchData();
-  }, [searchParams, currentPage, searchTerm]);
+  }, [searchParams, currentPage, searchTerm, companyStateFilter, companyAwardsRange, isAwardsRangeActive]);
 
   async function fetchData() {
     setLoading(true);
@@ -47,6 +53,17 @@ export default function Companies() {
       // Add search query if present
       if (searchTerm) {
         queryParams.append('q', searchTerm);
+      }
+      
+      // Add state filter if present
+      if (companyStateFilter) {
+        queryParams.append('state', companyStateFilter);
+      }
+      
+      // Add awards range filter if active
+      if (isAwardsRangeActive) {
+        queryParams.append('minAwards', companyAwardsRange[0].toString());
+        queryParams.append('maxAwards', companyAwardsRange[1].toString());
       }
       
       // Add pagination parameters
@@ -104,10 +121,12 @@ export default function Companies() {
   return (
     <main>
       {/* Loading State */}
-      {loading && searchTerm && (
+      {loading && (
         <div className="flex flex-col items-center justify-center py-8 gap-2">
           <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-          <p className="text-gray-600 dark:text-gray-300">Searching with AI...</p>
+          <p className="text-gray-600 dark:text-gray-300">
+            {searchTerm ? "Searching with AI..." : "Loading..."}
+          </p>
         </div>
       )}
 

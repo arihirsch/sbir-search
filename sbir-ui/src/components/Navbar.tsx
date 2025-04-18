@@ -36,11 +36,22 @@ export default function Navbar() {
     isAmountRangeActive,
     setIsAmountRangeActive,
     currentSection,
-    setCurrentSection
+    setCurrentSection,
+    topicYearFilter,
+    setTopicYearFilter,
+    companyStateFilter,
+    setCompanyStateFilter,
+    companyAwardsRange,
+    setCompanyAwardsRange,
+    isAwardsRangeActive,
+    setIsAwardsRangeActive
   } = useNavbar();
   
   // Local state for slider value before committing
   const [localAmountRange, setLocalAmountRange] = useState<number[]>(awardAmountRange);
+  
+  // Local state for company awards slider value
+  const [localAwardsRange, setLocalAwardsRange] = useState<number[]>(companyAwardsRange);
   
   const isTopicsRoute = location.pathname.startsWith('/topics');
   const isAwardsRoute = location.pathname.startsWith('/awards');
@@ -236,6 +247,72 @@ export default function Navbar() {
     }
   };
   
+  const handleTopicYearChange = (value: string) => {
+    setTopicYearFilter(value);
+    
+    // Also update URL params when on the main topics page
+    if (location.pathname === '/topics') {
+      setSearchParams(params => {
+        if (value) {
+          params.set("year", value);
+        } else {
+          params.delete("year");
+        }
+        return params;
+      });
+    }
+  };
+  
+  const handleCompanyStateChange = (value: string) => {
+    setCompanyStateFilter(value);
+    
+    // Also update URL params when on the main companies page
+    if (location.pathname === '/companies') {
+      setSearchParams(params => {
+        if (value) {
+          params.set("state", value);
+        } else {
+          params.delete("state");
+        }
+        return params;
+      });
+    }
+  };
+  
+  const handleAwardsRangeChange = (value: number[]) => {
+    setLocalAwardsRange(value);
+  };
+  
+  const handleAwardsRangeCommit = (value: number[]) => {
+    setCompanyAwardsRange(value);
+    setIsAwardsRangeActive(true);
+    
+    // Also update URL params when on the main companies page
+    if (location.pathname === '/companies') {
+      setSearchParams(params => {
+        params.set("minAwards", value[0].toString());
+        params.set("maxAwards", value[1].toString());
+        return params;
+      });
+    }
+  };
+  
+  const handleResetAwardsRange = () => {
+    const defaultRange = [0, 500];
+    setCompanyAwardsRange(defaultRange);
+    setLocalAwardsRange(defaultRange);
+    setIsAwardsRangeActive(false);
+    
+    // Also update URL params when on the main companies page
+    if (location.pathname === '/companies') {
+      setSearchParams(params => {
+        params.delete("minAwards");
+        params.delete("maxAwards");
+        return params;
+      });
+    }
+  };
+  
   return (
     <div className="fixed top-14 left-0 right-0 h-14 bg-background z-40">
       <div className="max-w-7xl mx-auto px-4 h-full border-b border-gray-200 dark:border-gray-700">
@@ -313,6 +390,32 @@ export default function Navbar() {
                         <SelectItem value="DOT">DOT</SelectItem>
                         <SelectItem value="DOE">DOE</SelectItem>
                         <SelectItem value="DOC">DOC</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="ml-4">
+                    <Select value={topicYearFilter} onValueChange={handleTopicYearChange}>
+                      <SelectTrigger className="w-32 text-sm bg-background">
+                        <SelectValue placeholder="Year..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white dark:bg-black">
+                        <SelectItem value="2025">2025</SelectItem>
+                        <SelectItem value="2024">2024</SelectItem>
+                        <SelectItem value="2023">2023</SelectItem>
+                        <SelectItem value="2022">2022</SelectItem>
+                        <SelectItem value="2021">2021</SelectItem>
+                        <SelectItem value="2020">2020</SelectItem>
+                        <SelectItem value="2019">2019</SelectItem>
+                        <SelectItem value="2018">2018</SelectItem>
+                        <SelectItem value="2017">2017</SelectItem>
+                        <SelectItem value="2016">2016</SelectItem>
+                        <SelectItem value="2015">2015</SelectItem>
+                        <SelectItem value="2014">2014</SelectItem>
+                        <SelectItem value="2013">2013</SelectItem>
+                        <SelectItem value="2012">2012</SelectItem>
+                        <SelectItem value="2011">2011</SelectItem>
+                        <SelectItem value="2010">2010</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -405,53 +508,162 @@ export default function Navbar() {
                   </div>
                 </>
               )}
+
+              {/* Company filters - shown inline when on companies route */}
+              {isCompaniesRoute && (
+                <>
+                  <div className="ml-4">
+                    <Select value={companyStateFilter} onValueChange={handleCompanyStateChange}>
+                      <SelectTrigger className="w-32 text-sm bg-background">
+                        <SelectValue placeholder="State..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white dark:bg-black max-h-60">
+                        <SelectItem value="AL">Alabama</SelectItem>
+                        <SelectItem value="AK">Alaska</SelectItem>
+                        <SelectItem value="AZ">Arizona</SelectItem>
+                        <SelectItem value="AR">Arkansas</SelectItem>
+                        <SelectItem value="CA">California</SelectItem>
+                        <SelectItem value="CO">Colorado</SelectItem>
+                        <SelectItem value="CT">Connecticut</SelectItem>
+                        <SelectItem value="DE">Delaware</SelectItem>
+                        <SelectItem value="FL">Florida</SelectItem>
+                        <SelectItem value="GA">Georgia</SelectItem>
+                        <SelectItem value="HI">Hawaii</SelectItem>
+                        <SelectItem value="ID">Idaho</SelectItem>
+                        <SelectItem value="IL">Illinois</SelectItem>
+                        <SelectItem value="IN">Indiana</SelectItem>
+                        <SelectItem value="IA">Iowa</SelectItem>
+                        <SelectItem value="KS">Kansas</SelectItem>
+                        <SelectItem value="KY">Kentucky</SelectItem>
+                        <SelectItem value="LA">Louisiana</SelectItem>
+                        <SelectItem value="ME">Maine</SelectItem>
+                        <SelectItem value="MD">Maryland</SelectItem>
+                        <SelectItem value="MA">Massachusetts</SelectItem>
+                        <SelectItem value="MI">Michigan</SelectItem>
+                        <SelectItem value="MN">Minnesota</SelectItem>
+                        <SelectItem value="MS">Mississippi</SelectItem>
+                        <SelectItem value="MO">Missouri</SelectItem>
+                        <SelectItem value="MT">Montana</SelectItem>
+                        <SelectItem value="NE">Nebraska</SelectItem>
+                        <SelectItem value="NV">Nevada</SelectItem>
+                        <SelectItem value="NH">New Hampshire</SelectItem>
+                        <SelectItem value="NJ">New Jersey</SelectItem>
+                        <SelectItem value="NM">New Mexico</SelectItem>
+                        <SelectItem value="NY">New York</SelectItem>
+                        <SelectItem value="NC">North Carolina</SelectItem>
+                        <SelectItem value="ND">North Dakota</SelectItem>
+                        <SelectItem value="OH">Ohio</SelectItem>
+                        <SelectItem value="OK">Oklahoma</SelectItem>
+                        <SelectItem value="OR">Oregon</SelectItem>
+                        <SelectItem value="PA">Pennsylvania</SelectItem>
+                        <SelectItem value="RI">Rhode Island</SelectItem>
+                        <SelectItem value="SC">South Carolina</SelectItem>
+                        <SelectItem value="SD">South Dakota</SelectItem>
+                        <SelectItem value="TN">Tennessee</SelectItem>
+                        <SelectItem value="TX">Texas</SelectItem>
+                        <SelectItem value="UT">Utah</SelectItem>
+                        <SelectItem value="VT">Vermont</SelectItem>
+                        <SelectItem value="VA">Virginia</SelectItem>
+                        <SelectItem value="WA">Washington</SelectItem>
+                        <SelectItem value="WV">West Virginia</SelectItem>
+                        <SelectItem value="WI">Wisconsin</SelectItem>
+                        <SelectItem value="WY">Wyoming</SelectItem>
+                        <SelectItem value="DC">District of Columbia</SelectItem>
+                        <SelectItem value="PR">Puerto Rico</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
             </div>
             
-            {/* Right side with slider (only shown on awards route) */}
-            {isAwardsRoute && (
+            {/* Right side with slider (shown on awards and companies routes) */}
+            {(isAwardsRoute || isCompaniesRoute) && (
               <div className="flex items-center">
-                {/* Amount Range Slider */}
-                <div className="flex items-center">
-                  {/* Min value label with fixed width */}
-                  <div className="w-20 text-right">
-                    <span className="text-sm text-gray-500 mr-2">
-                      {formatCurrency(localAmountRange[0])}
-                    </span>
+                {/* Amount Range Slider for Awards */}
+                {isAwardsRoute && (
+                  <div className="flex items-center">
+                    <div className="w-20 text-right">
+                      <span className="text-sm text-gray-500 mr-2">
+                        {formatCurrency(localAmountRange[0])}
+                      </span>
+                    </div>
+                    
+                    <div className="w-64 mx-2">
+                      <Slider 
+                        defaultValue={awardAmountRange}
+                        value={localAmountRange}
+                        min={0}
+                        max={2500000}
+                        step={25000}
+                        onValueChange={handleAmountRangeChange}
+                        onValueCommit={handleAmountRangeCommit}
+                        className="w-full"
+                      />
+                    </div>
+                    
+                    <div className="w-20">
+                      <span className="text-sm text-gray-500">
+                        {formatCurrency(localAmountRange[1])}
+                      </span>
+                    </div>
+                    
+                    <div className="w-20">
+                      {isAmountRangeActive && (
+                        <button 
+                          onClick={handleResetAmountRange}
+                          className="text-xs text-gray-600"
+                        >
+                          Reset
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  
-                  {/* Slider - update max to 2,500,000 */}
-                  <div className="w-64 mx-2">
-                    <Slider 
-                      defaultValue={awardAmountRange}
-                      value={localAmountRange}
-                      min={0}
-                      max={2500000}
-                      step={25000}
-                      onValueChange={handleAmountRangeChange}
-                      onValueCommit={handleAmountRangeCommit}
-                      className="w-full"
-                    />
+                )}
+
+                {/* Awards Range Slider for Companies */}
+                {isCompaniesRoute && (
+                  <div className="flex items-center">
+                    <div className="text-sm text-gray-500">
+                      Number of Awards:
+                    </div>
+                    <div className="w-10 text-right">
+                      <span className="text-sm text-gray-500">
+                        {localAwardsRange[0]}
+                      </span>
+                    </div>
+                    
+                    <div className="w-64 mx-2">
+                      <Slider 
+                        defaultValue={companyAwardsRange}
+                        value={localAwardsRange}
+                        min={0}
+                        max={500}
+                        step={5}
+                        onValueChange={handleAwardsRangeChange}
+                        onValueCommit={handleAwardsRangeCommit}
+                        className="w-full"
+                      />
+                    </div>
+                    
+                    <div className="w-20">
+                      <span className="text-sm text-gray-500">
+                        {localAwardsRange[1] === 500 ? "500+" : localAwardsRange[1]}
+                      </span>
+                    </div>
+                    
+                    <div className="w-20">
+                      {isAwardsRangeActive && (
+                        <button 
+                          onClick={handleResetAwardsRange}
+                          className="text-xs text-gray-600"
+                        >
+                          Reset
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  
-                  {/* Max value label with fixed width */}
-                  <div className="w-20">
-                    <span className="text-sm text-gray-500">
-                      {formatCurrency(localAmountRange[1])}
-                    </span>
-                  </div>
-                  
-                  {/* Reset button container with fixed width */}
-                  <div className="w-20">
-                    {isAmountRangeActive && (
-                      <button 
-                        onClick={handleResetAmountRange}
-                        className="text-xs text-gray-600"
-                      >
-                        Reset
-                      </button>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
             )}
           </div>
