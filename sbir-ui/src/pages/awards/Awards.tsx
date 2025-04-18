@@ -214,10 +214,15 @@ export default function Awards() {
       {/* Results Count */}
       {!loading && (
         <div className="text-center mb-8 text-gray-600 dark:text-gray-200">
-          {totalAwards > data.length ? 
-            `Showing awards ${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalAwards)} of ${totalAwards}` : 
-            `Found ${totalAwards} awards`
-          }
+          {searchTerm ? (
+            <span>
+              Showing results {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalAwards)} of {totalAwards} for &ldquo;{searchTerm}&rdquo;
+            </span>
+          ) : (
+            totalAwards > data.length ? 
+              `Showing awards ${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalAwards)} of ${totalAwards}` : 
+              `Found ${totalAwards} awards`
+          )}
         </div>
       )}
 

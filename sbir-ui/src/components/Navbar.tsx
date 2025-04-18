@@ -68,6 +68,27 @@ export default function Navbar() {
     }
   }, [isTopicsRoute, isAwardsRoute, isCompaniesRoute, setCurrentSection]);
   
+  // Update company filters from URL parameters
+  useEffect(() => {
+    if (isCompaniesRoute) {
+      const state = searchParams.get('state');
+      const minAwards = searchParams.get('minAwards');
+      
+      if (state) {
+        setCompanyStateFilter(state);
+      }
+      
+      if (minAwards) {
+        const min = parseInt(minAwards, 10);
+        if (!isNaN(min)) {
+          setCompanyAwardsRange([min, 500]);
+          setLocalAwardsRange([min, 500]);
+          setIsAwardsRangeActive(true);
+        }
+      }
+    }
+  }, [isCompaniesRoute, searchParams, setCompanyStateFilter, setCompanyAwardsRange, setIsAwardsRangeActive]);
+  
   // Format currency for display
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {

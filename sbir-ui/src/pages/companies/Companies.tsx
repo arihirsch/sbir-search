@@ -55,13 +55,18 @@ export default function Companies() {
         queryParams.append('q', searchTerm);
       }
       
-      // Add state filter if present
-      if (companyStateFilter) {
-        queryParams.append('state', companyStateFilter);
+      // Add state filter if present in URL or context
+      const stateFilter = searchParams.get('state') || companyStateFilter;
+      if (stateFilter) {
+        queryParams.append('state', stateFilter);
       }
       
-      // Add awards range filter if active
-      if (isAwardsRangeActive) {
+      // Add awards range filter if active in URL or context
+      const minAwards = searchParams.get('minAwards');
+      if (minAwards) {
+        queryParams.append('minAwards', minAwards);
+        queryParams.append('maxAwards', '500');
+      } else if (isAwardsRangeActive) {
         queryParams.append('minAwards', companyAwardsRange[0].toString());
         queryParams.append('maxAwards', companyAwardsRange[1].toString());
       }
@@ -147,10 +152,15 @@ export default function Companies() {
       {/* Results Count */}
       {!loading && (
         <div className="text-center mb-8 text-gray-600 dark:text-gray-200">
-          {totalCompanies > data.length ? 
-            `Showing companies ${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalCompanies)} of ${totalCompanies}` : 
-            `Found ${totalCompanies} companies`
-          }
+          {searchTerm ? (
+            <span>
+              Showing results {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalCompanies)} of {totalCompanies} for &ldquo;{searchTerm}&rdquo;
+            </span>
+          ) : (
+            totalCompanies > data.length ? 
+              `Showing companies ${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalCompanies)} of ${totalCompanies}` : 
+              `Found ${totalCompanies} companies`
+          )}
         </div>
       )}
 

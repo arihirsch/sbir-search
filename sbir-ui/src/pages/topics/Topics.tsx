@@ -237,10 +237,15 @@ export default function Topics() {
         {/* Results Count */}
         {!loading && (
           <div className="text-center mb-8 text-gray-600 dark:text-gray-200">
-            {totalTopics > data.length ? 
-              `Showing topics ${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalTopics)} of ${totalTopics}` : 
-              `Found ${totalTopics} topics`
-            }
+            {searchTerm ? (
+              <span>
+                Showing results {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalTopics)} of {totalTopics} for &ldquo;{searchTerm}&rdquo;
+              </span>
+            ) : (
+              totalTopics > data.length ? 
+                `Showing topics ${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalTopics)} of ${totalTopics}` : 
+                `Found ${totalTopics} topics`
+            )}
           </div>
         )}
 

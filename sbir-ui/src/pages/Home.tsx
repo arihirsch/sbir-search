@@ -68,7 +68,7 @@ export default function Home() {
   const [featuredCompanies, setFeaturedCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { setCurrentSection, setTopicFilter, setPhaseFilter, setProgramFilter, setAgencyFilter } = useNavbar();
+  const { setCurrentSection, setTopicFilter, setPhaseFilter, setProgramFilter, setAgencyFilter, setCompanyStateFilter, setCompanyAwardsRange, setIsAwardsRangeActive } = useNavbar();
 
   useEffect(() => {
     // Load featured data from the backend
@@ -166,25 +166,44 @@ export default function Home() {
     setAgencyFilter('');
     
     // Apply the specific filters for this search
-    if (searchItem.filters.status) {
-      setTopicFilter(searchItem.filters.status);
-    }
-    if (searchItem.filters.agency) {
-      setAgencyFilter(searchItem.filters.agency);
+    if (searchItem.section === 'companies') {
+      if (searchItem.filters.state) {
+        setCompanyStateFilter(searchItem.filters.state);
+      }
+      if (searchItem.filters.min_awards) {
+        setCompanyAwardsRange([searchItem.filters.min_awards, 500]);
+        setIsAwardsRangeActive(true);
+      }
+    } else if (searchItem.section === 'topics') {
+      if (searchItem.filters.status) {
+        setTopicFilter(searchItem.filters.status);
+      }
+      if (searchItem.filters.agency) {
+        setAgencyFilter(searchItem.filters.agency);
+      }
     }
     
     // Construct URL with query and filters
     const params = new URLSearchParams();
     params.set('q', searchItem.query);
     
-    if (searchItem.filters.status) {
-      params.set('filter', searchItem.filters.status);
-    }
-    if (searchItem.filters.agency) {
-      params.set('agency', searchItem.filters.agency);
-    }
-    if (searchItem.filters.year) {
-      params.set('year', searchItem.filters.year);
+    if (searchItem.section === 'companies') {
+      if (searchItem.filters.state) {
+        params.set('state', searchItem.filters.state);
+      }
+      if (searchItem.filters.min_awards) {
+        params.set('minAwards', searchItem.filters.min_awards.toString());
+      }
+    } else if (searchItem.section === 'topics') {
+      if (searchItem.filters.status) {
+        params.set('filter', searchItem.filters.status);
+      }
+      if (searchItem.filters.agency) {
+        params.set('agency', searchItem.filters.agency);
+      }
+      if (searchItem.filters.year) {
+        params.set('year', searchItem.filters.year);
+      }
     }
     
     // Navigate to the appropriate section with the search query and filters
