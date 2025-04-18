@@ -8,7 +8,7 @@ import { useNavbar } from '@/contexts/NavbarContext';
 export default function TitleBar() {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
-  const { currentSection } = useNavbar();
+  const { currentSection, resetFilters } = useNavbar();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,20 +16,25 @@ export default function TitleBar() {
       // Track search initiated
       posthog.capture('search_initiated', {
         search_term: searchTerm.trim(),
-        search_type: currentSection,
+        search_type: currentSection || 'topics', // Default to topics if no section selected
         source: 'title_bar'
       });
       
       // Navigate to the appropriate section with search query
-      navigate(`/${currentSection}?q=${encodeURIComponent(searchTerm.trim())}`);
+      navigate(`/${currentSection || 'topics'}?q=${encodeURIComponent(searchTerm.trim())}`);
     }
+  };
+
+  const handleHomeClick = () => {
+    setSearchTerm('');
+    resetFilters();
   };
 
   return (
     <div className="fixed top-0 left-0 right-0 h-14 bg-background z-50">
       <div className="max-w-7xl mx-auto px-4 h-full border-b border-border flex items-center justify-between">
         <div className="flex-1 flex justify-start">
-          <Link to="/">
+          <Link to="/" onClick={handleHomeClick}>
             <h2 className="text-2xl font-semibold text-black dark:text-white cursor-pointer">SBIRSpy</h2>
           </Link>
         </div>
@@ -38,7 +43,7 @@ export default function TitleBar() {
           <div className="relative">
             <Input
               type="search"
-              placeholder={`Search ${currentSection}...`}
+              placeholder={currentSection ? `Search ${currentSection}...` : "Search topics, awards, or companies..."}
               className="w-full pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

@@ -25,6 +25,7 @@ type NavbarContextType = {
   
   currentSection: string;
   setCurrentSection: (section: string) => void;
+  resetFilters: () => void;
 };
 
 const NavbarContext = createContext<NavbarContextType | undefined>(undefined);
@@ -42,7 +43,21 @@ export function NavbarProvider({ children }: { children: ReactNode }) {
   const [awardAmountRange, setAwardAmountRange] = useState<number[]>([0, 2500000]);
   const [isAmountRangeActive, setIsAmountRangeActive] = useState<boolean>(false);
   
-  const [currentSection, setCurrentSection] = useState<string>('topics');
+  const [currentSection, setCurrentSection] = useState<string>('');
+
+  const resetFilters = () => {
+    setTopicFilter('');
+    setPhaseFilter('');
+    setProgramFilter('');
+    setAgencyFilter('');
+    setAwardAgencyFilter('');
+    setAwardProgramFilter('');
+    setAwardPhaseFilter('');
+    setAwardYearFilter('');
+    setAwardAmountRange([0, 2500000]);
+    setIsAmountRangeActive(false);
+    setCurrentSection('');
+  };
 
   return (
     <NavbarContext.Provider value={{ 
@@ -69,7 +84,8 @@ export function NavbarProvider({ children }: { children: ReactNode }) {
       setIsAmountRangeActive,
       
       currentSection,
-      setCurrentSection
+      setCurrentSection,
+      resetFilters
     }}>
       {children}
     </NavbarContext.Provider>
