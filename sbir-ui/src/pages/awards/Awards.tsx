@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Award, parseAward } from "@/types/award";
 import { useNavbar } from "@/contexts/NavbarContext";
 import { Button } from "@/components/ui/button";
+import posthog from 'posthog-js';
+import { Loader2 } from "lucide-react";
 
 export default function Awards() {
   const [searchParams] = useSearchParams();
@@ -87,6 +89,15 @@ export default function Awards() {
   async function fetchData() {
     setLoading(true);
     try {
+      // Track search initiated
+      if (searchTerm) {
+        posthog.capture('search_initiated', {
+          search_term: searchTerm,
+          search_type: 'awards',
+          source: 'awards_page'
+        });
+      }
+
       // Build query parameters
       const queryParams = new URLSearchParams();
       
@@ -137,8 +148,27 @@ export default function Awards() {
       setTotalAwards(responseData.total);
       setHasMore(responseData.total > currentPage * pageSize);
       setSummary(responseData.summary);
+
+      // Track search completed
+      if (searchTerm) {
+        posthog.capture('search_completed', {
+          search_term: searchTerm,
+          search_type: 'awards',
+          result_count: responseData.total,
+          source: 'awards_page'
+        });
+      }
     } catch (error) {
       console.error('Failed to fetch data:', error);
+      // Track search error
+      if (searchTerm) {
+        posthog.capture('search_error', {
+          search_term: searchTerm,
+          search_type: 'awards',
+          error: error instanceof Error ? error.message : 'Unknown error',
+          source: 'awards_page'
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -156,8 +186,16 @@ export default function Awards() {
 
   return (
     <main>
+      {/* Loading State */}
+      {loading && searchTerm && (
+        <div className="flex flex-col items-center justify-center py-8 gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+          <p className="text-gray-600 dark:text-gray-300">Searching with AI...</p>
+        </div>
+      )}
+
       {/* Add Summary Card */}
-      {searchTerm && summary && (
+      {searchTerm && summary && !loading && (
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Search Summary</CardTitle>
@@ -170,20 +208,19 @@ export default function Awards() {
         </Card>
       )}
 
-      <div className="text-center mb-8 text-gray-600 dark:text-gray-200">
-        {loading ? (
-          "Loading awards..."
-        ) : (
-          totalAwards > data.length ? 
-          `Showing awards ${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalAwards)} of ${totalAwards}` : 
-          `Found ${totalAwards} awards`
-        )}
-      </div>
+      {/* Results Count */}
+      {!loading && (
+        <div className="text-center mb-8 text-gray-600 dark:text-gray-200">
+          {totalAwards > data.length ? 
+            `Showing awards ${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalAwards)} of ${totalAwards}` : 
+            `Found ${totalAwards} awards`
+          }
+        </div>
+      )}
 
+      {/* Results Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {loading ? (
-          <div className="col-span-2 text-center">Loading...</div>
-        ) : data.length > 0 ? (
+        {!loading && data.length > 0 ? (
           data.map((award) => (
             <Card 
               key={award.award_link}
@@ -206,7 +243,7 @@ export default function Awards() {
               </CardContent>
             </Card>
           ))
-        ) : (
+        ) : !loading && (
           <div className="col-span-2 text-center">No awards found</div>
         )}
       </div>

@@ -3,6 +3,8 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Company, parseCompany } from "@/types/company";
 import { Button } from "@/components/ui/button";
+import posthog from 'posthog-js';
+import { Loader2 } from "lucide-react";
 
 export default function Companies() {
   const [searchParams] = useSearchParams();
@@ -30,6 +32,15 @@ export default function Companies() {
   async function fetchData() {
     setLoading(true);
     try {
+      // Track search initiated
+      if (searchTerm) {
+        posthog.capture('search_initiated', {
+          search_term: searchTerm,
+          search_type: 'companies',
+          source: 'companies_page'
+        });
+      }
+
       // Build query parameters
       const queryParams = new URLSearchParams();
       
@@ -54,8 +65,27 @@ export default function Companies() {
       setTotalCompanies(responseData.total);
       setHasMore(responseData.total > currentPage * pageSize);
       setSummary(responseData.summary);
+
+      // Track search completed
+      if (searchTerm) {
+        posthog.capture('search_completed', {
+          search_term: searchTerm,
+          search_type: 'companies',
+          result_count: responseData.total,
+          source: 'companies_page'
+        });
+      }
     } catch (error) {
       console.error('Failed to fetch data:', error);
+      // Track search error
+      if (searchTerm) {
+        posthog.capture('search_error', {
+          search_term: searchTerm,
+          search_type: 'companies',
+          error: error instanceof Error ? error.message : 'Unknown error',
+          source: 'companies_page'
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -73,8 +103,16 @@ export default function Companies() {
 
   return (
     <main>
+      {/* Loading State */}
+      {loading && searchTerm && (
+        <div className="flex flex-col items-center justify-center py-8 gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+          <p className="text-gray-600 dark:text-gray-300">Searching with AI...</p>
+        </div>
+      )}
+
       {/* Add Summary Card */}
-      {searchTerm && summary && (
+      {searchTerm && summary && !loading && (
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Search Summary</CardTitle>
@@ -87,20 +125,19 @@ export default function Companies() {
         </Card>
       )}
 
-      <div className="text-center mb-8 text-gray-600 dark:text-gray-200">
-        {loading ? (
-          "Loading companies..."
-        ) : (
-          totalCompanies > data.length ? 
-          `Showing companies ${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalCompanies)} of ${totalCompanies}` : 
-          `Found ${totalCompanies} companies`
-        )}
-      </div>
+      {/* Results Count */}
+      {!loading && (
+        <div className="text-center mb-8 text-gray-600 dark:text-gray-200">
+          {totalCompanies > data.length ? 
+            `Showing companies ${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalCompanies)} of ${totalCompanies}` : 
+            `Found ${totalCompanies} companies`
+          }
+        </div>
+      )}
 
+      {/* Results Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {loading ? (
-          <div className="col-span-2 text-center">Loading...</div>
-        ) : data.length > 0 ? (
+        {!loading && data.length > 0 ? (
           data.map((company) => (
             <Card 
               key={company.firm_nid}
@@ -136,7 +173,7 @@ export default function Companies() {
               </CardContent>
             </Card>
           ))
-        ) : (
+        ) : !loading && (
           <div className="col-span-2 text-center">No companies found</div>
         )}
       </div>

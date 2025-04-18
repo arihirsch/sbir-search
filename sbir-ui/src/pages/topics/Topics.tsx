@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { parseTopic, Topic } from "@/types/topic";
 import { useNavbar } from "@/contexts/NavbarContext";
 import AgencyLogo from "@/components/AgencyLogo";
+import posthog from 'posthog-js';
+import { Loader2 } from "lucide-react";
 
 export default function Topics() {
   const [searchParams] = useSearchParams();
@@ -73,6 +75,15 @@ export default function Topics() {
   async function fetchData() {
     setLoading(true);
     try {
+      // Track search initiated
+      if (searchTerm) {
+        posthog.capture('search_initiated', {
+          search_term: searchTerm,
+          search_type: 'topics',
+          source: 'topics_page'
+        });
+      }
+
       // Build query parameters
       const queryParams = new URLSearchParams();
       
@@ -117,8 +128,27 @@ export default function Topics() {
       setTotalTopics(responseData.total);
       setHasMore(responseData.total > currentPage * pageSize);
       setSummary(responseData.summary);
+
+      // Track search completed
+      if (searchTerm) {
+        posthog.capture('search_completed', {
+          search_term: searchTerm,
+          search_type: 'topics',
+          result_count: responseData.total,
+          source: 'topics_page'
+        });
+      }
     } catch (error) {
       console.error('Failed to fetch data:', error);
+      // Track search error
+      if (searchTerm) {
+        posthog.capture('search_error', {
+          search_term: searchTerm,
+          search_type: 'topics',
+          error: error instanceof Error ? error.message : 'Unknown error',
+          source: 'topics_page'
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -166,8 +196,16 @@ export default function Topics() {
 
   return (
       <div>
+        {/* Loading State */}
+        {loading && searchTerm && (
+          <div className="flex flex-col items-center justify-center py-8 gap-2">
+            <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+            <p className="text-gray-600 dark:text-gray-300">Searching with AI...</p>
+          </div>
+        )}
+
         {/* Add Summary Card */}
-        {searchTerm && summary && (
+        {searchTerm && summary && !loading && (
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Search Summary</CardTitle>
@@ -180,20 +218,19 @@ export default function Topics() {
           </Card>
         )}
 
-        <div className="text-center mb-8 text-gray-600 dark:text-gray-200">
-          {loading ? (
-            "Loading topics..."
-          ) : (
-            totalTopics > data.length ? 
-            `Showing topics ${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalTopics)} of ${totalTopics}` : 
-            `Found ${totalTopics} topics`
-          )}
-        </div>
+        {/* Results Count */}
+        {!loading && (
+          <div className="text-center mb-8 text-gray-600 dark:text-gray-200">
+            {totalTopics > data.length ? 
+              `Showing topics ${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalTopics)} of ${totalTopics}` : 
+              `Found ${totalTopics} topics`
+            }
+          </div>
+        )}
 
+        {/* Results Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {loading ? (
-            <div className="col-span-2 text-center">Loading...</div>
-          ) : data.length > 0 ? (
+          {!loading && data.length > 0 ? (
             data.map(topic => (
               <Card 
                 key={topic.topic_number}
@@ -223,7 +260,7 @@ export default function Topics() {
                 </CardContent>
               </Card>
             ))
-          ) : (
+          ) : !loading && (
             <div className="col-span-2 text-center">
               No topics found
             </div>
