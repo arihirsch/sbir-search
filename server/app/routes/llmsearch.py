@@ -371,7 +371,7 @@ def generate_summary(query: str, results: List[Dict[str, Any]], table: str, filt
     - Identify **patterns**, **trends**, or **emergent themes**, especially from **recent results**.
     - Use result dates to highlight changes or developments over time, and be specific about the dates.
     - Limit the output to **under 100 words**. Avoid filler or repetition.
-    - If there are no results, return "No results found."
+    - If there are no results, return "No strong matches found."
     - When filters are applied, acknowledge them naturally in the summary and explain how they affect the results.
     - When filters are applied, if the number of results is greater than 0 (even if they are not the most relevant), summarize the results.
     - When filters are applied, and ONLY IF the number of results is exactly zero, explain that no strong matches were found given the filters in natural language.
