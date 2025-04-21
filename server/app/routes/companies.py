@@ -61,7 +61,7 @@ def get_all_companies():
     params.extend([limit, offset])
     
     cursor.execute("SET search_path TO extensions, public, db1, db2, db3;")    
-    cursor.execute("SET ivfflat.probes = 5;")
+    cursor.execute("SET ivfflat.probes = 7;")
     
     cursor.execute(query, params)
     results = cursor.fetchall()

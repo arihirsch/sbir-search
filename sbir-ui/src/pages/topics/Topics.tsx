@@ -260,6 +260,7 @@ export default function Topics() {
               >
                 <CardHeader className="flex flex-row items-start justify-between pb-2">
                   <div>
+                    <div className="text-blue-500 font-bold text-sm mb-2">Topic</div>
                     <CardTitle>{topic.topic_title}</CardTitle>
                     <CardDescription className="mt-2">Topic #{topic.topic_number}</CardDescription>
                   </div>
