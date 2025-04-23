@@ -29,7 +29,8 @@ export default function Awards() {
     awardAmountRange,
     setAwardAmountRange,
     isAmountRangeActive,
-    setIsAmountRangeActive
+    setIsAmountRangeActive,
+    setSearchTerm
   } = useNavbar();
   const navigate = useNavigate();
 
@@ -70,6 +71,11 @@ export default function Awards() {
       setAwardAmountRange([minAmount, maxAmount]);
       setIsAmountRangeActive(true);
       setCurrentPage(1); // Reset to first page when filter changes
+    }
+
+    // Store search term in context
+    if (searchTerm) {
+      setSearchTerm(searchTerm);
     }
   }, [searchParams]);
 

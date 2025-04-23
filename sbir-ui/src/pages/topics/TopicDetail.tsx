@@ -1,16 +1,70 @@
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Topic, parseTopic } from "@/types/topic";
 import { Solicitation, parseSolicitation } from "@/types/solicitation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator.tsx";
 import AgencyLogo from "@/components/AgencyLogo";
+import { useNavbar } from "@/contexts/NavbarContext";
 
 export default function TopicDetail() {
   const { topicNumber, solicitationId } = useParams();
   const [topic, setTopic] = useState<Topic | null>(null);
   const [solicitation, setSolicitation] = useState<Solicitation | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { 
+    topicFilter, 
+    phaseFilter, 
+    programFilter, 
+    agencyFilter, 
+    topicYearFilter,
+    searchTerm
+  } = useNavbar();
+
+  // Track previous filter values
+  const prevFilters = useRef({
+    topicFilter,
+    phaseFilter,
+    programFilter,
+    agencyFilter,
+    topicYearFilter,
+    searchTerm
+  });
+
+  // Effect to handle filter changes
+  useEffect(() => {
+    // Check if any filter has actually changed
+    const hasFilterChanged = 
+      prevFilters.current.topicFilter !== topicFilter ||
+      prevFilters.current.phaseFilter !== phaseFilter ||
+      prevFilters.current.programFilter !== programFilter ||
+      prevFilters.current.agencyFilter !== agencyFilter ||
+      prevFilters.current.topicYearFilter !== topicYearFilter ||
+      prevFilters.current.searchTerm !== searchTerm;
+
+    if (hasFilterChanged) {
+      const queryParams = new URLSearchParams();
+      if (searchTerm) queryParams.append('q', searchTerm);
+      if (topicFilter) queryParams.append('filter', topicFilter);
+      if (phaseFilter) queryParams.append('phase', phaseFilter);
+      if (programFilter) queryParams.append('program', programFilter);
+      if (agencyFilter) queryParams.append('agency', agencyFilter);
+      if (topicYearFilter) queryParams.append('year', topicYearFilter);
+      
+      navigate(`/topics?${queryParams.toString()}`);
+    }
+
+    // Update previous filter values
+    prevFilters.current = {
+      topicFilter,
+      phaseFilter,
+      programFilter,
+      agencyFilter,
+      topicYearFilter,
+      searchTerm
+    };
+  }, [topicFilter, phaseFilter, programFilter, agencyFilter, topicYearFilter, searchTerm, navigate]);
 
   useEffect(() => {
     async function fetchData() {

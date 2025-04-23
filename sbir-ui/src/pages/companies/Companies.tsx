@@ -20,7 +20,8 @@ export default function Companies() {
   const { 
     companyStateFilter,
     companyAwardsRange,
-    isAwardsRangeActive
+    isAwardsRangeActive,
+    setSearchTerm
   } = useNavbar();
 
   // Get search term from URL params
@@ -29,6 +30,11 @@ export default function Companies() {
   // Reset page when search params change
   useEffect(() => {
     setCurrentPage(1);
+
+    // Store search term in context
+    if (searchTerm) {
+      setSearchTerm(searchTerm);
+    }
   }, [searchParams]);
 
   useEffect(() => {

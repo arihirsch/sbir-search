@@ -11,6 +11,8 @@ type NavbarContextType = {
   setAgencyFilter: (filter: string) => void;
   topicYearFilter: string;
   setTopicYearFilter: (filter: string) => void;
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
   
   awardAgencyFilter: string;
   setAwardAgencyFilter: (filter: string) => void;
@@ -45,6 +47,7 @@ export function NavbarProvider({ children }: { children: ReactNode }) {
   const [programFilter, setProgramFilter] = useState<string>('');
   const [agencyFilter, setAgencyFilter] = useState<string>('');
   const [topicYearFilter, setTopicYearFilter] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
   
   const [awardAgencyFilter, setAwardAgencyFilter] = useState<string>('');
   const [awardProgramFilter, setAwardProgramFilter] = useState<string>('');
@@ -65,6 +68,7 @@ export function NavbarProvider({ children }: { children: ReactNode }) {
     setProgramFilter('');
     setAgencyFilter('');
     setTopicYearFilter('');
+    setSearchTerm('');
     setAwardAgencyFilter('');
     setAwardProgramFilter('');
     setAwardPhaseFilter('');
@@ -89,6 +93,8 @@ export function NavbarProvider({ children }: { children: ReactNode }) {
       setAgencyFilter,
       topicYearFilter,
       setTopicYearFilter,
+      searchTerm,
+      setSearchTerm,
       
       awardAgencyFilter,
       setAwardAgencyFilter,

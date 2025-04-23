@@ -406,7 +406,7 @@ export default function Navbar() {
                         <SelectItem value="NSF">NSF</SelectItem>
                         <SelectItem value="USDA">USDA</SelectItem>
                         <SelectItem value="EPA">EPA</SelectItem>
-                        <SelectItem value="ED">ED</SelectItem>
+                        <SelectItem value="ED">EDU</SelectItem>
                         <SelectItem value="DHS">DHS</SelectItem>
                         <SelectItem value="DOT">DOT</SelectItem>
                         <SelectItem value="DOE">DOE</SelectItem>

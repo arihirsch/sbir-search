@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Company, parseCompany } from "@/types/company";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavbar } from "@/contexts/NavbarContext";
 
 function formatValue(value: string | null): string {
   return value || 'N/A';
@@ -11,6 +12,54 @@ export default function CompanyDetail() {
   const { id } = useParams();
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { 
+    companyStateFilter, 
+    companyAwardsRange, 
+    isAwardsRangeActive,
+    searchTerm
+  } = useNavbar();
+
+  // Track previous filter values
+  const prevFilters = useRef({
+    companyStateFilter,
+    companyAwardsRange,
+    isAwardsRangeActive,
+    searchTerm
+  });
+
+  // Effect to handle filter changes
+  useEffect(() => {
+    // Check if any filter has actually changed
+    const hasFilterChanged = 
+      prevFilters.current.companyStateFilter !== companyStateFilter ||
+      prevFilters.current.isAwardsRangeActive !== isAwardsRangeActive ||
+      prevFilters.current.searchTerm !== searchTerm ||
+      (isAwardsRangeActive && (
+        prevFilters.current.companyAwardsRange[0] !== companyAwardsRange[0] ||
+        prevFilters.current.companyAwardsRange[1] !== companyAwardsRange[1]
+      ));
+
+    if (hasFilterChanged) {
+      const queryParams = new URLSearchParams();
+      if (searchTerm) queryParams.append('q', searchTerm);
+      if (companyStateFilter) queryParams.append('state', companyStateFilter);
+      if (isAwardsRangeActive) {
+        queryParams.append('min_awards', companyAwardsRange[0].toString());
+        queryParams.append('max_awards', companyAwardsRange[1].toString());
+      }
+      
+      navigate(`/companies?${queryParams.toString()}`);
+    }
+
+    // Update previous filter values
+    prevFilters.current = {
+      companyStateFilter,
+      companyAwardsRange,
+      isAwardsRangeActive,
+      searchTerm
+    };
+  }, [companyStateFilter, companyAwardsRange, isAwardsRangeActive, searchTerm, navigate]);
 
   useEffect(() => {
     async function fetchCompany() {

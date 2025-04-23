@@ -27,7 +27,8 @@ export default function Topics() {
     agencyFilter,
     setAgencyFilter,
     topicYearFilter,
-    setTopicYearFilter
+    setTopicYearFilter,
+    setSearchTerm
   } = useNavbar();
   const navigate = useNavigate();
 
@@ -64,6 +65,11 @@ export default function Topics() {
     if (urlYear && urlYear !== topicYearFilter) {
       setTopicYearFilter(urlYear);
       setCurrentPage(1);
+    }
+
+    // Store search term in context
+    if (searchTerm) {
+      setSearchTerm(searchTerm);
     }
   }, [searchParams]);
 
@@ -237,7 +243,9 @@ export default function Topics() {
         {/* Results Count */}
         {!loading && (
           <div className="text-center mb-8 text-gray-600 dark:text-gray-200">
-            {searchTerm ? (
+            {totalTopics === 0 ? (
+              <span>No results found{searchTerm ? ` for "${searchTerm}"` : ''}</span>
+            ) : searchTerm ? (
               <span>
                 Showing results {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalTopics)} of {totalTopics} for &ldquo;{searchTerm}&rdquo;
               </span>

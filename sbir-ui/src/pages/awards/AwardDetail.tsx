@@ -1,15 +1,78 @@
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Award, parseAward } from "@/types/award";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AgencyLogo from "@/components/AgencyLogo";
 import { Separator } from "@/components/ui/separator.tsx";
-
+import { useNavbar } from "@/contexts/NavbarContext";
 
 export default function AwardDetail() {
   const { id } = useParams();
   const [award, setAward] = useState<Award | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { 
+    awardAgencyFilter, 
+    awardProgramFilter, 
+    awardPhaseFilter, 
+    awardYearFilter,
+    awardAmountRange,
+    isAmountRangeActive,
+    searchTerm
+  } = useNavbar();
+
+  // Track previous filter values
+  const prevFilters = useRef({
+    awardAgencyFilter,
+    awardProgramFilter,
+    awardPhaseFilter,
+    awardYearFilter,
+    awardAmountRange,
+    isAmountRangeActive,
+    searchTerm
+  });
+
+  // Effect to handle filter changes
+  useEffect(() => {
+    // Check if any filter has actually changed
+    const hasFilterChanged = 
+      prevFilters.current.awardAgencyFilter !== awardAgencyFilter ||
+      prevFilters.current.awardProgramFilter !== awardProgramFilter ||
+      prevFilters.current.awardPhaseFilter !== awardPhaseFilter ||
+      prevFilters.current.awardYearFilter !== awardYearFilter ||
+      prevFilters.current.isAmountRangeActive !== isAmountRangeActive ||
+      prevFilters.current.searchTerm !== searchTerm ||
+      (isAmountRangeActive && (
+        prevFilters.current.awardAmountRange[0] !== awardAmountRange[0] ||
+        prevFilters.current.awardAmountRange[1] !== awardAmountRange[1]
+      ));
+
+    if (hasFilterChanged) {
+      const queryParams = new URLSearchParams();
+      if (searchTerm) queryParams.append('q', searchTerm);
+      if (awardAgencyFilter) queryParams.append('agency', awardAgencyFilter);
+      if (awardProgramFilter) queryParams.append('program', awardProgramFilter);
+      if (awardPhaseFilter) queryParams.append('phase', awardPhaseFilter);
+      if (awardYearFilter) queryParams.append('year', awardYearFilter);
+      if (isAmountRangeActive) {
+        queryParams.append('min_amount', awardAmountRange[0].toString());
+        queryParams.append('max_amount', awardAmountRange[1].toString());
+      }
+      
+      navigate(`/awards?${queryParams.toString()}`);
+    }
+
+    // Update previous filter values
+    prevFilters.current = {
+      awardAgencyFilter,
+      awardProgramFilter,
+      awardPhaseFilter,
+      awardYearFilter,
+      awardAmountRange,
+      isAmountRangeActive,
+      searchTerm
+    };
+  }, [awardAgencyFilter, awardProgramFilter, awardPhaseFilter, awardYearFilter, awardAmountRange, isAmountRangeActive, searchTerm, navigate]);
 
   useEffect(() => {
     async function fetchAward() {
