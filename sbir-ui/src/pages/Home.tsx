@@ -185,7 +185,13 @@ export default function Home() {
     
     // Construct URL with query and filters
     const params = new URLSearchParams();
-    params.set('q', searchItem.query);
+    
+    // Always set the query parameter if it exists
+    if (searchItem.query) {
+      params.set('q', searchItem.query);
+    } else if (searchItem.displayQuery) {
+      params.set('q', searchItem.displayQuery);
+    }
     
     if (searchItem.section === 'companies') {
       if (searchItem.filters.state) {
