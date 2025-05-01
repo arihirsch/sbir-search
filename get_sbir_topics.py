@@ -93,6 +93,7 @@ def generate_embeddings():
     conn = get_db_connection()
     cursor = conn.cursor()
     
+    total_embeddings_added = 0
     try:
         # Fetch rows with NULL embeddings
         cursor.execute("SELECT * FROM topics WHERE embedding IS NULL")
@@ -100,7 +101,7 @@ def generate_embeddings():
 
         if not rows:
             print("No topics need embeddings.")
-            return
+            return total_embeddings_added
         
         print(f"Generating embeddings for {len(rows)} topics...")
 
@@ -124,15 +125,19 @@ def generate_embeddings():
             embeddings = get_embeddings_batch(texts)
 
             # Update database
+            successful_updates = 0
             for idx, embedding in enumerate(embeddings):
                 if embedding:
                     cursor.execute(
                         "UPDATE topics SET embedding = %s WHERE topic_number = %s AND solicitation_id = %s",
                         (embedding, keys[idx][0], keys[idx][1])
                     )
+                    if cursor.rowcount > 0:
+                        successful_updates += 1
             
+            total_embeddings_added += successful_updates
             conn.commit()
-            print(f"✅ Updated {len(embeddings)} topics with embeddings (batch {i // BATCH_SIZE + 1})")
+            print(f"✅ Updated {successful_updates} topics with embeddings (batch {i // BATCH_SIZE + 1})")
             time.sleep(1)  # Rate limiting
 
     except Exception as e:
@@ -141,7 +146,8 @@ def generate_embeddings():
         raise
     finally:
         conn.close()
-        print("Embedding generation complete!")
+        print(f"Embedding generation complete! Added {total_embeddings_added} embeddings")
+        return total_embeddings_added
 
 def insert_data(data):
     print("Establishing database connection for data insertion...")
@@ -336,10 +342,13 @@ def main():
         fix_date_formats()
 
         print("Generating embeddings for new topics...")
-        generate_embeddings()
+        embeddings_added = generate_embeddings()
 
-        print("Recreating vector search index...")
-        recreate_vector_index()
+        if embeddings_added > 0:
+            print(f"Added {embeddings_added} new embeddings, recreating vector search index...")
+            recreate_vector_index()
+        else:
+            print("No new embeddings added, skipping index recreation")
 
         print("Data collection and processing complete!")
     except Exception as e:
