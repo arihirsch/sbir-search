@@ -22,7 +22,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         
-    - name: Run SBIR data collection
+    - name: Run SBIR topics collection
       env:
         SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
         SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
@@ -30,4 +30,14 @@ jobs:
         SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      run: python get_sbir_topics.py 
+      run: python get_sbir_topics.py
+
+    - name: Run SBIR awards collection
+      env:
+        SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+        SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+        SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: python get_sbir_awards.py 

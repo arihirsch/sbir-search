@@ -138,7 +138,6 @@ def generate_embeddings():
             total_embeddings_added += successful_updates
             conn.commit()
             print(f"✅ Updated {successful_updates} topics with embeddings (batch {i // BATCH_SIZE + 1})")
-            time.sleep(1)  # Rate limiting
 
     except Exception as e:
         print(f"Error during embedding generation: {str(e)}")
