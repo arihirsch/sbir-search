@@ -2,7 +2,7 @@ name: SBIR Data Collection
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Run at midnight UTC every day
+    - cron: '0 0 * * 0'  # Run at midnight UTC every Sunday
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
@@ -29,4 +29,5 @@ jobs:
         SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: python get_sbir_topics.py 
