@@ -2,7 +2,7 @@ name: SBIR Data Collection
 
 on:
   schedule:
-    - cron: '0 0 * * 0'  # Run at midnight UTC every Sunday
+    - cron: '0 20 * * 3'  # Run at 8 PM UTC every Wednesday
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
