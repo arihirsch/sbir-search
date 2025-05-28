@@ -11,8 +11,8 @@ import { useNavbar } from "@/contexts/NavbarContext";
 // Configuration for featured items - just update these IDs to change what's displayed
 const FEATURED_CONFIG = {
   topics: [
-    { topicNumber: "A254-P030", solicitationId: "1285" },
-    { topicNumber: "OSD252-D03", solicitationId: "1289" }
+    { topicNumber: "A254-P026", solicitationId: "1262" },
+    { topicNumber: "AFX256-DCSO5", solicitationId: "1293" }
   ],
   awards: [
     { id: "202272" },
