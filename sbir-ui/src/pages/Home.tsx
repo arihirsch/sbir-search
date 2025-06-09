@@ -12,7 +12,7 @@ import { useNavbar } from "@/contexts/NavbarContext";
 const FEATURED_CONFIG = {
   topics: [
     { topicNumber: "A254-P026", solicitationId: "1262" },
-    { topicNumber: "AFX256-DCSO5", solicitationId: "1293" }
+    { topicNumber: "OSD25D-005", solicitationId: "1292" }
   ],
   awards: [
     { id: "202272" },
